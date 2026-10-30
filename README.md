@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="apps/web/public/brand-lockup.png" alt="DaxabitHMS" width="520">
+<img src="apps/web/public/brand-lockup.png" alt="Daxabit" width="520">
 
-<img src="docs/daxabithms-cover.jpg" alt="Illustrative evening scene in an independent restaurant" width="100%">
+<img src="docs/daxabit-cover.jpg" alt="Daxabit Restaurant Dining Atmosphere" width="100%">
 
 **Open-source, self-hosted restaurant POS & management system** — billing
 with **UPI QR payments**, tables, kitchen display (KDS), reservations,
