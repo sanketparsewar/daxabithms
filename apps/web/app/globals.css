@@ -171,14 +171,31 @@
 }
 
 @layer base {
-  * {
+  *, ::before, ::after {
+    box-sizing: border-box;
     @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  body {
+    @apply bg-background text-foreground;
+    max-width: 100vw;
+    overflow-x: hidden;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Prevent any long words, URLs, UUIDs, or unconstrained text from breaking card boundaries or viewports */
+  p, span, h1, h2, h3, h4, h5, h6, label, th, td {
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+  img, svg, video, canvas, audio, iframe, embed, object {
+    display: block;
+    max-width: 100%;
   }
 }
 

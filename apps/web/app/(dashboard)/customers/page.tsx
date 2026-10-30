@@ -33,8 +33,8 @@ export default function CustomersPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-6 min-w-0 max-w-full">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
         <div>
           <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Customers</h1>
           <p className="text-sm text-muted-foreground">Profiles, loyalty, and order history</p>
@@ -49,7 +49,7 @@ export default function CustomersPage() {
         className="max-w-sm"
       />
 
-      <Card className="flex flex-col divide-y divide-border p-2">
+      <Card className="flex flex-col divide-y divide-border p-2 min-w-0 max-w-full">
         {isLoading ? (
           <div className="flex flex-col gap-2 p-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -61,17 +61,17 @@ export default function CustomersPage() {
             <Link
               key={c.id}
               href={`/customers/${c.id}`}
-              className="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-secondary"
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-secondary min-w-0 max-w-full"
             >
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-foreground">
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-sm font-medium text-foreground break-words">
                   {c.name ?? "Unnamed customer"}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground break-words">
                   {[c.phone, c.email].filter(Boolean).join(" · ") || "No contact info"}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-muted-foreground shrink-0 w-full sm:w-auto justify-between sm:justify-start pt-1.5 sm:pt-0 border-t sm:border-0 border-border/40">
                 <span className="flex items-center gap-1">
                   <Star className="h-3.5 w-3.5" />
                   {c.loyaltyPoints} pts
@@ -81,7 +81,7 @@ export default function CustomersPage() {
                     <Gift className="h-3.5 w-3.5" />₹{c.walletBalance}
                   </span>
                 )}
-                <div className="flex items-center gap-0.5">
+                <div className="flex items-center gap-0.5 shrink-0">
                   <Button
                     variant="ghost"
                     size="icon"

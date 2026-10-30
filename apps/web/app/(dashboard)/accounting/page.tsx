@@ -42,18 +42,19 @@ function RangePicker({
   onChange: (r: { from: string; to: string }) => void;
 }) {
   return (
-    <div className="flex gap-2">
-      <Input type="date" className="w-40" value={range.from} onChange={(e) => onChange({ ...range, from: e.target.value })} />
-      <Input type="date" className="w-40" value={range.to} onChange={(e) => onChange({ ...range, to: e.target.value })} />
+    <div className="flex flex-wrap items-center gap-2">
+      <Input type="date" className="w-full sm:w-40" value={range.from} onChange={(e) => onChange({ ...range, from: e.target.value })} />
+      <span className="text-xs text-muted-foreground hidden sm:inline">to</span>
+      <Input type="date" className="w-full sm:w-40" value={range.to} onChange={(e) => onChange({ ...range, to: e.target.value })} />
     </div>
   );
 }
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className={cn("flex justify-between py-1.5 text-sm", strong && "border-t border-border font-semibold")}>
-      <span className={strong ? "" : "text-muted-foreground"}>{label}</span>
-      <span>{value}</span>
+    <div className={cn("flex justify-between py-1.5 text-sm gap-2 min-w-0", strong && "border-t border-border font-semibold")}>
+      <span className={cn("break-words", strong ? "" : "text-muted-foreground")}>{label}</span>
+      <span className="tabular-nums shrink-0">{value}</span>
     </div>
   );
 }
@@ -81,8 +82,8 @@ function Expenses({ branchId }: { branchId: string | null }) {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <Card className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="flex flex-col gap-4 min-w-0 max-w-full">
+      <Card className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5 min-w-0">
         <Input type="date" value={f.spentOn} onChange={(e) => setF({ ...f, spentOn: e.target.value })} />
         <Input placeholder="Category (Rent, Supplies…)" value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} />
         <Input placeholder="Amount" inputMode="decimal" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} />
@@ -96,19 +97,19 @@ function Expenses({ branchId }: { branchId: string | null }) {
         </div>
       </Card>
       <RangePicker range={range} onChange={setRange} />
-      <Card className="flex flex-col divide-y divide-border p-2">
+      <Card className="flex flex-col divide-y divide-border p-2 min-w-0 max-w-full">
         {isLoading ? (
           <Skeleton className="m-4 h-12" />
         ) : data && data.length > 0 ? (
           <>
             {data.map((e) => (
-              <div key={e.id} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
-                <span>
+              <div key={e.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-4 py-2.5 text-sm min-w-0">
+                <span className="min-w-0 flex-1 break-words">
                   <span className="font-medium text-foreground">{e.category}</span>
                   <span className="text-muted-foreground"> · {e.spentOn.slice(0, 10)}{e.note && ` · ${e.note}`}{e.paidFromCash && " · till"}</span>
                 </span>
-                <span className="flex items-center gap-3">
-                  {formatCurrency(e.amount)}
+                <span className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto shrink-0">
+                  <span className="font-semibold sm:font-normal tabular-nums">{formatCurrency(e.amount)}</span>
                   <Button size="sm" variant="outline" onClick={() => deleteExpense.mutate(e.id, { onError: (err) => toast.error(errMsg(err)) })}>
                     Delete
                   </Button>
@@ -117,7 +118,7 @@ function Expenses({ branchId }: { branchId: string | null }) {
             ))}
             <div className="flex justify-between px-4 py-2.5 text-sm font-semibold">
               <span>Total</span>
-              <span>{formatCurrency(total)}</span>
+              <span className="tabular-nums">{formatCurrency(total)}</span>
             </div>
           </>
         ) : (
@@ -295,7 +296,7 @@ export default function AccountingPage() {
   const { branchId } = useBranch();
   const [tab, setTab] = useState<Tab>("expenses");
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 min-w-0 max-w-full">
       <div>
         <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Accounting</h1>
         <p className="text-sm text-muted-foreground">Expenses, cash close, profit &amp; loss, balance sheet, budgets, bank reconciliation, tax and branches</p>

@@ -63,7 +63,7 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-background">
       {/* Desktop sidebar */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
         <div className="flex h-16 items-center gap-2 px-5">
@@ -95,24 +95,29 @@ export function AppShell({
         </SheetContent>
       </Sheet>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 max-w-full flex-1 flex-col overflow-x-hidden">
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur sm:px-6">
-          <button
-            type="button"
-            onClick={() => setMobileOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary lg:hidden"
-            aria-label="Open navigation"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary lg:hidden"
+              aria-label="Open navigation"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="flex items-center gap-2 min-w-0 lg:hidden">
+              <RestaurantBrand />
+            </div>
+          </div>
           <div className="hidden lg:block" />
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <LanguageSwitcher compact />
             <NotificationBell />
             <UserMenu user={user} />
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8">{children}</main>
+        <main className="flex-1 min-w-0 max-w-full overflow-y-auto overflow-x-hidden p-3 pb-24 sm:p-6 sm:pb-24 lg:p-8">{children}</main>
         <EntityDialogHost />
       </div>
       <MobileBottomNav user={user} onMore={() => setMobileOpen(true)} />

@@ -173,8 +173,8 @@ export function CartPanel({
         </div>
       )}
       {existingOrderNumber && (
-        <div className="flex items-center justify-between gap-3 rounded-lg bg-secondary/60 px-3 py-2 text-xs text-muted-foreground">
-          <span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 rounded-lg bg-secondary/60 px-3 py-2 text-xs text-muted-foreground min-w-0">
+          <span className="break-words">
             This table already has open order{" "}
             <span className="font-medium text-foreground">#{existingOrderNumber}</span>
             {lines.length > 0 && " — these items will be added to it as a new round."}
@@ -193,30 +193,30 @@ export function CartPanel({
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-w-0 overflow-y-auto">
         {lines.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-muted-foreground">
             <ShoppingCart className="h-8 w-8 opacity-40" />
             <p className="text-sm">Cart is empty</p>
           </div>
         ) : (
-          <div className="flex flex-col divide-y divide-border">
+          <div className="flex flex-col divide-y divide-border min-w-0">
             {lines.map((line) => (
-              <div key={line.key} className="flex items-start justify-between gap-3 py-3">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">{line.name}</p>
+              <div key={line.key} className="flex items-start justify-between gap-2 py-3 min-w-0">
+                <div className="flex-1 min-w-0 pr-1">
+                  <p className="text-sm font-medium text-foreground break-words">{line.name}</p>
                   {line.modifierLabel && (
-                    <p className="text-xs text-muted-foreground">{line.modifierLabel}</p>
+                    <p className="text-xs text-muted-foreground break-words">{line.modifierLabel}</p>
                   )}
                   <p className="mt-1 text-sm font-medium tabular-nums text-foreground">
                     {formatCurrency(line.unitPrice * line.quantity)}
                   </p>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 shrink-0">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-7 w-7"
+                    className="h-7 w-7 shrink-0"
                     onClick={() => onDecrement(line.key)}
                   >
                     <Minus className="h-3 w-3" />
@@ -225,7 +225,7 @@ export function CartPanel({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-7 w-7"
+                    className="h-7 w-7 shrink-0"
                     onClick={() => onIncrement(line.key)}
                   >
                     <Plus className="h-3 w-3" />
@@ -233,7 +233,7 @@ export function CartPanel({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                    className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
                     onClick={() => onRemove(line.key)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -245,14 +245,14 @@ export function CartPanel({
         )}
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-border pt-4">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Subtotal (incl. tax)</span>
-          <span className="font-semibold tabular-nums text-foreground">
+      <div className="flex flex-col gap-3 border-t border-border pt-4 min-w-0">
+        <div className="flex items-center justify-between text-sm min-w-0">
+          <span className="text-muted-foreground truncate">Subtotal (incl. tax)</span>
+          <span className="font-semibold tabular-nums text-foreground shrink-0 ml-2">
             {formatCurrency(subtotal)}
           </span>
         </div>
-        <Button className="h-11" disabled={!canSubmit} onClick={onSubmit}>
+        <Button className="h-11 min-w-0 max-w-full truncate px-3" disabled={!canSubmit} onClick={onSubmit}>
           {isSubmitting
             ? "Sending to kitchen…"
             : existingOrderNumber

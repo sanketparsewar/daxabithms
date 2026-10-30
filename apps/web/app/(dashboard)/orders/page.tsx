@@ -171,11 +171,11 @@ export default function OrdersPage() {
       >
         <div
           className={cn(
-            "flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-2.5 shadow-[0_12px_32px_rgba(23,21,34,0.14)]",
+            "flex flex-wrap items-center gap-2 sm:gap-3 rounded-2xl border border-border bg-card px-3 sm:px-4 py-2.5 shadow-[0_12px_32px_rgba(23,21,34,0.14)] max-w-[95vw]",
             visibleSelected.length > 0 && "pointer-events-auto",
           )}
         >
-          <span className="text-sm font-medium tabular-nums text-foreground" aria-live="polite">
+          <span className="text-sm font-medium tabular-nums text-foreground shrink-0" aria-live="polite">
             {visibleSelected.length} selected
           </span>
           <Button
@@ -227,12 +227,12 @@ function OrderRow({
   return (
     <div
       className={cn(
-        "flex items-start gap-1 rounded-lg transition-colors duration-150 motion-reduce:transition-none",
+        "flex items-start gap-1 rounded-lg transition-colors duration-150 motion-reduce:transition-none min-w-0 max-w-full",
         selected && "bg-primary/5",
       )}
     >
       {selectable && (
-        <div className="flex h-full items-center py-4 pl-4">
+        <div className="flex h-full items-center py-4 pl-3 sm:pl-4 shrink-0">
           <Checkbox
             checked={selected}
             onCheckedChange={onToggle}
@@ -243,26 +243,26 @@ function OrderRow({
     <button
       type="button"
       onClick={() => openEntity("Order", order.id)}
-      className="flex flex-1 items-start justify-between gap-4 rounded-lg px-4 py-3 text-left transition hover:bg-secondary/50"
+      className="flex flex-1 flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4 rounded-lg px-3 sm:px-4 py-3 text-left transition hover:bg-secondary/50 min-w-0 max-w-full"
     >
-      <div className="flex min-w-0 flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <span className="text-sm font-semibold text-foreground">#{order.orderNumber}</span>
-          <span className="text-sm text-foreground">{name}</span>
+          <span className="text-sm text-foreground break-words">{name}</span>
           <ChannelBadge channel={order.channel} />
           <TypeBadge type={order.type} />
           {order.acceptance === "PENDING" && (
-            <Badge className="font-normal">Needs action</Badge>
+            <Badge className="font-normal shrink-0">Needs action</Badge>
           )}
-          {rejected && <Badge variant="secondary" className="font-normal">Rejected</Badge>}
+          {rejected && <Badge variant="secondary" className="font-normal shrink-0">Rejected</Badge>}
           {!rejected && order.status === "CANCELLED" && (
-            <Badge variant="secondary" className="font-normal">Cancelled</Badge>
+            <Badge variant="secondary" className="font-normal shrink-0">Cancelled</Badge>
           )}
         </div>
-        <span className="truncate text-xs text-muted-foreground">{summary}</span>
+        <span className="text-xs text-muted-foreground break-words line-clamp-2">{summary}</span>
       </div>
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <span className="text-sm font-medium tabular-nums text-foreground">
+      <div className="flex sm:flex-col shrink-0 items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-1 pt-1.5 sm:pt-0 border-t sm:border-0 border-border/50">
+        <span className="text-sm font-semibold sm:font-medium tabular-nums text-foreground">
           {formatCurrency(order.totalAmount)}
         </span>
         <span className="flex items-center gap-1 text-xs text-muted-foreground">

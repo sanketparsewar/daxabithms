@@ -32,12 +32,12 @@ function StatCard({
   accent?: "success" | "warning";
 }) {
   return (
-    <Card className="flex flex-col gap-3 p-6">
-      <div className="flex items-center justify-between">
-        <span className="text-[13px] font-medium text-muted-foreground">{label}</span>
+    <Card className="flex flex-col gap-3 p-5 sm:p-6 min-w-0 max-w-full">
+      <div className="flex items-center justify-between gap-2 min-w-0">
+        <span className="truncate text-[13px] font-medium text-muted-foreground">{label}</span>
         <div
           className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-xl",
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
             accent === "success" && "bg-success/10 text-success",
             accent === "warning" && "bg-warning/10 text-warning",
             !accent && "bg-primary/10 text-primary",
@@ -46,7 +46,7 @@ function StatCard({
           <Icon className="h-[18px] w-[18px]" />
         </div>
       </div>
-      <span className="text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+      <span className="truncate text-2xl sm:text-3xl font-semibold tabular-nums tracking-tight text-foreground">
         {value}
       </span>
     </Card>

@@ -45,7 +45,7 @@ export default function KdsPage() {
   const pendingOrders = incoming.data ?? [];
 
   return (
-    <div className="flex min-h-[calc(100dvh-10rem)] flex-col gap-4 lg:h-[calc(100dvh-8rem)]">
+    <div className="flex min-h-[calc(100dvh-10rem)] flex-col gap-4 lg:h-[calc(100dvh-8rem)] min-w-0 max-w-full">
       <div>
         <h1 className="text-2xl font-semibold sm:text-[32px] tracking-tight text-foreground">
           Kitchen Display

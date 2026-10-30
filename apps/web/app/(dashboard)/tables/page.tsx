@@ -84,9 +84,9 @@ export default function TablesPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 min-w-0 max-w-full">
       <TableRequestsBar branchId={branchId} />
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0">
         <div>
           <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Tables</h1>
           <p className="text-sm text-muted-foreground">
@@ -96,7 +96,7 @@ export default function TablesPage() {
           </p>
         </div>
         {canManage && floors && floors.length > 0 && (
-          <Button variant={editMode ? "default" : "outline"} size="sm" className="h-11 w-full sm:h-8 sm:w-auto" onClick={() => setEditMode((v) => !v)}>
+          <Button variant={editMode ? "default" : "outline"} size="sm" className="h-11 w-full sm:h-8 sm:w-auto shrink-0" onClick={() => setEditMode((v) => !v)}>
             <LayoutGrid className="h-4 w-4" />
             {editMode ? "Done editing" : "Edit floor plan"}
           </Button>
@@ -115,8 +115,8 @@ export default function TablesPage() {
       ) : !branchId ? (
         <BranchNotice />
       ) : floors && floors.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
-          <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px] min-w-0">
+          <div className="flex flex-col gap-4 min-w-0">
             <div className="flex min-w-0 flex-wrap items-center gap-2 [&_button]:max-sm:min-h-10">
               {(floors.length > 1 || editMode) && (
                 <ResponsiveTabs
@@ -143,7 +143,7 @@ export default function TablesPage() {
               )}
             </div>
 
-            <Card ref={cardRef} className="overflow-auto p-3 sm:p-6">
+            <Card ref={cardRef} className="overflow-x-auto overflow-y-hidden max-w-full p-3 sm:p-6 min-w-0">
               <div
                 className="relative"
                 style={

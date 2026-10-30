@@ -49,8 +49,8 @@ export default function ReservationsPage() {
   const visible = reservations?.filter((r) => channel === "all" || r.channel === channel);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-6 min-w-0 max-w-full">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
         <div>
           <h1 className="text-[32px] font-semibold tracking-tight text-foreground">
             Reservations
@@ -80,7 +80,7 @@ export default function ReservationsPage() {
             type="button"
             onClick={() => setChannel(key)}
             className={cn(
-              "rounded-full border px-3.5 py-1 text-xs transition-colors",
+              "rounded-full border px-3.5 py-1 text-xs transition-colors shrink-0",
               channel === key
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border text-muted-foreground hover:bg-secondary",
@@ -91,7 +91,7 @@ export default function ReservationsPage() {
         ))}
       </div>
 
-      <Card className="flex flex-col divide-y divide-border p-2">
+      <Card className="flex flex-col divide-y divide-border p-2 min-w-0 max-w-full">
         {isLoading ? (
           <div className="flex flex-col gap-2 p-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -100,25 +100,25 @@ export default function ReservationsPage() {
           </div>
         ) : visible && visible.length > 0 ? (
           visible.map((r) => (
-            <div key={r.id} className="flex items-center justify-between gap-4 px-4 py-3">
+            <div key={r.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 min-w-0 max-w-full">
               <button
                 type="button"
                 onClick={() => setSelected(r)}
-                className="flex flex-col text-left transition hover:opacity-80"
+                className="flex flex-col text-left transition hover:opacity-80 min-w-0 flex-1"
                 title="Manage booking"
               >
-                <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  {r.customerName}
+                <span className="flex flex-wrap items-center gap-2 text-sm font-medium text-foreground">
+                  <span className="break-words">{r.customerName}</span>
                   <ChannelBadge channel={r.channel} />
                 </span>
-                <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Users className="h-3 w-3" />
-                  {r.guestCount} guests
-                  {r.table && <> · {r.table.name ?? `Table ${r.table.number}`}</>}
-                  {r.phone && <> · {r.phone}</>}
+                <span className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground pt-0.5">
+                  <Users className="h-3 w-3 shrink-0" />
+                  <span>{r.guestCount} guests</span>
+                  {r.table && <span className="break-words">· {r.table.name ?? `Table ${r.table.number}`}</span>}
+                  {r.phone && <span className="break-all">· {r.phone}</span>}
                 </span>
               </button>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 w-full sm:w-auto shrink-0 pt-1.5 sm:pt-0 border-t sm:border-0 border-border/40">
                 <span className="text-sm tabular-nums text-muted-foreground">
                   {new Date(r.reservedAt).toLocaleString(undefined, {
                     month: "short",
@@ -128,7 +128,7 @@ export default function ReservationsPage() {
                   })}
                 </span>
                 {r.status === "RESERVED" && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     <Button
                       variant="secondary"
                       size="icon-sm"

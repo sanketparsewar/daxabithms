@@ -39,34 +39,34 @@ function DeliveryCard({ order, branchId }: { order: DeliveryOrder; branchId: str
     setStatus.mutate({ orderId: order.id, status: next }, { onError: (e) => toast.error(errMsg(e)) });
 
   return (
-    <Card className="flex flex-col gap-3 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold text-foreground">
+    <Card className="flex flex-col gap-3 p-4 min-w-0 max-w-full">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-3 min-w-0">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-foreground break-words">
             #{order.orderNumber} · {order.guestName ?? "Guest"}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground break-words">
             {order.deliveryAddress ?? "Address in notes"}
             {order.deliveryPincode && ` · ${order.deliveryPincode}`}
           </p>
           {order.deliveryPhone && (
-            <a href={`tel:${order.deliveryPhone}`} className="text-xs text-primary underline underline-offset-2">
+            <a href={`tel:${order.deliveryPhone}`} className="text-xs text-primary underline underline-offset-2 break-all">
               {order.deliveryPhone}
             </a>
           )}
         </div>
-        <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-foreground">
+        <span className="shrink-0 self-start rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-foreground">
           {STATUS_LABEL[status]}
         </span>
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-muted-foreground break-words">
         {formatCurrency(order.totalAmount)} + {formatCurrency(order.deliveryFee)} delivery
         {order.deliveryZone && ` · ${order.deliveryZone.name}`}
         {order.deliveryEtaAt && ` · ETA ${time(order.deliveryEtaAt)}`}
         {order.scheduledFor && ` · scheduled ${time(order.scheduledFor)}`}
       </p>
-      {order.notes && <p className="text-xs italic text-muted-foreground">{order.notes}</p>}
-      <div className="flex flex-wrap items-center gap-2">
+      {order.notes && <p className="text-xs italic text-muted-foreground break-words">{order.notes}</p>}
+      <div className="flex flex-wrap items-center gap-2 pt-1 w-full">
         {(status === "UNASSIGNED" || status === "ASSIGNED") && (
           <select
             aria-label="Driver"
@@ -78,7 +78,7 @@ function DeliveryCard({ order, branchId }: { order: DeliveryOrder; branchId: str
                 { onError: (err) => toast.error(errMsg(err)) },
               )
             }
-            className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+            className="max-w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm"
           >
             <option value="">Assign driver…</option>
             {drivers?.map((d) => (
@@ -146,20 +146,20 @@ function ZonesTab({ branchId }: { branchId: string | null }) {
           </p>
         </div>
       </Card>
-      <Card className="flex flex-col divide-y divide-border p-2">
+      <Card className="flex flex-col divide-y divide-border p-2 min-w-0 max-w-full">
         {isLoading ? (
           <Skeleton className="m-4 h-12" />
         ) : zones && zones.length > 0 ? (
           zones.map((z) => (
-            <div key={z.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
-              <div>
-                <p className={cn("font-medium", !z.isActive && "text-muted-foreground line-through")}>{z.name}</p>
-                <p className="text-xs text-muted-foreground">
+            <div key={z.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 text-sm min-w-0">
+              <div className="min-w-0 flex-1">
+                <p className={cn("font-medium break-words", !z.isActive && "text-muted-foreground line-through")}>{z.name}</p>
+                <p className="text-xs text-muted-foreground break-words">
                   {formatCurrency(z.fee)} fee · min {formatCurrency(z.minOrderAmount)} · {z.etaMinutes} min ·{" "}
                   {z.pincodes.join(", ")}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 shrink-0">
                 <Button
                   size="sm"
                   variant="outline"
@@ -191,19 +191,19 @@ export default function DeliveryPage() {
   const { data: orders, isLoading } = useDeliveries(branchId, tab === "history");
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 min-w-0 max-w-full">
       <div>
         <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Delivery</h1>
         <p className="text-sm text-muted-foreground">Assign drivers, track deliveries, and manage zones</p>
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {(["active", "history", "zones"] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
             className={cn(
-              "rounded-full border px-3.5 py-1 text-xs capitalize transition-colors",
+              "rounded-full border px-3.5 py-1 text-xs capitalize transition-colors shrink-0",
               tab === t ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:bg-secondary",
             )}
           >

@@ -87,18 +87,18 @@ export function ProductGrid({
           <button
             key={item.id}
             onClick={() => onSelect(item)}
-            className="flex min-h-24 flex-col items-start gap-2 rounded-2xl border border-border bg-card p-3 text-left sm:p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.97] active:translate-y-0 lg:min-h-32 lg:justify-between lg:p-4 lg:hover:border-primary/50"
+            className="flex min-h-24 w-full min-w-0 flex-col items-start gap-2 rounded-2xl border border-border bg-card p-3 text-left sm:p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.97] active:translate-y-0 lg:min-h-32 lg:justify-between lg:p-4 lg:hover:border-primary/50"
           >
             <span
-              className={`h-2.5 w-2.5 rounded-full ${item.isVeg ? "bg-success" : "bg-destructive"}`}
+              className={`h-2.5 w-2.5 shrink-0 rounded-full ${item.isVeg ? "bg-success" : "bg-destructive"}`}
             />
-            <span className="text-sm font-medium leading-tight text-foreground lg:text-[15px]">{item.name}</span>
-            <span className="flex w-full items-baseline justify-between gap-2">
-              <span className="text-sm font-semibold tabular-nums text-foreground lg:text-base">
+            <span className="w-full text-sm font-medium leading-tight text-foreground break-words line-clamp-2 lg:text-[15px]">{item.name}</span>
+            <span className="flex w-full min-w-0 flex-wrap items-baseline justify-between gap-1">
+              <span className="text-sm font-semibold tabular-nums text-foreground shrink-0 lg:text-base">
                 {formatCurrency(item.price)}
               </span>
               {item.halfPrice != null && (
-                <span className="hidden text-[11px] tabular-nums text-muted-foreground lg:inline">
+                <span className="text-[11px] tabular-nums text-muted-foreground shrink-0">
                   Half {formatCurrency(item.halfPrice)}
                 </span>
               )}

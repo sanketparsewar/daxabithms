@@ -43,7 +43,7 @@ export default function SettingsPage() {
   const { data, isLoading } = useSettings(branchId);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 min-w-0 max-w-full">
       <div>
         <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Settings</h1>
         <p className="text-sm text-muted-foreground">Restaurant, branch, and staff configuration</p>

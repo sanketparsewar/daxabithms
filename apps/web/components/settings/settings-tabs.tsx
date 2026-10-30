@@ -47,7 +47,7 @@ export function SettingsTabs() {
   );
 
   return (
-    <nav className="flex gap-1 border-b border-border">
+    <nav className="flex max-w-full overflow-x-auto gap-1 border-b border-border scrollbar-none">
       {visibleTabs.map((tab) => {
         const isActive =
           tab.href === "/settings" ? pathname === "/settings" : pathname?.startsWith(tab.href);
@@ -56,7 +56,7 @@ export function SettingsTabs() {
             key={tab.href}
             href={tab.href}
             className={cn(
-              "flex items-center gap-2 border-b-2 px-3 pb-3 text-sm font-medium transition-colors",
+              "flex shrink-0 items-center gap-2 border-b-2 px-3 pb-3 text-sm font-medium transition-colors whitespace-nowrap",
               isActive
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground",
