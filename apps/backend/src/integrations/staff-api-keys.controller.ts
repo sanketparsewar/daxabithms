@@ -8,10 +8,7 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import {
-  createStaffApiKeySchema,
-  type SessionUser,
-} from '@daxabithms/types';
+import { createStaffApiKeySchema, type SessionUser } from '@daxabithms/types';
 import { Auth } from '../common/decorators/auth.decorator';
 import { AuditAction } from '../audit/audit-action';
 import { CurrentUser } from '../common/decorators/current-user.decorator';

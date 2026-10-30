@@ -44,9 +44,13 @@ describe('cash drawer', () => {
   });
 
   it('only kicks the drawer when asked', () => {
-    const without = buildReceiptEscPos(base as any);
+    type ReceiptJobArgs = Parameters<typeof buildReceiptEscPos>[0];
+    const without = buildReceiptEscPos(base as unknown as ReceiptJobArgs);
 
-    const withKick = buildReceiptEscPos({ ...(base as any), openDrawer: true });
+    const withKick = buildReceiptEscPos({
+      ...(base as unknown as ReceiptJobArgs),
+      openDrawer: true,
+    });
     expect(without.includes(DRAWER)).toBe(false);
     expect(withKick.subarray(-5).equals(DRAWER)).toBe(true);
     expect(withKick.length).toBe(without.length + 5);
@@ -304,7 +308,7 @@ describe('VERI*FACTU QR on the receipt', () => {
       restaurantName: 'Casa Ñandú',
       currency: 'EUR',
       branch,
-      order: { ...o, verifactu } as never,
+      order: { ...o, verifactu },
       profile: resolveProfile({ paperWidthMm: 80 }),
       ...fmt,
     });

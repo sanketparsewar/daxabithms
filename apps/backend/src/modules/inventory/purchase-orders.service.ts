@@ -3,10 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type {
-  PurchaseOrderDto,
-  PurchaseOrderStatus,
-} from '@daxabithms/types';
+import type { PurchaseOrderDto, PurchaseOrderStatus } from '@daxabithms/types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { round2 } from '../../common/money';
 

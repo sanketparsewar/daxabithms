@@ -10,7 +10,6 @@ import {
   Laptop, 
   Monitor, 
   Printer, 
-  ShieldCheck, 
   Wifi, 
   WifiOff, 
   Zap, 

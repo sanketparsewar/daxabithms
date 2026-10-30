@@ -3,10 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type {
-  QuotationStatus,
-  SupplierQuotationDto,
-} from '@daxabithms/types';
+import type { QuotationStatus, SupplierQuotationDto } from '@daxabithms/types';
 import { PrismaService } from '../../prisma/prisma.service';
 
 const NEXT_STATUS: Record<QuotationStatus, QuotationStatus[]> = {

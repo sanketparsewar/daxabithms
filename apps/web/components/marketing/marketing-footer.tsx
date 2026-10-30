@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
-import { downloadHref } from "@/lib/downloads";
 
 const columns = [
   {
@@ -15,6 +14,7 @@ const columns = [
     title: "Resources",
     links: [
       { href: "/docs", label: "Documentation" },
+      { href: "/download/windows", label: "Windows app" },
       { href: "/docs/api", label: "API & MCP" },
       { href: "/docs/accessibility", label: "Accessibility statement" },
       { href: "/docs/compliance-india", label: "India compliance notes" },

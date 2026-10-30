@@ -62,8 +62,8 @@ remain deliberately deferred — see "Explicitly deferred" for what and why.
       README — both images built and run for real via `docker compose up`,
       not just written and assumed to work (see Session log for the two
       pnpm-monorepo packaging bugs this caught).
-- [ ] Base CI (lint+typecheck+build on push) — `.github/workflows` — not done
-      this session, next up.
+- [x] Base CI (lint+typecheck+build on push) — `.github/workflows/ci.yml` — automated
+      validation on main branch and pull requests.
 
 **Permission list (seed data, granular, matches spec):** view_sales,
 create_orders, edit_orders, cancel_orders, apply_discounts, process_refunds,

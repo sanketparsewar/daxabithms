@@ -46,7 +46,10 @@ export class PrismaExceptionFilter implements ExceptionFilter {
             'This action references something that does not exist or was already removed.',
           );
         default:
-          console.error('[PrismaExceptionFilter] Unhandled Prisma error:', exception);
+          console.error(
+            '[PrismaExceptionFilter] Unhandled Prisma error:',
+            exception,
+          );
           return new InternalServerErrorException(
             'Something went wrong. Please try again.',
           );

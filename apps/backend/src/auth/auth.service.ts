@@ -81,7 +81,9 @@ export class AuthService {
     // Permissions are global, not per-tenant — ensure all defined permissions exist
     let allPermissions = await this.prisma.permission.findMany();
     const existingKeys = new Set(allPermissions.map((p) => p.key));
-    const missingPermissions = PERMISSIONS.filter((p) => !existingKeys.has(p.key));
+    const missingPermissions = PERMISSIONS.filter(
+      (p) => !existingKeys.has(p.key),
+    );
     if (missingPermissions.length > 0) {
       await this.prisma.permission.createMany({
         data: missingPermissions,
@@ -93,8 +95,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 12);
 
-    const owner = await this.prisma.$transaction(
-      async (tx) => {
+    const owner = await this.prisma.$transaction(async (tx) => {
       const restaurant = await tx.restaurant.create({
         data: { name: dto.restaurantName },
       });
