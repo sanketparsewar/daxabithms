@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
 import * as bcrypt from 'bcrypt';
 import { UsersService } from './users.service';
 
@@ -21,8 +21,8 @@ describe('UsersService', () => {
       user: {
         findFirst: jest.fn().mockResolvedValue(null),
         findMany: jest.fn().mockResolvedValue([]),
-        create: jest.fn().mockImplementation(async ({ data, select }) => {
-          return {
+        create: jest.fn().mockImplementation(({ data }) => {
+          return Promise.resolve({
             id: 'user-1',
             name: data.name,
             email: data.email,
@@ -33,25 +33,23 @@ describe('UsersService', () => {
             pinHash: data.pinHash,
             role: { id: data.roleId, name: 'CASHIER', label: 'Cashier' },
             branches: [{ branch: { id: 'branch-1', name: 'Main' } }],
-          };
+          });
         }),
-        update: jest
-          .fn()
-          .mockImplementation(async ({ where, data, select }) => {
-            return {
-              id: where.id,
-              name: data.name ?? 'Staff',
-              email: data.email ?? 'staff@example.com',
-              phone: data.phone,
-              roleId: data.roleId ?? 'role-1',
-              isActive: data.isActive ?? true,
-              createdAt: new Date(),
-              pinHash:
-                data.pinHash !== undefined ? data.pinHash : 'existing-hash',
-              role: { id: 'role-1', name: 'CASHIER', label: 'Cashier' },
-              branches: [{ branch: { id: 'branch-1', name: 'Main' } }],
-            };
-          }),
+        update: jest.fn().mockImplementation(({ where, data }) => {
+          return Promise.resolve({
+            id: where.id,
+            name: data.name ?? 'Staff',
+            email: data.email ?? 'staff@example.com',
+            phone: data.phone,
+            roleId: data.roleId ?? 'role-1',
+            isActive: data.isActive ?? true,
+            createdAt: new Date(),
+            pinHash:
+              data.pinHash !== undefined ? data.pinHash : 'existing-hash',
+            role: { id: 'role-1', name: 'CASHIER', label: 'Cashier' },
+            branches: [{ branch: { id: 'branch-1', name: 'Main' } }],
+          });
+        }),
         delete: jest.fn().mockResolvedValue({ id: 'user-1' }),
         count: jest.fn().mockResolvedValue(1),
       },
