@@ -1,4 +1,4 @@
-# DaxabitHMS — Windows MSIX client
+# Daxabit — Windows MSIX client
 
 A thin native shell (WinForms + WebView2) around the same web UI the
 Linux/Docker deployment already serves. It ships no server, no database, no

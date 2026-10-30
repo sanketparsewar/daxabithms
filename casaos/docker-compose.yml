@@ -226,7 +226,7 @@ x-casaos:
       Initial CasaOS/ZimaOS release: POS ordering, kitchen display, table
       management with QR ordering, reservations, inventory, customer
       loyalty/CRM, and billing.
-  website: "https://daxabithms.local/"
-  repo: "https://github.com/DaxabitHMS/daxabithms"
-  support: "https://daxabithms.local/contact"
-  docs: "https://github.com/DaxabitHMS/daxabithms#readme"
+  website: "https://daxabit.com/"
+  repo: "https://github.com/daxabit/daxabit"
+  support: "https://daxabit.com/contact"
+  docs: "https://github.com/daxabit/daxabit#readme"

@@ -1,26 +1,26 @@
 #!/usr/bin/env bash
 # One-command install of DaxabitHMS on Ubuntu or Debian (amd64 or arm64).
 #
-#   curl -fsSL https://daxabithms.local/install-linux.sh | sudo bash
+#   curl -fsSL https://daxabit.com/install-linux.sh | sudo bash
 #
 # Downloads the .deb for the latest release from GitHub, checks its SHA-256, makes sure Docker and Docker Compose
-# are present, and installs the package with apt. The package starts DaxabitHMS under systemd (it runs in Docker)
+# are present, and installs the package with apt. The package starts Daxabit under systemd (it runs in Docker)
 # and it is then available at http://localhost:1995.
-# Pin a version:  curl -fsSL https://daxabithms.local/install-linux.sh | sudo DAXABITHMS_VERSION=X.Y.Z bash
-# Read it first:  curl -fsSL https://daxabithms.local/install-linux.sh | less
+# Pin a version:  curl -fsSL https://daxabit.com/install-linux.sh | sudo DAXABITHMS_VERSION=X.Y.Z bash
+# Read it first:  curl -fsSL https://daxabit.com/install-linux.sh | less
 # Use a file you already downloaded (it must sit next to its .sha256):  sudo DEB_FILE=./daxabithms_X.Y.Z_amd64.deb bash install-linux.sh
 set -euo pipefail
 
-REPO="daxabithms/daxabithms"
+REPO="daxabit/daxabit"
 PKG="daxabithms"
 say() { printf '\033[1;34m==>\033[0m %s\n' "$1"; }
 die() { printf '\033[1;31mERROR:\033[0m %s\n' "$1" >&2; exit 1; }
 
-[ "$(id -u)" -eq 0 ] || die "Run as root: curl -fsSL https://daxabithms.local/install-linux.sh | sudo bash"
+[ "$(id -u)" -eq 0 ] || die "Run as root: curl -fsSL https://daxabit.com/install-linux.sh | sudo bash"
 [ -r /etc/os-release ] && . /etc/os-release
-case "${ID:-}:${ID_LIKE:-}" in debian:*|ubuntu:*|*:*debian*|*:*ubuntu*) ;; *) die "This installer is for Ubuntu and Debian. For other systems use Docker: https://daxabithms.local/" ;; esac
+case "${ID:-}:${ID_LIKE:-}" in debian:*|ubuntu:*|*:*debian*|*:*ubuntu*) ;; *) die "This installer is for Ubuntu and Debian. For other systems use Docker: https://daxabit.com/" ;; esac
 command -v apt-get >/dev/null || die "apt-get was not found."
-{ command -v systemctl >/dev/null && [ -d /run/systemd/system ]; } || die "systemd is required. In a container or WSL without systemd, use Docker Compose instead: https://daxabithms.local/"
+{ command -v systemctl >/dev/null && [ -d /run/systemd/system ]; } || die "systemd is required. In a container or WSL without systemd, use Docker Compose instead: https://daxabit.com/"
 
 ARCH="$(dpkg --print-architecture)"
 case "$ARCH" in amd64|arm64) ;; *) die "Unsupported CPU architecture '$ARCH' (amd64 and arm64 are published)." ;; esac

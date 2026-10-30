@@ -493,8 +493,7 @@ This project follows the [Contributor Covenant](./CODE_OF_CONDUCT.md).
 
 ## License
 
-Copyright © 2026 DaxabitHMS
-and DaxabitHMS. Licensed under the
+Copyright © 2026 Daxabit. Licensed under the
 [GNU Affero General Public License v3.0](./LICENSE) (AGPL-3.0). In short:
 you're free to self-host, use, and modify this software for your
 restaurant or business. If you modify it and run that modified version
@@ -508,15 +507,15 @@ See [`MAINTAINERS.md`](./MAINTAINERS.md) for project maintainers.
 ---
 
 <div align="center">
-<img src="apps/web/public/logo.png" alt="DaxabitHMS" width="72">
+<img src="apps/web/public/logo.png" alt="Daxabit" width="72">
 </div>
 
 
 ## Case study
 
-Read the [DaxabitHMS case study](https://www.daxabithms.local/projects/daxabithms) for the product background and design decisions.
+Read the [Daxabit case study](https://daxabit.com/projects/daxabit) for the product background and design decisions.
 
-Maintainer: [DaxabitHMS](https://www.daxabithms.local/)
+Maintainer: [Daxabit](https://daxabit.com/)
 
 ---
 
@@ -525,4 +524,3 @@ self-hosted POS, UPI QR payment POS, GST billing software for restaurants,
 kitchen display system, KDS, restaurant inventory management, restaurant
 payroll and attendance, café POS, cloud kitchen software, QR table ordering,
 offline-first POS, NestJS, Next.js, PostgreSQL, Prisma, CasaOS, ZimaOS.</sub>
-# restaurent-management

@@ -16,45 +16,36 @@ before calling anything done.
 ## Color tokens (light)
 
 ```
---background:      #FAFAFA
+--background:      #F8FAFC
 --card:             #FFFFFF
---sidebar:          #FCFCFC
---foreground:       #111827   /* primary text */
---muted-foreground: #6B7280   /* secondary text */
---border:           #E5E7EB
+--sidebar:          #FFFFFF
+--foreground:       #0F172A   /* primary text */
+--muted-foreground: #64748B   /* secondary text */
+--border:           #E2E8F0
 --success:          #22C55E
 --warning:          #F59E0B
 --danger:           #EF4444
---primary:          #9F1239   /* wine/burgundy — see rationale below */
+--primary:          #2563EB   /* Electric Sapphire Blue — Daxabit high-tech identity */
 --primary-foreground: #FFFFFF
 ```
 
 Dark mode (own token set, not `background * 0.1` math):
 
 ```
---background:       #0B0B0D
---card:              #151517
---sidebar:           #111113
---foreground:        #F4F4F5
---muted-foreground:  #9CA3AF
---border:            #26262A
+--background:       #0B0F17
+--card:              #111827
+--sidebar:           #0B0F17
+--foreground:        #F8FAFC
+--muted-foreground:  #94A3B8
+--border:            #1E293B
 --success:           #34D399
 --warning:           #FBBF24
 --danger:            #F87171
---primary:           #FB7185   /* brighter rose for dark-bg contrast */
---primary-foreground: #1F0A0F
+--primary:           #38BDF8   /* Electric Cyan/Sky Blue for high-contrast dark theme */
+--primary-foreground: #020617
 ```
 
-**Primary accent decision (the one deliberate risk):** wine/burgundy
-instead of the expected SaaS indigo/blurple (Stripe, Linear) or restaurant
-cliché tomato-red. It's a considered nod to hospitality (wine lists, velvet
-banquettes, fine dining) that stays distinct from the danger-red already in
-the palette, and reads as premium rather than generic-dashboard-default —
-finalized directly rather than looped back for a color-swatch vote, since
-this is an internal operator tool, not a client-facing brand identity where
-that stakes-based ask-first call would apply. Revisit only if a real
-restaurant-brand pass (logo, physical signage) later demands matching an
-existing brand color instead.
+**Primary accent decision:** Electric Sapphire Blue (`#2563EB`) in light mode and Electric Cyan (`#38BDF8`) in dark mode, reflecting Daxabit's cyber-marlin emblem and high-performance offline architecture.
 
 ## Typography
 

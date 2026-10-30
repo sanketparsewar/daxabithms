@@ -2,7 +2,7 @@
 
 This covers the self-service customer kiosk (a 23.8" landscape Android touchscreen,
 RK3576 / Android 14 / 4 GB RAM) and the staff kitchen-display tablet (HONOR Pad X8a),
-both served by the **same** DaxabitHMS instance. Nothing here needs an APK or a Play
+both served by the **same** Daxabit instance. Nothing here needs an APK or a Play
 Store listing: the kiosk is a browser page that can be added to the home screen as a
 full-screen web app (PWA shortcut).
 
@@ -26,7 +26,7 @@ station chips, (b) realtime now always connects through the web origin (see §6)
 ## 2. Kiosk URL and launch
 
 1. In the staff app: **Settings → Customer kiosk → Enable kiosk**. Copy the address, e.g.
-   `https://daxabithms.local/kiosk/<32 hex characters>`. The address *is* the
+   `https://daxabit.com/kiosk/<32 hex characters>`. The address *is* the
    credential: anyone who has it can place orders (and nothing else). **Create new address**
    invalidates the old one immediately; **Turn kiosk off** removes it.
 2. On the kiosk (Android 14, Chrome): open that address → ⋮ menu → **Add to Home screen / Install app**.

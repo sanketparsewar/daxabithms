@@ -1,6 +1,6 @@
 [Unit]
-Description=DaxabitHMS (Docker Compose)
-Documentation=https://daxabithms.local/docs
+Description=Daxabit (Docker Compose)
+Documentation=https://daxabit.com/docs
 Requires=docker.service
 After=docker.service network-online.target
 Wants=network-online.target
