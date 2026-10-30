@@ -20,8 +20,14 @@ internal static class ServerPaths
     public const int BackendPort = 4001;
     public const int WebPort = 1995;
 
-    public static string DataDir =>
+    public static string CommonDataDir =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "DaxabitHMS", "server");
+
+    public static string LocalDataDir =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DaxabitHMS", "server");
+
+    public static string DataDir =>
+        Directory.Exists(CommonDataDir) ? CommonDataDir : LocalDataDir;
 
     public static string PgDataDir => Path.Combine(DataDir, "pgdata");
     public static string UploadsDir => Path.Combine(DataDir, "uploads");
@@ -31,28 +37,28 @@ internal static class ServerPaths
 
     /// <summary>
     /// Read-only runtime assets staged into the MSIX at build time (see
-    /// windows/msix/stage-server-assets.ps1). Resolved relative to the
-    /// running exe's directory so it works both from an installed MSIX
-    /// location and a local unpackaged test run.
-    ///
-    /// NEVER executed from directly — see RuntimeServerDir. MSIX install
-    /// directories (C:\Program Files\WindowsApps\...) carry restrictive
-    /// ACLs that block spawning arbitrary bundled executables as child
-    /// processes even for a runFullTrust app (confirmed: initdb.exe
-    /// failed with "Access is denied" trying to run postgres.exe -V from
-    /// there) — only the package's own declared entry point (DaxabitHMS
-    /// .exe itself) is actually launchable in place.
+    /// windows/msix/stage-server-assets.ps1) or installed directly by DaxabitHMS-Setup.exe.
+    /// Resolved relative to the running exe's directory.
     /// </summary>
     public static string InstallServerDir =>
         Path.Combine(AppContext.BaseDirectory, "server");
 
     /// <summary>
-    /// Writable copy of InstallServerDir under %LOCALAPPDATA%, made once
-    /// on first run (see ServerSupervisor.EnsureRuntimeCopyAsync) — this
-    /// is what actually gets executed from. Everything below derives
-    /// paths from here, not InstallServerDir.
+    /// Writable copy of InstallServerDir under %LOCALAPPDATA% for MSIX,
+    /// OR direct execution from InstallServerDir when installed via classic installer.
     /// </summary>
-    public static string RuntimeServerDir => Path.Combine(DataDir, "server-runtime");
+    public static string RuntimeServerDir
+    {
+        get
+        {
+            var inPlaceNode = Path.Combine(InstallServerDir, "node", "node.exe");
+            if (File.Exists(inPlaceNode))
+            {
+                return InstallServerDir;
+            }
+            return Path.Combine(DataDir, "server-runtime");
+        }
+    }
 
     public static string PostgresBinDir => Path.Combine(RuntimeServerDir, "postgres", "bin");
 

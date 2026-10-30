@@ -32,6 +32,11 @@ internal sealed class AppConfig
 
     public static string ConfigPath => Path.Combine(ConfigDir, "config.json");
 
+    internal static string MachineConfigDir =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "DaxabitHMS");
+
+    public static string MachineConfigPath => Path.Combine(MachineConfigDir, "config.json");
+
     public static string WebView2UserDataFolder => Path.Combine(ConfigDir, "WebView2");
 
     public static string LogDir => Path.Combine(ConfigDir, "logs");
@@ -43,6 +48,12 @@ internal sealed class AppConfig
             if (File.Exists(ConfigPath))
             {
                 var json = File.ReadAllText(ConfigPath);
+                var cfg = JsonSerializer.Deserialize<AppConfig>(json);
+                if (cfg is not null) return cfg;
+            }
+            if (File.Exists(MachineConfigPath))
+            {
+                var json = File.ReadAllText(MachineConfigPath);
                 var cfg = JsonSerializer.Deserialize<AppConfig>(json);
                 if (cfg is not null) return cfg;
             }

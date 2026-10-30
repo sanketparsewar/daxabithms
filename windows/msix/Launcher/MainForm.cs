@@ -225,6 +225,14 @@ internal sealed class MainForm : Form
 
     private async Task<bool> StartEmbeddedServerAsync()
     {
+        // If a managed Windows Service (e.g. DaxabitHMSServer) or background instance
+        // is already running and healthy on the web port, seamlessly attach to it.
+        if (await IsServerAlreadyHealthyAsync())
+        {
+            ShowStatus("Connected to local DaxabitHMS service.");
+            return true;
+        }
+
         _supervisor = new ServerSupervisor();
         _supervisor.StatusChanged += status =>
         {
@@ -297,6 +305,20 @@ internal sealed class MainForm : Form
             await RemoveAllDataAndUninstallAsync();
         };
         return true;
+    }
+
+    private static async Task<bool> IsServerAlreadyHealthyAsync()
+    {
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            using var resp = await client.GetAsync($"http://127.0.0.1:{ServerPaths.WebPort}/api/health");
+            return resp.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private void RestoreFromTray()

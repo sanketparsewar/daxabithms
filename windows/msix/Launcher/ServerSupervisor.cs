@@ -109,6 +109,7 @@ internal sealed class ServerSupervisor : IDisposable
         // upgrade to a newer version and re-copy automatically; deleting
         // %LOCALAPPDATA%\DaxabitHMS\server\server-runtime forces a
         // fresh copy if ever needed.
+        if (string.Equals(ServerPaths.RuntimeServerDir, ServerPaths.InstallServerDir, StringComparison.OrdinalIgnoreCase)) return;
         if (File.Exists(ServerPaths.NodeExePath)) return;
 
         // This build's package genuinely has no embedded-server payload —
