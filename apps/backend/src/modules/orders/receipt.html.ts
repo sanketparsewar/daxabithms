@@ -17,6 +17,7 @@ import type { ReceiptVerifactu } from './escpos-receipt';
 import {
   resolveTaxIdLabel,
   resolveTaxLabel,
+  STANDARD_RESTAURANT_SAC,
   TAX_REGIME_PRESETS,
   type TaxMode,
   type TaxRegime,
@@ -114,9 +115,13 @@ export function buildReceiptHtml({
       const modifierLines = item.modifiers
         .map((m) => `<div class="sub">+ ${esc(m.nameSnapshot)}</div>`)
         .join('');
+      const sacLine =
+        branch.taxRegime === 'INDIA_GST'
+          ? `<div class="sub">SAC: ${STANDARD_RESTAURANT_SAC}</div>`
+          : '';
       return `
         <tr>
-          <td>${esc(item.nameSnapshot)}${modifierLines}${
+          <td>${esc(item.nameSnapshot)}${modifierLines}${sacLine}${
             Number(item.taxRateSnapshot) > 0
               ? `<div class="sub">${esc(taxLabel)} @ ${item.taxRateSnapshot}%</div>`
               : ''
@@ -238,6 +243,13 @@ export function buildReceiptHtml({
   </script>
   <div class="receipt">
     <h1>${esc(restaurantName)}</h1>
+    ${
+      branch.taxRegime === 'INDIA_GST'
+        ? `<div class="muted center" style="font-weight: 600; text-transform: uppercase; margin-bottom: 2px;">${
+            order.isProvisional ? 'Provisional Bill' : 'Tax Invoice'
+          }</div>`
+        : ''
+    }
     <p class="center muted">
       ${esc(branch.name)}${branch.address ? `<br>${esc(branch.address)}` : ''}
       ${branch.phone ? `<br>Ph: ${esc(branch.phone)}` : ''}
@@ -279,6 +291,11 @@ export function buildReceiptHtml({
         ? 'Bill only &mdash; not a receipt. Payment pending.'
         : 'Thank you! Visit again.'
     }</p>
+    ${
+      branch.taxRegime === 'INDIA_GST'
+        ? `<p class="center muted" style="font-size: 9px; margin-top: 4px;">System-generated invoice. For statutory verification, consult your registered tax advisor.</p>`
+        : ''
+    }
   </div>
 </body>
 </html>`;

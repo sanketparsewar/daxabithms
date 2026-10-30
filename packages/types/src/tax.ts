@@ -100,11 +100,27 @@ export function resolveTaxIdLabel(taxRegime: TaxRegime): string {
   return TAX_REGIME_PRESETS[taxRegime].taxIdLabel;
 }
 
-export const branchTaxSettingsSchema = z.object({
-  country: z.string().length(2).optional(),
-  taxRegime: z.enum(TAX_REGIMES).optional(),
-  taxMode: z.enum(TAX_MODES).optional(),
-  taxLabel: z.string().max(30).optional().nullable(),
-  taxId: z.string().max(50).optional().nullable(),
-});
+import { validateGstin } from "./financial";
+
+export const branchTaxSettingsSchema = z
+  .object({
+    country: z.string().length(2).optional(),
+    taxRegime: z.enum(TAX_REGIMES).optional(),
+    taxMode: z.enum(TAX_MODES).optional(),
+    taxLabel: z.string().max(30).optional().nullable(),
+    taxId: z.string().max(50).optional().nullable(),
+  })
+  .refine(
+    (data) => {
+      if (data.taxRegime === "INDIA_GST" && data.taxId && data.taxId.trim()) {
+        const res = validateGstin(data.taxId);
+        return res.valid;
+      }
+      return true;
+    },
+    {
+      message: "Invalid GSTIN format or check digit for India GST regime",
+      path: ["taxId"],
+    },
+  );
 export type BranchTaxSettingsDto = z.infer<typeof branchTaxSettingsSchema>;
