@@ -12,6 +12,7 @@ export interface StaffMember {
   isActive: boolean;
   createdAt: string;
   roleId: string;
+  hasPin?: boolean;
   role: { id: string; name: string; label: string };
   branches: { branch: { id: string; name: string } }[];
 }

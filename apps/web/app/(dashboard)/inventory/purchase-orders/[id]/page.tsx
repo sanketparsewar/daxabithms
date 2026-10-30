@@ -32,8 +32,25 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
   const { data: po, isLoading } = usePurchaseOrder(branchId, id);
   const updateStatus = useUpdatePurchaseOrderStatus(branchId);
 
-  if (isLoading || !po) {
+  if (isLoading) {
     return <Skeleton className="h-96 rounded-2xl" />;
+  }
+
+  if (!po) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
+        <h2 className="text-xl font-semibold text-foreground">Purchase order not found</h2>
+        <p className="text-sm text-muted-foreground">
+          This purchase order may have been removed or does not exist in this branch.
+        </p>
+        <Link href="/inventory/purchase-orders">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Purchase Orders
+          </Button>
+        </Link>
+      </div>
+    );
   }
 
   const send = () =>

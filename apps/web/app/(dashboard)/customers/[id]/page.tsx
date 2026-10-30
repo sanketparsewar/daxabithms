@@ -23,8 +23,25 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const deleteCustomer = useDeleteCustomer(branchId);
   const [isEditing, setIsEditing] = useState(false);
 
-  if (isLoading || !customer) {
+  if (isLoading) {
     return <Skeleton className="h-96 rounded-2xl" />;
+  }
+
+  if (!customer) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
+        <h2 className="text-xl font-semibold text-foreground">Customer not found</h2>
+        <p className="text-sm text-muted-foreground">
+          This customer profile may have been removed or does not exist in this branch.
+        </p>
+        <Link href="/customers">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Customers
+          </Button>
+        </Link>
+      </div>
+    );
   }
 
   const onDelete = () => {

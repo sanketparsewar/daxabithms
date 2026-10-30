@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { useState } from "react";
+import { ApiError } from "@/lib/api";
 import { I18nProvider } from "@/lib/i18n/context";
 
 // Suppress the React 19 development warning triggered by next-themes injecting its theme-hydration script
@@ -28,7 +29,12 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
             staleTime: 30_000,
             gcTime: 5 * 60_000,
             refetchOnWindowFocus: false,
-            retry: 1,
+            retry: (failureCount, error) => {
+              if (error instanceof ApiError && error.status === 401) {
+                return false;
+              }
+              return failureCount < 1;
+            },
           },
         },
       }),

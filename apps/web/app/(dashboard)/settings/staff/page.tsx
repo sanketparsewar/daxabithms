@@ -3,6 +3,7 @@
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AddStaffDialog } from "@/components/settings/add-staff-dialog";
+import { SetPinDialog } from "@/components/settings/set-pin-dialog";
 import { SettingsTabs } from "@/components/settings/settings-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -73,8 +74,9 @@ export default function StaffPage() {
                 <TableHead>Contact</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Branches</TableHead>
+                <TableHead>PIN Login</TableHead>
                 <TableHead className="text-right">Active</TableHead>
-                <TableHead className="w-40" />
+                <TableHead className="w-48 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -91,6 +93,15 @@ export default function StaffPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {member.branches.map((b) => b.branch.name).join(", ") || "—"}
+                  </TableCell>
+                  <TableCell>
+                    {member.hasPin ? (
+                      <Badge variant="outline" className="text-xs font-normal border-emerald-500/40 text-emerald-500">
+                        Enabled
+                      </Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Disabled</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <Switch
@@ -109,28 +120,31 @@ export default function StaffPage() {
                     />
                   </TableCell>
                   <TableCell>
-                    {member.id !== currentUser?.user.id && (
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2 text-xs text-muted-foreground"
-                          title="Reset two-factor authentication (lost device)"
-                          onClick={() => onResetTwoFactor(member)}
-                        >
-                          Reset 2FA
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          title="Delete staff account"
-                          onClick={() => onDelete(member)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-end gap-1">
+                      <SetPinDialog member={member} />
+                      {member.id !== currentUser?.user.id && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-xs text-muted-foreground"
+                            title="Reset two-factor authentication (lost device)"
+                            onClick={() => onResetTwoFactor(member)}
+                          >
+                            Reset 2FA
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            title="Delete staff account"
+                            onClick={() => onDelete(member)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

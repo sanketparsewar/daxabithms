@@ -37,6 +37,14 @@ export default function DashboardGroupLayout({ children }: { children: React.Rea
     }
   }, [isLoading, isError, router]);
 
+  useEffect(() => {
+    const handleExpired = () => {
+      router.replace("/login");
+    };
+    window.addEventListener("daxabit:session-expired", handleExpired);
+    return () => window.removeEventListener("daxabit:session-expired", handleExpired);
+  }, [router]);
+
   // Direct URL to a page the role may not use (e.g. a waiter opening /dashboard
   // after login): send them to their first permitted screen.
   useEffect(() => {

@@ -150,13 +150,19 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card className="flex flex-col gap-1 p-6 lg:col-span-1">
           <h2 className="mb-3 text-[18px] font-medium text-foreground">Tables</h2>
-          {data && (
+          {data ? (
             <>
               <TableStatusRow label="Available" count={data.tables.available} dotClass="bg-success" />
               <TableStatusRow label="Occupied" count={data.tables.occupied} dotClass="bg-primary" />
               <TableStatusRow label="Reserved" count={data.tables.reserved} dotClass="bg-warning" />
               <TableStatusRow label="Cleaning" count={data.tables.cleaning} dotClass="bg-muted-foreground" />
             </>
+          ) : (
+            <div className="flex flex-col gap-2 py-1">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-6 w-full rounded" />
+              ))}
+            </div>
           )}
         </Card>
 
@@ -165,13 +171,19 @@ export default function DashboardPage() {
             <ChefHat className="h-[18px] w-[18px] text-muted-foreground" />
             Kitchen queue
           </h2>
-          {data && (
+          {data ? (
             <>
               <TableStatusRow label="New" count={data.kitchenQueue.new} dotClass="bg-primary" />
               <TableStatusRow label="Accepted" count={data.kitchenQueue.accepted} dotClass="bg-warning" />
               <TableStatusRow label="Preparing" count={data.kitchenQueue.preparing} dotClass="bg-warning" />
               <TableStatusRow label="Ready" count={data.kitchenQueue.ready} dotClass="bg-success" />
             </>
+          ) : (
+            <div className="flex flex-col gap-2 py-1">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-6 w-full rounded" />
+              ))}
+            </div>
           )}
         </Card>
 
@@ -181,23 +193,29 @@ export default function DashboardPage() {
             Recent transactions
           </h2>
           <div className="flex flex-col divide-y divide-border">
-            {data?.recentOrders.length === 0 && (
+            {isLoading || !data ? (
+              <div className="flex flex-col gap-2 py-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-8 w-full rounded" />
+                ))}
+              </div>
+            ) : data.recentOrders.length === 0 ? (
               <p className="py-4 text-sm text-muted-foreground">No sales yet today.</p>
-            )}
-            {data?.recentOrders.map((order) => {
-              const isOnline = ONLINE_ORDER_TYPES.has(order.type);
-              return (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between py-2.5 text-left text-sm"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setViewingOrderId(order.id)}
-                    className="flex flex-col text-left transition hover:opacity-80 focus:outline-none"
-                    title="View order details"
+            ) : (
+              data.recentOrders.map((order) => {
+                const isOnline = ONLINE_ORDER_TYPES.has(order.type);
+                return (
+                  <div
+                    key={order.id}
+                    className="flex items-center justify-between py-2.5 text-left text-sm"
                   >
-                    <span className="font-medium text-foreground">#{order.orderNumber}</span>
+                    <button
+                      type="button"
+                      onClick={() => setViewingOrderId(order.id)}
+                      className="flex flex-col text-left transition hover:opacity-80 focus:outline-none"
+                      title="View order details"
+                    >
+                      <span className="font-medium text-foreground">#{order.orderNumber}</span>
                     <Badge
                       variant="secondary"
                       className={cn(
@@ -221,7 +239,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
               );
-            })}
+            }))}
           </div>
         </Card>
 

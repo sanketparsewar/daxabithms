@@ -29,12 +29,16 @@ export class UsersService {
     private readonly audit: AuditService,
   ) {}
 
-  list(restaurantId: string) {
-    return this.prisma.user.findMany({
+  async list(restaurantId: string) {
+    const users = await this.prisma.user.findMany({
       where: { restaurantId },
-      select: SELECT,
+      select: { ...SELECT, pinHash: true },
       orderBy: { createdAt: 'asc' },
     });
+    return users.map(({ pinHash, ...user }) => ({
+      ...user,
+      hasPin: Boolean(pinHash),
+    }));
   }
 
   listRoles(restaurantId: string) {
@@ -60,6 +64,7 @@ export class UsersService {
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 12);
+    const pinHash = dto.pin ? await bcrypt.hash(dto.pin, 12) : null;
     const user = await this.prisma.user.create({
       data: {
         restaurantId,
@@ -68,11 +73,12 @@ export class UsersService {
         phone: dto.phone,
         roleId: dto.roleId,
         passwordHash,
+        pinHash,
         branches: {
           create: dto.branchIds.map((branchId) => ({ branchId })),
         },
       },
-      select: SELECT,
+      select: { ...SELECT, pinHash: true },
     });
 
     await this.audit.record({
@@ -80,10 +86,26 @@ export class UsersService {
       action: 'staff.created',
       entity: 'User',
       entityId: user.id,
-      metadata: { name: user.name, email: user.email, roleId: user.roleId },
+      metadata: {
+        name: user.name,
+        email: user.email,
+        roleId: user.roleId,
+        hasPin: Boolean(pinHash),
+      },
     });
 
-    return user;
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      roleId: user.roleId,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      role: user.role,
+      branches: user.branches,
+      hasPin: Boolean(pinHash),
+    };
   }
 
   async update(
@@ -130,6 +152,13 @@ export class UsersService {
       ? await bcrypt.hash(dto.password, 12)
       : undefined;
 
+    const pinHash =
+      dto.pin !== undefined
+        ? dto.pin
+          ? await bcrypt.hash(dto.pin, 12)
+          : null
+        : undefined;
+
     const updated = await this.prisma.user.update({
       where: { id },
       data: {
@@ -139,6 +168,7 @@ export class UsersService {
         roleId: dto.roleId,
         isActive: dto.isActive,
         passwordHash,
+        ...(pinHash !== undefined ? { pinHash } : {}),
         ...(dto.branchIds
           ? {
               branches: {
@@ -148,13 +178,10 @@ export class UsersService {
             }
           : {}),
       },
-      select: SELECT,
+      select: { ...SELECT, pinHash: true },
     });
 
-    // Never log `dto.password`/`passwordHash` — only the fields it's safe
-    // for an owner reviewing history to see. `passwordChanged` is a boolean
-    // flag, not the value, so a password rotation is still visible in the
-    // trail without the audit log becoming a secondary place secrets leak.
+    // Never log `dto.password`/`passwordHash` or `dto.pin`/`pinHash`
     await this.audit.record({
       userId: actorId,
       action: 'staff.updated',
@@ -168,10 +195,22 @@ export class UsersService {
         isActive: dto.isActive,
         branchIds: dto.branchIds,
         passwordChanged: Boolean(dto.password),
+        pinChanged: dto.pin !== undefined,
       },
     });
 
-    return updated;
+    return {
+      id: updated.id,
+      name: updated.name,
+      email: updated.email,
+      phone: updated.phone,
+      roleId: updated.roleId,
+      isActive: updated.isActive,
+      createdAt: updated.createdAt,
+      role: updated.role,
+      branches: updated.branches,
+      hasPin: Boolean(updated.pinHash),
+    };
   }
 
   async remove(restaurantId: string, actorId: string, id: string) {

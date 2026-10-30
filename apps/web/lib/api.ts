@@ -27,6 +27,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ message: res.statusText }));
+    if (
+      res.status === 401 &&
+      typeof window !== "undefined" &&
+      !path.startsWith("/auth/login") &&
+      !path.startsWith("/auth/pin-login")
+    ) {
+      window.dispatchEvent(new CustomEvent("daxabit:session-expired"));
+    }
     throw new ApiError(body.message ?? "Request failed", res.status, body.issues, body.code);
   }
 

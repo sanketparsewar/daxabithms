@@ -89,7 +89,11 @@ export default function ReportsPage() {
             <Button variant="outline" size="sm" onClick={() => window.print()}>
               <Printer className="mr-2 h-4 w-4" /> Print
             </Button>
+            {range.from > range.to && (
+              <span className="text-xs text-destructive">Start date must be on or before end date.</span>
+            )}
             {canExport &&
+              range.from <= range.to &&
               (["xlsx", "pdf", "csv"] as const).map((f) => (
                 <a
                   key={f}
@@ -106,7 +110,11 @@ export default function ReportsPage() {
             <p className="mb-3 hidden text-xs text-muted-foreground print:block">
               {range.from} to {range.to}
             </p>
-            {isLoading ? (
+            {range.from > range.to ? (
+              <p className="py-8 text-center text-sm text-destructive">
+                Invalid date range: start date ({range.from}) cannot be after end date ({range.to}).
+              </p>
+            ) : isLoading ? (
               <Skeleton className="h-32" />
             ) : error ? (
               <p className="text-sm text-destructive">{error instanceof ApiError ? error.message : "Could not load report"}</p>

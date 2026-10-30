@@ -22,7 +22,16 @@ export function useRealtime(branchId: string | null) {
   useEffect(() => {
     if (!branchId) return;
 
-    const socket = io(resolveWsUrl(), { query: { branchId }, withCredentials: true });
+    const socket = io(resolveWsUrl(), {
+      query: { branchId },
+      withCredentials: true,
+      transports: ["polling", "websocket"],
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+    });
     let wasDown = false;
 
     socket.on("connect", () => {

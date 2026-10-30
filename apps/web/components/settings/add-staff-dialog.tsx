@@ -32,6 +32,7 @@ export function AddStaffDialog() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [pin, setPin] = useState("");
   const [roleId, setRoleId] = useState("");
   const { branches } = useBranch();
   const [branchIds, setBranchIds] = useState<string[]>([]);
@@ -44,6 +45,7 @@ export function AddStaffDialog() {
     setEmail("");
     setPhone("");
     setPassword("");
+    setPin("");
     setRoleId("");
     setBranchIds([]);
   };
@@ -62,12 +64,17 @@ export function AddStaffDialog() {
       toast.error("Select at least one branch");
       return;
     }
+    if (pin && !/^\d{4,8}$/.test(pin)) {
+      toast.error("PIN must be 4 to 8 digits");
+      return;
+    }
     createStaff.mutate(
       {
         name,
         email: email || undefined,
         phone: phone || undefined,
         password,
+        pin: pin || undefined,
         roleId,
         branchIds,
       },
@@ -112,11 +119,27 @@ export function AddStaffDialog() {
             <Label htmlFor="s-password">Password</Label>
             <PasswordInput
               id="s-password"
-              
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
               required
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="s-pin">Fast-Login PIN</Label>
+              <span className="text-xs text-muted-foreground">Optional (4–8 digits)</span>
+            </div>
+            <Input
+              id="s-pin"
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={8}
+              placeholder="e.g. 1234"
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
             />
           </div>
 
