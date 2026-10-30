@@ -9,9 +9,18 @@ import { PrismaService } from '../../prisma/prisma.service';
 // multi-branch staff scoping is actually needed, tracked in ROADMAP.md.
 @Injectable()
 export class BranchAccessService {
+  private readonly verifiedCache = new Map<string, number>();
+
   constructor(private readonly prisma: PrismaService) {}
 
   async assertAccess(restaurantId: string, branchId: string): Promise<void> {
+    const key = `${restaurantId}:${branchId}`;
+    const now = Date.now();
+    const expiry = this.verifiedCache.get(key);
+    if (expiry && expiry > now) {
+      return;
+    }
+
     const branch = await this.prisma.branch.findFirst({
       where: { id: branchId, restaurantId },
       select: { id: true },
@@ -19,5 +28,6 @@ export class BranchAccessService {
     if (!branch) {
       throw new ForbiddenException('Branch not found or not accessible');
     }
+    this.verifiedCache.set(key, now + 60_000);
   }
 }
