@@ -17,13 +17,20 @@ export function MarketingNav() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-border/75 bg-background/85 backdrop-blur-xl transition-all">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Logo size={30} />
-          <span className="text-[15px] font-semibold tracking-tight text-foreground">
-            Daxabit
-          </span>
+        <Link href="/" className="group flex items-center gap-2.5">
+          <div className="relative flex items-center justify-center rounded-lg p-0.5 transition-transform duration-200 group-hover:scale-105">
+            <Logo size={32} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[16px] font-bold tracking-tight text-foreground">
+              Daxabit
+            </span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-primary -mt-1">
+              Hospitality Suite
+            </span>
+          </div>
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -31,25 +38,25 @@ export function MarketingNav() {
             <a
               key={l.href}
               href={l.href}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:underline hover:underline-offset-4"
             >
               {l.label}
             </a>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2.5 md:flex">
           <a
             href={downloadHref("github")}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
           >
             <Github className="size-4" />
             GitHub
           </a>
-          <Button variant="ghost" size="default" render={<Link href="/login" />}>
+          <Button variant="ghost" size="default" className="font-medium" render={<Link href="/login" />}>
             Sign in
           </Button>
-          <Button variant="default" size="default" render={<Link href="/signup" />}>
+          <Button variant="default" size="default" className="font-semibold shadow-sm shadow-primary/25" render={<Link href="/signup" />}>
             Get started free
           </Button>
         </div>

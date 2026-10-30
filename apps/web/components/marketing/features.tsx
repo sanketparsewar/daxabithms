@@ -72,28 +72,37 @@ export function Features() {
   return (
     <section id="features" className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
       <Reveal className="mx-auto max-w-2xl text-center">
-        <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          Everything a real dine-in operation needs
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary mb-3">
+          Comprehensive Feature Matrix
+        </div>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          Everything a high-volume venue needs
         </h2>
         <p className="mt-4 text-lg text-muted-foreground">
-          Not a retail POS bolted onto a restaurant — purpose-built for
-          dine-in, takeaway, and kitchen operations from day one.
+          Not an adapted retail checkout — purpose-built by <strong className="text-foreground">Daxabit</strong> for
+          dine-in, takeaway, and high-speed kitchen operations.
         </p>
       </Reveal>
 
-      <RevealGroup className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <RevealGroup className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {features.map((f) => (
           <RevealItem
             key={f.title}
-            className="group rounded-2xl border border-border/60 bg-card p-6 transition-colors hover:border-primary/40"
+            className="group relative flex flex-col justify-between rounded-2xl border border-border/70 bg-card/90 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl"
           >
-            <div className="inline-flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-200 group-hover:scale-110">
-              <f.icon className="size-5" />
+            <div>
+              <div className="inline-flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground">
+                <f.icon className="size-5" />
+              </div>
+              <h3 className="mt-4 text-base font-semibold tracking-tight text-foreground">{f.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {f.description}
+              </p>
             </div>
-            <h3 className="mt-4 text-[15px] font-semibold text-foreground">{f.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {f.description}
-            </p>
+            <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-primary opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <span>Included out-of-the-box</span>
+              <span>&rarr;</span>
+            </div>
           </RevealItem>
         ))}
       </RevealGroup>

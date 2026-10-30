@@ -47,11 +47,14 @@ function CopyCommand() {
         setCopied(true);
         setTimeout(() => setCopied(false), 1800);
       }}
-      className="group flex w-full max-w-xl items-center justify-between gap-3 rounded-xl border border-border/60 bg-background px-4 py-3 text-left font-mono text-[13px] text-foreground/90 transition-colors hover:border-primary/40"
+      className="group relative flex w-full max-w-xl items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/90 px-4 py-3 text-left font-mono text-[13px] text-foreground/90 shadow-sm backdrop-blur-md transition-all hover:border-primary/50 hover:shadow-md"
     >
-      <span className="truncate">{INSTALL_COMMAND}</span>
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:text-foreground">
-        {copied ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
+      <div className="flex items-center gap-2 overflow-hidden">
+        <span className="font-bold text-primary select-none">$</span>
+        <span className="truncate">{INSTALL_COMMAND}</span>
+      </div>
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-all group-hover:bg-primary group-hover:text-primary-foreground">
+        {copied ? <Check className="size-3.5 text-success group-hover:text-primary-foreground" /> : <Copy className="size-3.5" />}
       </span>
     </button>
   );
@@ -64,11 +67,14 @@ export function InstallSection() {
   return (
     <section id="get-started" className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
       <Reveal className="mx-auto max-w-2xl text-center">
-        <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          Running in minutes, not a sales call
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary mb-3">
+          Instant Deployment
+        </div>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          Running in minutes, not weeks
         </h2>
         <p className="mt-4 text-lg text-muted-foreground">
-          Pick a path. Every route lands on the exact same self-hosted stack.
+          Deploy Daxabit on your local server, NAS, or private VPS.
         </p>
       </Reveal>
 
@@ -81,36 +87,43 @@ export function InstallSection() {
           <RevealItem key={c.channel}>
             <a
               href={downloadHref(c.channel)}
-              className="group flex h-full flex-col rounded-2xl border border-border/60 bg-card p-6 transition-colors hover:border-primary/40"
+              className="group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card/90 p-6 shadow-xs backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl"
             >
-              <div className="inline-flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <c.icon className="size-5" />
+              <div>
+                <div className="inline-flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground">
+                  <c.icon className="size-5" />
+                </div>
+                <h3 className="mt-4 text-base font-semibold tracking-tight text-foreground">{c.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {c.description}
+                </p>
               </div>
-              <h3 className="mt-4 text-[15px] font-semibold text-foreground">{c.title}</h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                {c.description}
-              </p>
-              <span className="mt-4 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                Continue &rarr;
+              <span className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-primary transition-transform duration-200 group-hover:translate-x-1">
+                Continue deployment &rarr;
               </span>
             </a>
           </RevealItem>
         ))}
       </RevealGroup>
 
-      <Reveal delay={0.15} className="mt-14 flex flex-col items-center gap-1 text-center">
-        <p className="text-4xl font-semibold tabular-nums text-foreground sm:text-5xl">
-          <AnimatedCounter value={total} />
-        </p>
-        <p className="text-sm text-muted-foreground">
-          real link click-throughs tracked since launch &mdash; no pre-seeded number, see{" "}
+      <Reveal delay={0.15} className="mt-14 flex flex-col items-center gap-1.5 text-center">
+        <div className="flex items-center gap-2">
+          <span className="relative flex size-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+            <span className="relative inline-flex size-2.5 rounded-full bg-success" />
+          </span>
+          <p className="text-4xl font-extrabold tabular-nums tracking-tight text-foreground sm:text-5xl">
+            <AnimatedCounter value={total} />
+          </p>
+        </div>
+        <p className="text-xs text-muted-foreground font-medium">
+          verified link click-throughs tracked since release &mdash;{" "}
           <a
             href="/api/v1/downloads/stats"
-            className="underline underline-offset-4 hover:text-foreground"
+            className="text-primary underline underline-offset-4 hover:opacity-80"
           >
-            the live counter API
+            view live counter API
           </a>
-          .
         </p>
       </Reveal>
     </section>

@@ -32,21 +32,21 @@ function StatCard({
   accent?: "success" | "warning";
 }) {
   return (
-    <Card className="flex flex-col gap-3 p-5 sm:p-6 min-w-0 max-w-full">
+    <Card className="group relative flex flex-col justify-between gap-3 p-5 sm:p-6 min-w-0 max-w-full rounded-2xl border border-border/70 bg-card/90 backdrop-blur-sm shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
       <div className="flex items-center justify-between gap-2 min-w-0">
-        <span className="truncate text-[13px] font-medium text-muted-foreground">{label}</span>
+        <span className="truncate text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
         <div
           className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-            accent === "success" && "bg-success/10 text-success",
-            accent === "warning" && "bg-warning/10 text-warning",
-            !accent && "bg-primary/10 text-primary",
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110",
+            accent === "success" && "bg-success/15 text-success",
+            accent === "warning" && "bg-warning/15 text-warning",
+            !accent && "bg-primary/15 text-primary",
           )}
         >
           <Icon className="h-[18px] w-[18px]" />
         </div>
       </div>
-      <span className="truncate text-2xl sm:text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+      <span className="truncate text-2xl sm:text-3xl font-bold tabular-nums tracking-tight text-foreground">
         {value}
       </span>
     </Card>
