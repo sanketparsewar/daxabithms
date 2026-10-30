@@ -291,4 +291,4 @@ Questions or bugs: [open an issue](https://github.com/daxabithms/daxabithms/issu
 
 ---
 
-<sub>DaxabitHMS is developed by [DaxabitHMS Infotech Private Limited](https://www.daxabithms.com/) · [daxabithms.com](https://www.daxabithms.com/)</sub>
+<sub>Daxabit is developed by [Daxabit](https://daxabit.com/) · [daxabit.com](https://daxabit.com/)</sub>

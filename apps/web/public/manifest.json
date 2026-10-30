@@ -7,8 +7,8 @@
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "any",
-  "background_color": "#0f0f11",
-  "theme_color": "#9f1239",
+  "background_color": "#0B0F17",
+  "theme_color": "#2563EB",
   "lang": "en",
   "categories": ["business", "food", "productivity"],
   "icons": [

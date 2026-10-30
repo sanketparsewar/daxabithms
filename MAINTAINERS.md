@@ -2,10 +2,10 @@
 
 | Name | Role | Contact |
 |---|---|---|
-| DaxabitHMS Team | Maintainer | info@daxabithms.local |
+| Daxabit Team | Maintainer | info@daxabit.com |
 
 ## Copyright
 
-Copyright © 2026 DaxabitHMS. Licensed under the
+Copyright © 2026 Daxabit. Licensed under the
 [GNU Affero General Public License v3.0](./LICENSE) — see
 [`LICENSE`](./LICENSE) for the full text.

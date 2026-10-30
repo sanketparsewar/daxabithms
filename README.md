@@ -21,16 +21,16 @@ dine-in, takeaway, delivery and kitchen operations.
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Status](https://img.shields.io/badge/status-active%20development-orange.svg)](./ROADMAP.md)
 
-Developed by [DaxabitHMS Infotech Private Limited](https://www.daxabithms.com/)
+Developed by [Daxabit](https://daxabit.com/)
 
-**[Try DaxabitHMS]()** · **[Case study](https://www.daxabithms.local/projects/daxabithms)** · **[Maintainer: DaxabitHMS](https://www.daxabithms.local/)**
+**[Try Daxabit]()** · **[Maintainer: Daxabit](https://daxabit.com/)**
 
 <p align="center">
   <img src="docs/assets/hero-animated.svg" alt="DaxabitHMS: animated overview with an illustrative sample screen" width="100%">
 </p>
 
 
-[Quick Start](#quick-start) ·
+[Quick Start](./QUICKSTART.md) ·
 [How to use](#how-to-use-daxabithms) ·
 [Full tutorial](./TUTORIAL.md) ·
 [Features](#features) ·

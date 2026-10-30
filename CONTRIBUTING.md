@@ -31,14 +31,13 @@ anything here is out of date, trust [`PROJECT.md`](./PROJECT.md) and
 
 This project follows the [Contributor Covenant](./CODE_OF_CONDUCT.md). By
 participating, you agree to uphold it. Report unacceptable behavior to
-**mail@daxabithms.local**.
+**conduct@daxabit.com**.
 
 ## Maintainers & copyright
 
-See [`MAINTAINERS.md`](./MAINTAINERS.md) — DaxabitHMS is the lead
-maintainer; project copyright is held jointly by
-DaxabitHMS
-Ranjit. By submitting a PR, you agree your contribution is licensed under
+See [`MAINTAINERS.md`](./MAINTAINERS.md) — Daxabit is the lead
+maintainer; project copyright is held by
+Daxabit. By submitting a PR, you agree your contribution is licensed under
 the same [AGPL-3.0](./LICENSE) as the rest of the project; you retain
 copyright on your own contribution.
 
