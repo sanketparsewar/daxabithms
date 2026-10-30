@@ -44,11 +44,11 @@ export function ProductGrid({
         />
       )}
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:gap-5">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:gap-4">
       {categories && categories.length > 0 && (
         <nav
           aria-label="Category"
-          className="hidden w-52 shrink-0 flex-col gap-1 overflow-y-auto border-r border-border pr-3 lg:flex xl:w-60"
+          className="hidden w-36 shrink-0 flex-col gap-1 overflow-y-auto border-r border-border pr-2.5 lg:flex xl:w-44"
         >
           {[{ id: undefined as string | undefined, name: "All", count: undefined as number | undefined }, ...categories.map((c) => ({ id: c.id as string | undefined, name: c.name, count: c._count.items as number | undefined }))].map((c) => {
             const active = c.id === activeCategoryId;
@@ -59,15 +59,15 @@ export function ProductGrid({
                 aria-current={active ? "true" : undefined}
                 onClick={() => setActiveCategoryId(c.id)}
                 className={cn(
-                  "flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                  "flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors cursor-pointer",
                   active
-                    ? "bg-primary font-semibold text-primary-foreground shadow-sm"
-                    : "font-medium text-foreground hover:bg-secondary",
+                    ? "bg-primary font-semibold text-primary-foreground shadow-xs"
+                    : "font-medium text-foreground hover:bg-secondary/80",
                 )}
               >
-                <span className="min-w-0 break-words leading-tight">{c.name}</span>
+                <span className="min-w-0 truncate leading-tight">{c.name}</span>
                 {c.count !== undefined && (
-                  <span className={cn("shrink-0 text-xs tabular-nums", active ? "opacity-80" : "text-muted-foreground")}>
+                  <span className={cn("shrink-0 text-xs tabular-nums", active ? "opacity-90 font-semibold" : "text-muted-foreground")}>
                     {c.count}
                   </span>
                 )}
@@ -80,29 +80,44 @@ export function ProductGrid({
       {isError && !items ? (
         <QueryError error={error} what="the menu" onRetry={() => void refetch()} retrying={isFetching} />
       ) : (
-      <div className="grid flex-1 auto-rows-min grid-cols-2 gap-3 overflow-y-auto pb-4 sm:grid-cols-3 lg:grid-cols-3 lg:gap-4 xl:grid-cols-4 2xl:grid-cols-5">
+      <div className="grid flex-1 auto-rows-min grid-cols-[repeat(auto-fill,minmax(145px,1fr))] gap-3 overflow-y-auto pb-4">
         {isLoading &&
-          Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+          Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
         {filtered?.map((item) => (
           <button
             key={item.id}
             onClick={() => onSelect(item)}
-            className="flex min-h-24 w-full min-w-0 flex-col items-start gap-2 rounded-2xl border border-border bg-card p-3 text-left sm:p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.97] active:translate-y-0 lg:min-h-32 lg:justify-between lg:p-4 lg:hover:border-primary/50"
+            className="group flex min-h-[112px] w-full min-w-0 flex-col justify-between rounded-xl border border-border bg-card p-3 text-left shadow-xs transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-md active:translate-y-0 active:scale-[0.98] cursor-pointer"
           >
-            <span
-              className={`h-2.5 w-2.5 shrink-0 rounded-full ${item.isVeg ? "bg-success" : "bg-destructive"}`}
-            />
-            <span className="w-full text-sm font-medium leading-tight text-foreground break-words line-clamp-2 lg:text-[15px]">{item.name}</span>
-            <span className="flex w-full min-w-0 flex-wrap items-baseline justify-between gap-1">
-              <span className="text-sm font-semibold tabular-nums text-foreground shrink-0 lg:text-base">
+            <div className="flex w-full items-start justify-between gap-1.5">
+              <span
+                className={cn(
+                  "mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-background",
+                  item.isVeg ? "bg-emerald-500" : "bg-rose-500",
+                )}
+                title={item.isVeg ? "Vegetarian" : "Non-vegetarian"}
+              />
+              {item.modifierGroups.length > 0 && (
+                <span className="rounded bg-secondary/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  Custom
+                </span>
+              )}
+            </div>
+            <div className="w-full min-w-0 py-1">
+              <span className="block text-sm font-semibold leading-snug text-foreground break-words line-clamp-2">
+                {item.name}
+              </span>
+            </div>
+            <div className="flex w-full items-baseline justify-between gap-1 pt-1.5 border-t border-border/40">
+              <span className="text-sm font-bold tabular-nums text-foreground">
                 {formatCurrency(item.price)}
               </span>
               {item.halfPrice != null && (
-                <span className="text-[11px] tabular-nums text-muted-foreground shrink-0">
-                  Half {formatCurrency(item.halfPrice)}
+                <span className="text-[11px] font-medium tabular-nums text-muted-foreground">
+                  ½ {formatCurrency(item.halfPrice)}
                 </span>
               )}
-            </span>
+            </div>
           </button>
         ))}
         {filtered?.length === 0 && !isLoading && (

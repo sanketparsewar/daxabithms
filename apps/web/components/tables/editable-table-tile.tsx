@@ -83,21 +83,21 @@ export function EditableTableTile({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       className={cn(
-        "absolute flex cursor-grab touch-none flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 text-xs font-medium text-foreground shadow-sm active:cursor-grabbing",
+        "absolute flex cursor-grab touch-none flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-primary/60 bg-primary/10 text-xs font-semibold text-foreground shadow-xs active:cursor-grabbing",
       )}
       style={{ left: posX, top: posY, width: table.width, height: table.height }}
     >
-      <TableShapeIcon shape={table.shape} capacity={table.capacity} className="h-6 w-6" />
-      <span className="text-sm font-semibold">{table.name ?? `T${table.number}`}</span>
-      <span className="flex items-center gap-1 text-[11px] opacity-80">
+      <TableShapeIcon shape={table.shape} capacity={table.capacity} className="h-6 w-6 shrink-0 text-primary" />
+      <span className="text-sm font-bold tracking-tight">{table.name ?? `T${table.number}`}</span>
+      <span className="flex items-center gap-1 text-[11px] font-medium opacity-85">
         <Users className="h-3 w-3" />
         {table.capacity}
       </span>
-      <div className="absolute -top-3 right-1 flex gap-1">
+      <div className="absolute -top-3.5 right-0.5 flex gap-1 z-10">
         <Button
           variant="secondary"
-          size="icon"
-          className="h-6 w-6 shadow"
+          size="icon-xs"
+          className="size-6 shadow-md rounded-md bg-card border border-border hover:bg-secondary"
           onClick={(e) => {
             e.stopPropagation();
             onEdit();
@@ -107,8 +107,8 @@ export function EditableTableTile({
         </Button>
         <Button
           variant="secondary"
-          size="icon"
-          className="h-6 w-6 text-destructive shadow"
+          size="icon-xs"
+          className="size-6 text-destructive shadow-md rounded-md bg-card border border-border hover:bg-destructive/10"
           onClick={handleDelete}
         >
           <Trash2 className="h-3 w-3" />

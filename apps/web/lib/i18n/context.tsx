@@ -18,7 +18,8 @@ import es from "./dictionaries/es.json";
 import fr from "./dictionaries/fr.json";
 
 const DICTIONARIES: Record<Locale, Record<string, string>> = { en, es, fr };
-const STORAGE_KEY = "nodedr-locale";
+const STORAGE_KEY = "daxabithms-locale";
+const LEGACY_STORAGE_KEY = "nodedr-locale";
 
 function detectBrowserLocale(): Locale {
   if (typeof navigator === "undefined") return DEFAULT_LOCALE;
@@ -58,7 +59,7 @@ export function I18nProvider({
 
   useEffect(() => {
     if (fixedLocale) return;
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocaleState(isLocale(saved) ? saved : detectBrowserLocale());
   }, [fixedLocale]);

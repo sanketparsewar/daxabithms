@@ -28,19 +28,19 @@ export function LiveStatus() {
         {!muted && !unlocked && (
           <Button
             type="button"
-            className="h-11"
+            size="sm"
             onClick={() => {
               void unlockAudio().then((ok) => ok && playNotificationFeedback());
             }}
           >
             <Volume2 className="h-4 w-4" aria-hidden />
-            Tap to turn on new-ticket sound
+            Tap to turn on sound
           </Button>
         )}
         <Button
           type="button"
           variant="outline"
-          className="h-11"
+          size="sm"
           aria-pressed={muted}
           onClick={toggleMute}
           title="Per-device setting"

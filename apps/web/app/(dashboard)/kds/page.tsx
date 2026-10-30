@@ -1,6 +1,6 @@
 "use client";
 
-import type { KotStatusDto } from "@nodedr-restaurant/types";
+import type { KotStatusDto } from "@daxabithms/types";
 import { useEffect } from "react";
 import { BranchNotice } from "@/components/layout/branch-notice";
 import { PerformanceWidget } from "@/components/kds/performance-widget";
@@ -45,9 +45,9 @@ export default function KdsPage() {
   const pendingOrders = incoming.data ?? [];
 
   return (
-    <div className="flex min-h-[calc(100dvh-10rem)] flex-col gap-4 lg:h-[calc(100dvh-8rem)] min-w-0 max-w-full">
+    <div className="flex flex-col gap-5 min-w-0 max-w-full pb-10">
       <div>
-        <h1 className="text-2xl font-semibold sm:text-[32px] tracking-tight text-foreground">
+        <h1 className="text-2xl font-bold sm:text-[32px] tracking-tight text-foreground">
           Kitchen Display
         </h1>
         <p className="text-sm text-muted-foreground">Live order tickets by station</p>
@@ -64,10 +64,10 @@ export default function KdsPage() {
               aria-pressed={s.id === activeStation}
               onClick={() => pref.choose(s.id)}
               className={cn(
-                "min-h-11 rounded-full border px-4 text-sm font-medium transition-colors",
+                "h-9 rounded-full border px-4 text-xs font-semibold transition-all cursor-pointer",
                 s.id === activeStation
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border text-muted-foreground hover:bg-secondary",
+                  ? "border-primary bg-primary text-primary-foreground shadow-xs"
+                  : "border-border bg-card/60 text-muted-foreground hover:bg-secondary hover:text-foreground",
               )}
             >
               {s.name}
@@ -118,25 +118,25 @@ export default function KdsPage() {
           retrying={tickets.isFetching}
         />
       ) : (
-        <div className="flex min-h-0 flex-1 snap-x snap-mandatory gap-3 overflow-x-auto sm:grid sm:snap-none sm:grid-cols-2 sm:gap-4 sm:overflow-hidden xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 min-w-0">
           {COLUMNS.map((col) => (
-            <div key={col.status} className="flex w-[85%] shrink-0 snap-center flex-col gap-3 overflow-hidden rounded-2xl bg-secondary/40 p-3 sm:w-auto sm:shrink">
-              <div className="flex items-center justify-between px-1">
-                <h2 className="text-sm font-semibold text-foreground">{col.label}</h2>
-                <span className="text-xs font-medium text-muted-foreground">
+            <div key={col.status} className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card/40 p-4 shadow-xs">
+              <div className="flex items-center justify-between pb-2.5 border-b border-border/50">
+                <h2 className="text-sm font-bold text-foreground">{col.label}</h2>
+                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold tabular-nums text-foreground">
                   {byStatus(col.status).length}
                 </span>
               </div>
-              <div className="flex flex-1 flex-col gap-3 overflow-y-auto pb-2">
+              <div className="flex flex-col gap-3">
                 {(tickets.isLoading || !canFetch) &&
                   Array.from({ length: 2 }).map((_, i) => (
-                    <Skeleton key={i} className="h-32 rounded-2xl" />
+                    <Skeleton key={i} className="h-32 rounded-xl" />
                   ))}
                 {byStatus(col.status).map((ticket) => (
                   <TicketCard key={ticket.id} ticket={ticket} branchId={branchId} />
                 ))}
                 {canFetch && !tickets.isLoading && byStatus(col.status).length === 0 && (
-                  <p className="py-6 text-center text-xs text-muted-foreground">No tickets</p>
+                  <p className="py-8 text-center text-xs text-muted-foreground">No tickets</p>
                 )}
               </div>
             </div>

@@ -1,0 +1,16 @@
+[Unit]
+Description=DaxabitHMS (Docker Compose)
+Documentation=https://daxabithms.local/docs
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=900
+ExecStart=/usr/bin/docker compose --project-name daxabithms --env-file /etc/daxabithms/daxabithms.env -f /usr/lib/daxabithms/docker-compose.yml up -d --remove-orphans
+ExecStop=/usr/bin/docker compose --project-name daxabithms --env-file /etc/daxabithms/daxabithms.env -f /usr/lib/daxabithms/docker-compose.yml down
+
+[Install]
+WantedBy=multi-user.target

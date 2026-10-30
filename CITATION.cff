@@ -1,12 +1,8 @@
 cff-version: 1.2.0
-message: "If you use Nodedr OrderRestro in research, teaching, or a public project, please cite it."
+message: "If you use DaxabitHMS in research, teaching, or a public project, please cite it."
 type: software
-title: "Nodedr OrderRestro"
+title: "DaxabitHMS"
 authors:
-  - family-names: Ranjit
-    given-names: Raktim
-    website: https://www.raktimranjit.com/
-repository-code: https://github.com/Raktim94/nodedr-restaurant-pos
-url: https://orderrestro.nodedr.com/
+  - name: "DaxabitHMS"
 license: AGPL-3.0-only
-abstract: "Offline-first, self-hosted restaurant management software with point of sale, tables, kitchen display, reservations, and inventory."
+abstract: "Offline-first, self-hosted restaurant and hospitality management software with point of sale, tables, kitchen display, reservations, and inventory."

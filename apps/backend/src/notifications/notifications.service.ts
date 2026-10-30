@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { NotificationListQueryDto } from '@nodedr-restaurant/types';
+import type { NotificationListQueryDto } from '@daxabithms/types';
 import { PrismaService } from '../prisma/prisma.service';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 

@@ -224,7 +224,7 @@ export class WebhooksService {
         payload: {
           event: 'test',
           createdAt: new Date().toISOString(),
-          data: { message: 'Hello from OrderRestro' },
+          data: { message: 'Hello from DaxabitHMS' },
         },
       },
     });
@@ -297,14 +297,15 @@ export class WebhooksService {
         d.endpoint.url,
         netOptionsFromEnv(),
       );
+      const sigTimestamp = Math.floor(Date.now() / 1000);
+      const signature = signPayload(secret, body, sigTimestamp);
       statusCode = await this.post(target, body, {
+        'X-DaxabitHMS-Event': d.event,
+        'X-DaxabitHMS-Delivery': d.id,
+        'X-DaxabitHMS-Signature': signature,
         'X-OrderRestro-Event': d.event,
         'X-OrderRestro-Delivery': d.id,
-        'X-OrderRestro-Signature': signPayload(
-          secret,
-          body,
-          Math.floor(Date.now() / 1000),
-        ),
+        'X-OrderRestro-Signature': signature,
       });
       if (statusCode < 200 || statusCode >= 300)
         error = `Receiver answered HTTP ${statusCode}`;
@@ -357,7 +358,7 @@ export class WebhooksService {
           headers: {
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(body),
-            'User-Agent': 'OrderRestro-Webhooks/1',
+            'User-Agent': 'DaxabitHMS-Webhooks/1',
             ...headers,
           },
           // Connect to the address we already vetted; TLS still validates

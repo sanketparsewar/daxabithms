@@ -1,4 +1,4 @@
-import type { SessionUser } from '@nodedr-restaurant/types';
+import type { SessionUser } from '@daxabithms/types';
 import type { Request } from 'express';
 
 export interface AuthenticatedRequest extends Request {

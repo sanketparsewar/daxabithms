@@ -2,13 +2,17 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export const MUTE_STORAGE_KEY = "nodedr_notifications_muted";
-const MUTE_EVENT = "nodedr:notifications-mute-changed";
+export const MUTE_STORAGE_KEY = "daxabithms_notifications_muted";
+export const LEGACY_MUTE_STORAGE_KEY = "nodedr_notifications_muted";
+const MUTE_EVENT = "daxabithms:notifications-mute-changed";
 
 function readMuted(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    return localStorage.getItem(MUTE_STORAGE_KEY) === "1";
+    return (
+      localStorage.getItem(MUTE_STORAGE_KEY) === "1" ||
+      localStorage.getItem(LEGACY_MUTE_STORAGE_KEY) === "1"
+    );
   } catch {
     return false;
   }

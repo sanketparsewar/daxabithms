@@ -16,7 +16,7 @@ import {
   twoFactorCodeSchema,
   twoFactorDisableSchema,
   type SessionUser,
-} from '@nodedr-restaurant/types';
+} from '@daxabithms/types';
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -26,7 +26,8 @@ import { Auth } from '../common/decorators/auth.decorator';
 import { AuthService } from './auth.service';
 import { TwoFactorService } from './two-factor.service';
 
-const SESSION_COOKIE = 'nodedr_session';
+const SESSION_COOKIE = 'daxabithms_session';
+const LEGACY_SESSION_COOKIE = 'nodedr_session';
 const COOKIE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
 // A `Secure` cookie is silently dropped by every browser on a plain
@@ -97,11 +98,13 @@ export class AuthController {
 
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie(SESSION_COOKIE, {
+    const cookieOpts = {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: 'lax' as const,
       secure: isCookieSecure(),
-    });
+    };
+    res.clearCookie(SESSION_COOKIE, cookieOpts);
+    res.clearCookie(LEGACY_SESSION_COOKIE, cookieOpts);
     return { ok: true };
   }
 

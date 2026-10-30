@@ -17,12 +17,12 @@ import {
 } from './verifactu.domain';
 
 const sys: SystemInfo = {
-  producerName: 'NODEDR INFOTECH PRIVATE LIMITED',
+  producerName: 'DAXABITHMS',
   producerCountry: 'IN',
   producerIdType: '04',
   producerId: 'U00000AA0000AAA000000',
-  systemName: 'OrderRestro',
-  systemId: 'OR',
+  systemName: 'DaxabitHMS',
+  systemId: 'DX',
   version: '1.0.0',
   installationNumber: 'inst-1',
 };

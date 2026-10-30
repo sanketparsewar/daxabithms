@@ -8,7 +8,7 @@ import {
   TAX_REGIME_PRESETS,
   type BranchSettingsDto,
   type RestaurantSettingsDto,
-} from '@nodedr-restaurant/types';
+} from '@daxabithms/types';
 import { AuditService } from '../../audit/audit.service';
 import { PrismaService } from '../../prisma/prisma.service';
 

@@ -166,7 +166,7 @@ export function TicketCard({ ticket, branchId }: { ticket: KotTicket; branchId: 
       <div className="flex flex-wrap items-center gap-2 pt-1">
         {nextStatus && (
           <Button
-            className="h-11 sm:h-12 flex-1 min-w-[110px] text-sm sm:text-base truncate px-2"
+            className="h-10 flex-1 min-w-[110px] text-sm font-semibold truncate px-3 rounded-lg shadow-xs"
             disabled={updateStatus.isPending}
             onClick={() =>
               updateStatus.mutate(
@@ -188,18 +188,18 @@ export function TicketCard({ ticket, branchId }: { ticket: KotTicket; branchId: 
         {canReject && (
           <Button
             variant="destructive"
-            className="h-11 sm:h-12 shrink-0 px-3 text-xs sm:text-sm"
+            className="h-10 shrink-0 px-3 text-xs font-semibold rounded-lg"
             onClick={() => setRejectOpen(true)}
             aria-label={`Reject ticket for order ${ticket.order.orderNumber}`}
           >
-            <X className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
+            <X className="h-4 w-4" aria-hidden />
             Reject
           </Button>
         )}
         <Button
           variant="outline"
           size="icon"
-          className="h-11 w-11 sm:h-12 sm:w-12 shrink-0"
+          className="size-10 shrink-0 rounded-lg"
           title={ticket.isPriority ? "Unmark priority" : "Mark priority"}
           aria-label={ticket.isPriority ? "Unmark priority" : "Mark priority"}
           disabled={setPriority.isPending}
@@ -207,12 +207,12 @@ export function TicketCard({ ticket, branchId }: { ticket: KotTicket; branchId: 
             setPriority.mutate({ id: ticket.id, isPriority: !ticket.isPriority })
           }
         >
-          <Star className={cn("h-4 w-4 sm:h-5 sm:w-5", ticket.isPriority && "fill-warning text-warning")} />
+          <Star className={cn("h-4 w-4", ticket.isPriority && "fill-warning text-warning")} />
         </Button>
         <Button
           variant="outline"
           size="icon"
-          className="h-11 w-11 sm:h-12 sm:w-12 shrink-0"
+          className="size-10 shrink-0 rounded-lg"
           title={ticket.printedCount > 0 ? "Reprint ticket (marked REPRINT)" : "Print ticket"}
           aria-label={ticket.printedCount > 0 ? "Reprint ticket" : "Print ticket"}
           disabled={reprint.isPending}

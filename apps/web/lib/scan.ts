@@ -14,7 +14,8 @@ export type ScanResult =
   | { kind: "table"; qrToken: string }
   | { kind: "invalid"; reason: "empty" | "unrecognized" };
 
-export const ORDER_QR_PREFIX = "orderrestro:order:";
+export const ORDER_QR_PREFIX = "daxabithms:order:";
+const LEGACY_ORDER_QR_PREFIX = "orderrestro:order:";
 const ORDER_NUMBER = /^[A-Z0-9]{1,12}(?:-[A-Z0-9]{1,12}){1,3}$/;
 const TABLE_URL = /\/order\/([a-f0-9]{32})\/?$/i;
 
@@ -28,8 +29,10 @@ export function normalizeScan(raw: string): ScanResult {
   if (!text) return { kind: "invalid", reason: "empty" };
   if (text.length > 200) return { kind: "invalid", reason: "unrecognized" };
 
-  if (text.toLowerCase().startsWith(ORDER_QR_PREFIX)) {
-    const number = text.slice(ORDER_QR_PREFIX.length).trim().toUpperCase();
+  const lower = text.toLowerCase();
+  if (lower.startsWith(ORDER_QR_PREFIX) || lower.startsWith(LEGACY_ORDER_QR_PREFIX)) {
+    const prefix = lower.startsWith(ORDER_QR_PREFIX) ? ORDER_QR_PREFIX : LEGACY_ORDER_QR_PREFIX;
+    const number = text.slice(prefix.length).trim().toUpperCase();
     return ORDER_NUMBER.test(number)
       ? { kind: "order", orderNumber: number }
       : { kind: "invalid", reason: "unrecognized" };

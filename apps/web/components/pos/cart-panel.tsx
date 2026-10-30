@@ -80,14 +80,14 @@ export function CartPanel({
   return (
     <div className="flex h-full flex-col gap-4">
       <Tabs value={orderType} onValueChange={(v) => onOrderTypeChange(v as PosOrderType)}>
-        <TabsList className="w-full">
-          <TabsTrigger value="DINE_IN" className="flex-1">
+        <TabsList className="w-full h-10 p-1 bg-secondary/80 rounded-xl">
+          <TabsTrigger value="DINE_IN" className="flex-1 text-xs font-semibold rounded-lg">
             Dine-in
           </TabsTrigger>
-          <TabsTrigger value="TAKEAWAY" className="flex-1">
+          <TabsTrigger value="TAKEAWAY" className="flex-1 text-xs font-semibold rounded-lg">
             Takeaway
           </TabsTrigger>
-          <TabsTrigger value="DELIVERY" className="flex-1">
+          <TabsTrigger value="DELIVERY" className="flex-1 text-xs font-semibold rounded-lg">
             Delivery
           </TabsTrigger>
         </TabsList>
@@ -95,7 +95,7 @@ export function CartPanel({
 
       {orderType === "DINE_IN" && (
         <Select value={tableId} onValueChange={(v) => onTableChange(v ?? "")}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full h-10 rounded-xl text-sm font-medium">
             <SelectValue placeholder="Select table">
               {(value: string | null) => {
                 const t = tables.find((table) => table.id === value);
@@ -248,11 +248,11 @@ export function CartPanel({
       <div className="flex flex-col gap-3 border-t border-border pt-4 min-w-0">
         <div className="flex items-center justify-between text-sm min-w-0">
           <span className="text-muted-foreground truncate">Subtotal (incl. tax)</span>
-          <span className="font-semibold tabular-nums text-foreground shrink-0 ml-2">
+          <span className="font-bold text-base tabular-nums text-foreground shrink-0 ml-2">
             {formatCurrency(subtotal)}
           </span>
         </div>
-        <Button className="h-11 min-w-0 max-w-full truncate px-3" disabled={!canSubmit} onClick={onSubmit}>
+        <Button className="h-12 min-w-0 max-w-full truncate px-4 text-sm font-semibold rounded-xl shadow-sm" disabled={!canSubmit} onClick={onSubmit}>
           {isSubmitting
             ? "Sending to kitchen…"
             : existingOrderNumber
