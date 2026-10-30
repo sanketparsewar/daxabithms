@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Github, HardDrive, Terminal } from "lucide-react";
+import { Check, Copy, Github, HardDrive, Monitor, Terminal } from "lucide-react";
 import { useState } from "react";
 import { AnimatedCounter } from "@/components/marketing/animated-counter";
 import { Reveal, RevealGroup, RevealItem } from "@/components/marketing/reveal";
@@ -11,6 +11,12 @@ const INSTALL_COMMAND =
   "git clone https://github.com/daxabit/daxabit.git && cd daxabit && ./install.sh";
 
 const channels = [
+  {
+    channel: "windows" as const,
+    icon: Monitor,
+    title: "Windows Desktop",
+    description: "Native Windows 10/11 desktop suite with offline & online support and direct thermal printing.",
+  },
   {
     channel: "install-script" as const,
     icon: Terminal,
@@ -82,7 +88,7 @@ export function InstallSection() {
         <CopyCommand />
       </Reveal>
 
-      <RevealGroup className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <RevealGroup className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {channels.map((c) => (
           <RevealItem key={c.channel}>
             <a

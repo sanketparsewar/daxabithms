@@ -1,6 +1,6 @@
 "use client";
 
-import { Github, Menu, X } from "lucide-react";
+import { Github, Menu, Monitor, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Logo } from "@/components/layout/logo";
@@ -10,6 +10,7 @@ import { downloadHref } from "@/lib/downloads";
 const links = [
   { href: "#features", label: "Features" },
   { href: "#security", label: "Security" },
+  { href: "/download/windows", label: "Windows App" },
   { href: "#get-started", label: "Get started" },
 ];
 
@@ -46,6 +47,15 @@ export function MarketingNav() {
         </nav>
 
         <div className="hidden items-center gap-2.5 md:flex">
+          <Button
+            variant="outline"
+            size="default"
+            className="font-medium gap-1.5 hidden lg:inline-flex border-primary/25 text-primary hover:bg-primary/10"
+            render={<Link href="/download/windows" />}
+          >
+            <Monitor className="size-3.5" />
+            Download for Windows
+          </Button>
           <a
             href={downloadHref("github")}
             className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Github } from "lucide-react";
+import { ArrowRight, Github, Monitor } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -73,6 +73,15 @@ export function Hero() {
           <Button size="lg" className="h-12 px-7 text-[15px] font-semibold shadow-lg shadow-primary/20" render={<Link href="/signup" />}>
             Get started free
             <ArrowRight className="size-4" data-icon="inline-end" />
+          </Button>
+          <Button
+            variant="default"
+            size="lg"
+            className="h-12 px-6 text-[15px] font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border/80 shadow-sm"
+            render={<Link href="/download/windows" />}
+          >
+            <Monitor className="size-4 text-primary" data-icon="inline-start" />
+            Download for Windows
           </Button>
           <Button
             variant="outline"

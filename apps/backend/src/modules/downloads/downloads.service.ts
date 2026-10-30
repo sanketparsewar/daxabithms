@@ -12,6 +12,9 @@ const DOWNLOAD_CHANNELS: Record<string, string> = {
   'install-script': '/install.sh',
   docker: '#one-click-install',
   casaos: '#',
+  windows: '/download/windows',
+  'windows-setup': '/downloads/DaxabitHMS-Setup.bat',
+  'windows-ps1': '/downloads/Install-Daxabit.ps1',
 };
 
 export type DownloadChannel = keyof typeof DOWNLOAD_CHANNELS;
