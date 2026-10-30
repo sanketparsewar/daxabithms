@@ -4,25 +4,25 @@ import { DocPage, DocSection } from "@/components/marketing/doc-page";
 import { downloadHref } from "@/lib/downloads";
 
 export const metadata: Metadata = {
-  title: "Documentation — DaxabitHMS",
-  description: "API & MCP, accessibility, and India compliance docs for a self-hosted DaxabitHMS instance.",
+  title: "Documentation — Daxabit",
+  description: "API & MCP, accessibility, and India compliance docs for a self-hosted Daxabit instance.",
 };
 
 const docs = [
   {
     href: "/docs/api",
     title: "API & MCP",
-    description: "Connect an AI client via MCP, or use DaxabitHMS as a backend for your own website.",
+    description: "Connect an AI client via MCP, or use Daxabit as a backend for your own website.",
   },
   {
     href: "/docs/accessibility",
     title: "Accessibility",
-    description: "How DaxabitHMS is built to work with keyboards, screen readers, and reduced motion.",
+    description: "How Daxabit is built to work with keyboards, screen readers, and reduced motion.",
   },
   {
     href: "/docs/compliance-india",
     title: "India compliance",
-    description: "GST, receipts, and data-residency notes for running DaxabitHMS in India.",
+    description: "GST, receipts, and data-residency notes for running Daxabit in India.",
   },
 ];
 

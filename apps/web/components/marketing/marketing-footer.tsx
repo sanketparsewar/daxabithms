@@ -37,10 +37,10 @@ export function MarketingFooter() {
           <div>
             <Link href="/" className="flex items-center gap-2.5">
               <Logo size={28} />
-              <span className="text-sm font-semibold text-foreground">DaxabitHMS</span>
+              <span className="text-sm font-semibold text-foreground">Daxabit</span>
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-              Offline-first restaurant and hospitality management system, self-hosted on your own
+              Offline-first restaurant and hospitality management system by Daxabit, self-hosted on your own
               server.
             </p>
           </div>
@@ -68,7 +68,7 @@ export function MarketingFooter() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-6 sm:flex-row">
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} DaxabitHMS. All rights reserved.
+            &copy; {new Date().getFullYear()} Daxabit. All rights reserved.
           </p>
           <p className="text-xs text-muted-foreground">Made in India.</p>
         </div>

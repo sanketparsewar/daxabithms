@@ -8,7 +8,7 @@ import { downloadHref, totalDownloads } from "@/lib/downloads";
 import { useDownloadStats } from "@/hooks/use-download-stats";
 
 const INSTALL_COMMAND =
-  "git clone https://github.com/daxabithms/daxabithms.git && cd daxabithms && ./install.sh";
+  "git clone https://github.com/daxabit/daxabit.git && cd daxabit && ./install.sh";
 
 const channels = [
   {

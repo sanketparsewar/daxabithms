@@ -1,7 +1,7 @@
 {
-  "name": "DaxabitHMS",
-  "short_name": "DaxabitHMS",
-  "description": "DaxabitHMS — Restaurant & Hospitality Management System (POS, tables, KDS, inventory, billing)",
+  "name": "Daxabit",
+  "short_name": "Daxabit",
+  "description": "Daxabit — Restaurant & Hospitality Management System (POS, tables, KDS, inventory, billing)",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

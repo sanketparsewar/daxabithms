@@ -305,7 +305,7 @@ function GeneralSettingsForm({
                 </button>
               )}
               <p className="text-xs text-muted-foreground">
-                Shows in the app sidebar and login screen instead of the DaxabitHMS mark.
+                Shows in the app sidebar and login screen instead of the Daxabit mark.
                 Square, at least 256×256px, PNG with a transparent background works best.
               </p>
             </div>

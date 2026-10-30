@@ -54,7 +54,7 @@ function SettingsForm({ branchId, s }: { branchId: string; s: VerifactuSettings 
       </div>
 
       <div role="note" className="rounded-xl border border-border bg-muted/40 p-4 text-sm">
-        <strong>Implemented, not certified.</strong> DaxabitHMS has not been run against the live AEAT portal and has not issued
+        <strong>Implemented, not certified.</strong> Daxabit has not been run against the live AEAT portal and has not issued
         its Declaración Responsable. Test with AEAT&rsquo;s pre-production portal and ask your gestor before relying on it.
       </div>
 

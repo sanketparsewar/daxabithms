@@ -14,8 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DaxabitHMS",
-  description: "DaxabitHMS — Restaurant & Hospitality Management System",
+  title: {
+    default: "Daxabit — Restaurant & Hospitality Management System",
+    template: "%s · Daxabit",
+  },
+  description: "Daxabit — Restaurant & Hospitality Management System",
   manifest: "/manifest.json",
   icons: {
     icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }],
