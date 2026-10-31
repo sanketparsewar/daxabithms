@@ -1,3 +1,5 @@
+using System.Net.Http;
+using System.Text.Json;
 using System.Diagnostics;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -11,6 +13,7 @@ internal sealed class MainForm : Form
     private Label? _loadingStatusLabel;
     private Panel? _connectionErrorPanel;
     private Panel? _fatalErrorPanel;
+    private Panel? _incompatibleVersionPanel;
     private System.Windows.Forms.Timer? _autoReconnectTimer;
     private bool _isReconnecting;
 
@@ -585,10 +588,15 @@ internal sealed class MainForm : Form
         }
     }
 
-    private void Navigate()
+    private async void Navigate()
     {
         if (_config.ServerUrl is null) return;
         ShowLoading($"Loading {_config.ServerUrl}…");
+
+        var compatible = await CheckCompatibilityAsync();
+        if (!compatible) return;
+
+        HideIncompatibleVersion();
         _webView.CoreWebView2?.Navigate(_config.ServerUrl);
     }
 
@@ -614,6 +622,143 @@ internal sealed class MainForm : Form
         finally
         {
             _isReconnecting = false;
+        }
+    }
+
+    private async Task<bool> CheckCompatibilityAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_config.ServerUrl)) return true;
+        try
+        {
+            var clientVersion = typeof(MainForm).Assembly.GetName().Version?.ToString(3) ?? "1.0.5";
+            if (!Uri.TryCreate(_config.ServerUrl, UriKind.Absolute, out var serverUri)) return true;
+
+            var compatUrl = $"{serverUri.Scheme}://{serverUri.Authority}/api/v1/system/compatibility?client=DESKTOP&version={clientVersion}";
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+            var response = await http.GetAsync(compatUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("compatible", out var comp) && !comp.GetBoolean())
+                {
+                    var msg = doc.RootElement.TryGetProperty("message", out var m) ? m.GetString() : null;
+                    ShowIncompatibleVersion(msg ?? $"Desktop client v{clientVersion} is incompatible with this server.");
+                    return false;
+                }
+            }
+        }
+        catch
+        {
+            // Server starting or offline — handled by connectivity flows
+        }
+        return true;
+    }
+
+    private void ShowIncompatibleVersion(string message)
+    {
+        HideLoading();
+        HideConnectionError();
+        _webView.Visible = false;
+
+        if (_incompatibleVersionPanel is null)
+        {
+            _incompatibleVersionPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(248, 249, 250),
+            };
+
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 4,
+            };
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 35f));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 65f));
+
+            var headline = new Label
+            {
+                Text = "Desktop Client Incompatible",
+                Font = new Font("Segoe UI", 16f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(220, 53, 69),
+                AutoSize = false,
+                Dock = DockStyle.Top,
+                Height = 45,
+                TextAlign = ContentAlignment.MiddleCenter,
+            };
+
+            var body = new Label
+            {
+                Name = "IncompatibleBodyLabel",
+                Text = message + "\n\nThis client cannot operate against the server until updated, to protect order data integrity.",
+                Font = new Font("Segoe UI", 10.5f),
+                ForeColor = Color.FromArgb(73, 80, 87),
+                AutoSize = false,
+                Dock = DockStyle.Top,
+                Height = 80,
+                TextAlign = ContentAlignment.MiddleCenter,
+            };
+
+            var buttons = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                AutoSize = true,
+                Dock = DockStyle.Top,
+                Anchor = AnchorStyles.None,
+            };
+
+            var updateBtn = new Button { Text = "Download Update…", AutoSize = true, Margin = new Padding(8), Font = new Font("Segoe UI", 10f) };
+            updateBtn.Click += (_, _) =>
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo("https://github.com/daxabithms/daxabithms/releases") { UseShellExecute = true });
+                }
+                catch { }
+            };
+            buttons.Controls.Add(updateBtn);
+
+            var changeServerBtn = new Button { Text = "Change Server Address…", AutoSize = true, Margin = new Padding(8), Font = new Font("Segoe UI", 10f) };
+            changeServerBtn.Click += async (_, _) => await ChangeServerAsync();
+            buttons.Controls.Add(changeServerBtn);
+
+            var retryBtn = new Button { Text = "Retry", AutoSize = true, Margin = new Padding(8), Font = new Font("Segoe UI", 10f) };
+            retryBtn.Click += async (_, _) => await ReconnectAsync();
+            buttons.Controls.Add(retryBtn);
+
+            var buttonsWrapper = new Panel { Dock = DockStyle.Top, Height = 60 };
+            buttonsWrapper.Controls.Add(buttons);
+            buttonsWrapper.Resize += (_, _) => buttons.Left = Math.Max(0, (buttonsWrapper.Width - buttons.Width) / 2);
+
+            layout.Controls.Add(headline, 0, 1);
+            layout.Controls.Add(body, 0, 2);
+            layout.Controls.Add(buttonsWrapper, 0, 3);
+
+            _incompatibleVersionPanel.Controls.Add(layout);
+            Controls.Add(_incompatibleVersionPanel);
+        }
+        else
+        {
+            var bodyLabel = _incompatibleVersionPanel.Controls.Find("IncompatibleBodyLabel", true).FirstOrDefault() as Label;
+            if (bodyLabel is not null)
+            {
+                bodyLabel.Text = message + "\n\nThis client cannot operate against the server until updated, to protect order data integrity.";
+            }
+        }
+
+        _incompatibleVersionPanel.Visible = true;
+        _incompatibleVersionPanel.BringToFront();
+    }
+
+    private void HideIncompatibleVersion()
+    {
+        if (_incompatibleVersionPanel is not null)
+        {
+            _incompatibleVersionPanel.Visible = false;
         }
     }
 

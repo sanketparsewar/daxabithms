@@ -12,5 +12,6 @@ import { BackupService } from './backup.service';
   imports: [AuditModule, NotificationsModule],
   controllers: [BackupController],
   providers: [BackupService],
+  exports: [BackupService],
 })
 export class BackupModule {}
