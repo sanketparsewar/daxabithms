@@ -16,7 +16,10 @@
 
 param(
     [switch]$SkipServerStaging,
-    [string]$Configuration = 'Release'
+    [string]$Configuration = 'Release',
+    [string]$CertificatePath,
+    [string]$CertificatePassword,
+    [string]$TimeStampServer = 'http://timestamp.digicert.com'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -84,6 +87,18 @@ $finalInstaller = Join-Path $InstallerOutputDir 'DaxabitHMS-Setup.exe'
 if (Test-Path $finalInstaller) {
     $sizeMb = [math]::Round(((Get-Item $finalInstaller).Length / 1MB), 2)
     Write-Host "Installer built successfully: $finalInstaller ($sizeMb MB)" -ForegroundColor Green
+# 5. Sign Installer (Optional Production Authenticode Signing)
+if ($CertificatePath) {
+    if (-not (Get-Command signtool -ErrorAction SilentlyContinue)) {
+        throw "signtool not found on PATH — required for signing installer."
+    }
+    if (-not (Test-Path $CertificatePath)) { throw "Certificate not found at $CertificatePath" }
+    Write-Host "-- Signing DaxabitHMS-Setup.exe with Authenticode certificate..." -ForegroundColor Cyan
+    & signtool sign /fd SHA256 /tr $TimeStampServer /td SHA256 /f $CertificatePath /p $CertificatePassword $finalInstaller
+    if ($LASTEXITCODE -ne 0) { throw "signtool sign failed with exit code $LASTEXITCODE" }
+    Write-Host "Installer signed successfully." -ForegroundColor Green
+}
+
 } else {
     throw "Build completed but $finalInstaller was not found."
 }

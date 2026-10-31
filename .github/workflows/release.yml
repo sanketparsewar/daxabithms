@@ -1,0 +1,391 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.5.0)'
+        required: true
+        type: string
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Full Pre-Release Automated Quality Gate
+  # ---------------------------------------------------------------------------
+  test-and-validate:
+    name: Verify Tests, Lints & Production Builds
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run lint
+        run: pnpm run lint
+
+      - name: Run TypeScript checks
+        run: pnpm run typecheck
+
+      - name: Run dependency security audit
+        run: pnpm audit --audit-level=high
+
+      - name: Run test suites (Backend & Frontend)
+        run: pnpm run test
+
+      - name: Run production build
+        run: pnpm run build
+
+  # ---------------------------------------------------------------------------
+  # 2. Build & Publish Versioned Docker Images
+  # ---------------------------------------------------------------------------
+  publish-docker-images:
+    name: Build & Push Production Docker Images
+    runs-on: ubuntu-latest
+    needs: [test-and-validate]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Release Version
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="v${{ inputs.version }}"
+            VER="${{ inputs.version }}"
+          else
+            TAG="${{ github.ref_name }}"
+            VER="${TAG#v}"
+          fi
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "version=${VER}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push Backend Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/backend/Dockerfile
+          push: true
+          build-args: |
+            APP_VERSION=${{ steps.meta.outputs.version }}
+          tags: |
+            ghcr.io/${{ github.repository }}-backend:${{ steps.meta.outputs.version }}
+            ghcr.io/${{ github.repository }}-backend:latest
+
+      - name: Build & Push Web Frontend Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: true
+          build-args: |
+            APP_VERSION=${{ steps.meta.outputs.version }}
+          tags: |
+            ghcr.io/${{ github.repository }}-web:${{ steps.meta.outputs.version }}
+            ghcr.io/${{ github.repository }}-web:latest
+
+      - name: Build & Push Updater Sidecar Image
+        uses: docker/build-push-action@v6
+        with:
+          context: updater
+          file: updater/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-updater:${{ steps.meta.outputs.version }}
+            ghcr.io/${{ github.repository }}-updater:latest
+
+  # ---------------------------------------------------------------------------
+  # 3. Build & Validate Windows Desktop MSIX Client
+  # ---------------------------------------------------------------------------
+  build-windows-msix:
+    name: Build Windows x64 Desktop Client (MSIX)
+    runs-on: windows-latest
+    needs: [test-and-validate]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Decode Production Signing Certificate (if configured in secrets)
+        id: cert
+        shell: pwsh
+        env:
+          SIGNING_CERT_BASE64: ${{ secrets.WINDOWS_SIGNING_CERT_BASE64 }}
+        run: |
+          if ($env:SIGNING_CERT_BASE64) {
+            $certPath = Join-Path $env:RUNNER_TEMP 'signing-cert.pfx'
+            [System.Convert]::FromBase64String($env:SIGNING_CERT_BASE64) | Set-Content -Path $certPath -AsByteStream
+            echo "has_cert=true" >> $env:GITHUB_OUTPUT
+            echo "cert_path=$certPath" >> $env:GITHUB_OUTPUT
+            Write-Host "Production code signing certificate loaded into runner memory." -ForegroundColor Green
+          } else {
+            echo "has_cert=false" >> $env:GITHUB_OUTPUT
+            Write-Host "WARNING: WINDOWS_SIGNING_CERT_BASE64 not configured. Package will be signed as development/unsigned build." -ForegroundColor Yellow
+          }
+
+      - name: Build Windows Desktop MSIX Package
+        shell: pwsh
+        env:
+          CERT_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERT_PASSWORD }}
+        run: |
+          if ('${{ steps.cert.outputs.has_cert }}' -eq 'true') {
+            Write-Host "Building with production Authenticode signing..." -ForegroundColor Cyan
+            & .\windows\msix\build-windows-msix.ps1 -Configuration Release -CertificatePath '${{ steps.cert.outputs.cert_path }}' -CertificatePassword $env:CERT_PASSWORD
+            & .\windows\msix\validate-msix.ps1
+          } else {
+            Write-Host "Building development test package (never distribute self-signed packages as trusted releases)..." -ForegroundColor Yellow
+            & .\windows\msix\build-windows-msix.ps1 -Configuration Release -SelfSignedTest
+            & .\windows\msix\validate-msix.ps1 -AllowPlaceholderPublisher
+          }
+
+      - name: Cleanup Temporary Certificate
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path '${{ steps.cert.outputs.cert_path }}') {
+            Remove-Item -Force '${{ steps.cert.outputs.cert_path }}'
+            Write-Host "Cleaned up temporary signing certificate from disk." -ForegroundColor DarkGray
+          }
+
+      - name: Prepare Artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path out\release-msix | Out-Null
+          $src = 'windows\msix\out\DaxabitHMS.msix'
+          if ('${{ steps.cert.outputs.has_cert }}' -eq 'true') {
+            Copy-Item $src 'out\release-msix\DaxabitHMS-Desktop.msix'
+          } else {
+            Copy-Item $src 'out\release-msix\DaxabitHMS-Desktop-unsigned.msix'
+          }
+
+      - name: Upload MSIX Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-desktop-msix
+          path: out\release-msix\*
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # 4. Build & Validate Windows Server Installer
+  # ---------------------------------------------------------------------------
+  build-windows-installer:
+    name: Build Windows x64 Server Installer (Setup.exe)
+    runs-on: windows-latest
+    needs: [test-and-validate]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run production build (required for server staging)
+        run: pnpm run build
+
+      - name: Install Inno Setup Compiler
+        run: |
+          choco install innosetup --no-progress
+          echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+
+      - name: Decode Production Signing Certificate (if configured in secrets)
+        id: cert
+        shell: pwsh
+        env:
+          SIGNING_CERT_BASE64: ${{ secrets.WINDOWS_SIGNING_CERT_BASE64 }}
+        run: |
+          if ($env:SIGNING_CERT_BASE64) {
+            $certPath = Join-Path $env:RUNNER_TEMP 'signing-cert-inst.pfx'
+            [System.Convert]::FromBase64String($env:SIGNING_CERT_BASE64) | Set-Content -Path $certPath -AsByteStream
+            echo "has_cert=true" >> $env:GITHUB_OUTPUT
+            echo "cert_path=$certPath" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "has_cert=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Build Windows Server Installer
+        shell: pwsh
+        env:
+          CERT_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERT_PASSWORD }}
+        run: |
+          if ('${{ steps.cert.outputs.has_cert }}' -eq 'true') {
+            & .\windows\installer\build-windows-installer.ps1 -Configuration Release -CertificatePath '${{ steps.cert.outputs.cert_path }}' -CertificatePassword $env:CERT_PASSWORD
+            & .\windows\installer\validate-installer.ps1 -RequireProductionSignature
+          } else {
+            & .\windows\installer\build-windows-installer.ps1 -Configuration Release
+            & .\windows\installer\validate-installer.ps1
+          }
+
+      - name: Cleanup Temporary Certificate
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path '${{ steps.cert.outputs.cert_path }}') {
+            Remove-Item -Force '${{ steps.cert.outputs.cert_path }}'
+          }
+
+      - name: Prepare Artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path out\release-installer | Out-Null
+          $src = 'out\installer\DaxabitHMS-Setup.exe'
+          if ('${{ steps.cert.outputs.has_cert }}' -eq 'true') {
+            Copy-Item $src 'out\release-installer\DaxabitHMS-Setup.exe'
+          } else {
+            Copy-Item $src 'out\release-installer\DaxabitHMS-Setup-unsigned.exe'
+          }
+
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-server-installer
+          path: out\release-installer\*
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # 5. Assemble Release, Generate Checksums & Publish to GitHub
+  # ---------------------------------------------------------------------------
+  publish-release:
+    name: Generate Checksums & Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: [publish-docker-images, build-windows-msix, build-windows-installer]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Release Version
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="v${{ inputs.version }}"
+            VER="${{ inputs.version }}"
+          else
+            TAG="${{ github.ref_name }}"
+            VER="${TAG#v}"
+          fi
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "version=${VER}" >> $GITHUB_OUTPUT
+
+      - name: Download Windows MSIX Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-desktop-msix
+          path: release-artifacts/
+
+      - name: Download Windows Installer Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-server-installer
+          path: release-artifacts/
+
+      - name: Generate Cryptographic SHA-256 Checksums
+        run: |
+          cd release-artifacts
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Generate Structured Release Notes
+        id: notes
+        run: |
+          cat << 'EOF' > release_notes.md
+          ## DaxabitHMS Release ${{ steps.meta.outputs.tag }}
+
+          Official production release of DaxabitHMS — Offline-First Restaurant & Hospitality Management System.
+
+          ### Release Artifacts & Downloads
+
+          | Platform | Package | Purpose |
+          | :--- | :--- | :--- |
+          | **Windows Server** | `DaxabitHMS-Setup.exe` | One-click unified Windows server installer with managed PostgreSQL service |
+          | **Windows Desktop** | `DaxabitHMS-Desktop.msix` | WinForms + WebView2 standalone desktop client for cashiers and waiters |
+          | **Integrity** | `SHA256SUMS.txt` | Cryptographic SHA-256 digests for all release files |
+
+          ### Production Docker Images (GHCR)
+
+          ```bash
+          # Backend API
+          docker pull ghcr.io/${{ github.repository }}-backend:${{ steps.meta.outputs.version }}
+
+          # Web Management & POS Frontend
+          docker pull ghcr.io/${{ github.repository }}-web:${{ steps.meta.outputs.version }}
+
+          # Sidecar Auto-Updater
+          docker pull ghcr.io/${{ github.repository }}-updater:${{ steps.meta.outputs.version }}
+          ```
+
+          ### Deployment & Upgrade Guides
+          - [LAN Deployment & Terminal Access](docs/LAN_DEPLOYMENT.md)
+          - [Automatic Updates & Safe Rollback](docs/UPDATE_AND_ROLLBACK.md)
+          - [Hardware & Thermal Printing Guide](docs/HARDWARE_COMPATIBILITY.md)
+          - [Disaster Recovery & PostgreSQL Restoration](docs/DISASTER_RECOVERY.md)
+
+          ### Cryptographic Checksums (SHA-256)
+          ```text
+          EOF
+          cat release-artifacts/SHA256SUMS.txt >> release_notes.md
+          echo '```' >> release_notes.md
+
+      - name: Publish Official GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: DaxabitHMS ${{ steps.meta.outputs.tag }}
+          body_path: release_notes.md
+          files: release-artifacts/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

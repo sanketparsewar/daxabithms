@@ -59,7 +59,13 @@ param(
 
     [switch]$InstallLocally,
 
-    [switch]$IncludeEmbeddedServer
+    [switch]$IncludeEmbeddedServer,
+
+    [string]$CertificatePath,
+
+    [string]$CertificatePassword,
+
+    [string]$TimeStampServer = 'http://timestamp.digicert.com'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -116,8 +122,18 @@ New-Item -ItemType Directory -Force -Path (Split-Path $msixOut) | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "makeappx pack failed with exit code $LASTEXITCODE" }
 Write-Host "Built package: $msixOut" -ForegroundColor Green
 
-# --- 4. Optional: sign with a throwaway local test certificate -------------
-if ($SelfSignedTest) {
+# --- 4. Signing: Production Certificate or Test Certificate ----------------
+if ($CertificatePath) {
+    if (-not (Get-Command signtool -ErrorAction SilentlyContinue)) {
+        throw "signtool not found on PATH — required for signing. Install Windows 10/11 SDK."
+    }
+    if (-not (Test-Path $CertificatePath)) { throw "Certificate not found at $CertificatePath" }
+    Write-Host "Signing package with production Authenticode certificate: $CertificatePath..." -ForegroundColor Cyan
+    & signtool sign /fd SHA256 /tr $TimeStampServer /td SHA256 /f $CertificatePath /p $CertificatePassword $msixOut
+    if ($LASTEXITCODE -ne 0) { throw "signtool sign failed with exit code $LASTEXITCODE" }
+    Write-Host "Package signed with trusted production certificate." -ForegroundColor Green
+}
+elseif ($SelfSignedTest) {
     if (-not (Get-Command signtool -ErrorAction SilentlyContinue)) {
         throw "signtool not found on PATH — required for -SelfSignedTest. Install the Windows 10/11 SDK."
     }
