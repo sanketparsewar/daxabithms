@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, MessageCircle, Pencil, Phone, X } from "lucide-react";
+import { Check, MessageCircle, Pencil, Phone, Printer, X } from "lucide-react";
 import { useState } from "react";
 import { StatusNote, useNoteToast } from "@/components/ui/status-note";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,9 @@ import { ReasonDialog } from "@/components/orders/reason-dialog";
 import { hasPermission, useCurrentUser } from "@/hooks/use-auth";
 import { useAcceptOrder, useOrder, useRejectOrder } from "@/hooks/use-orders";
 import { formatCurrency } from "@/lib/format";
+import { ApiError } from "@/lib/api";
+import { openReceiptPrint } from "@/lib/print";
+import { usePrintOrderUsb } from "@/hooks/use-print";
 import { cn } from "@/lib/utils";
 
 const CANCEL_SOURCE_LABEL = {
@@ -42,6 +45,8 @@ export function OrderDetailDialog({
   const { data: me } = useCurrentUser();
   const canEditRole = hasPermission(me?.user, "orders.edit");
   const canAnswer = hasPermission(me?.user, "orders.accept");
+  const canPrintRole = hasPermission(me?.user, "bills.print");
+  const printUsb = usePrintOrderUsb(branchId);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -193,9 +198,41 @@ export function OrderDetailDialog({
               </p>
             )}
             {order.status === "PAID" && (
-              <p className="rounded-lg bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
-                This bill is paid. To correct it, issue a refund from the Dashboard — paid bills are never edited in place.
-              </p>
+              <div className="flex flex-col gap-2">
+                <p className="rounded-lg bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
+                  This bill is paid. To correct it, issue a refund from the Dashboard — paid bills are never edited in place.
+                </p>
+                {canPrintRole && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => branchId && openReceiptPrint(order.id, branchId, { reprint: "true" })}
+                    >
+                      <Printer className="mr-1.5 h-4 w-4" /> Browser reprint
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      disabled={printUsb.isPending}
+                      onClick={() =>
+                        printUsb.mutate(
+                          { orderId: order.id, adjustments: { reprint: "true" } },
+                          {
+                            onSuccess: () => toast.success("Reprint sent to thermal printer"),
+                            onError: (err) =>
+                              toast.error(
+                                err instanceof ApiError ? err.message : "Could not print to thermal printer",
+                              ),
+                          },
+                        )
+                      }
+                    >
+                      <Printer className="mr-1.5 h-4 w-4" /> {printUsb.isPending ? "Printing…" : "Thermal reprint"}
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
             {canCancel && (
               <div className="flex gap-2">

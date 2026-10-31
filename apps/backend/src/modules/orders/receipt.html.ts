@@ -59,6 +59,8 @@ interface ReceiptOrder {
   discountPercent?: number;
   /** A bill handed over before payment: no "paid in full" wording. */
   isProvisional?: boolean;
+  /** Whether this is a reprint / duplicate copy. */
+  isReprint?: boolean;
   /** Applied so far / still owed; printed when set. */
   amountPaid?: number;
   balanceDue?: number;
@@ -243,6 +245,11 @@ export function buildReceiptHtml({
   </script>
   <div class="receipt">
     <h1>${esc(restaurantName)}</h1>
+    ${
+      order.isReprint
+        ? `<div class="center" style="border: 2px dashed #111; font-weight: 700; font-size: 13px; padding: 4px; margin: 4px 0 6px; letter-spacing: 1px;">*** DUPLICATE / REPRINT ***</div>`
+        : ''
+    }
     ${
       branch.taxRegime === 'INDIA_GST'
         ? `<div class="muted center" style="font-weight: 600; text-transform: uppercase; margin-bottom: 2px;">${

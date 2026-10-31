@@ -439,8 +439,12 @@ export class OrdersController {
       id,
       adj,
     );
+    const printCount = await this.ordersService.getReceiptPrintCount(branchId, id);
+    const isReprint = query.reprint === 'true' || printCount > 0;
     if (overrides.isProvisional) {
       await this.ordersService.recordBillPrinted(branchId, id, user.id);
+    } else {
+      await this.ordersService.recordReceiptPrinted(branchId, id, user.id);
     }
     const html = buildReceiptHtml({
       restaurantName: order.branch.restaurant.name,
@@ -457,6 +461,7 @@ export class OrdersController {
       },
       order: {
         ...toEscposOrder(order, overrides),
+        isReprint,
         verifactu: overrides.isProvisional
           ? null
           : await this.verifactu.qrForOrder(order.id),
@@ -471,6 +476,7 @@ export class OrdersController {
     @CurrentUser() user: SessionUser,
     @Query('branchId') branchId: string,
     @Param('id') id: string,
+    @Query('reprint') reprint: string,
     @Res() res: Response,
   ) {
     await this.branchAccess.assertAccess(user.restaurantId, branchId);
@@ -478,6 +484,7 @@ export class OrdersController {
     const html = buildKotHtml({
       branchName: order.branch.name,
       order: toKotOrder(order),
+      reprint: reprint === 'true' ? 1 : undefined,
     });
     res.type('html').send(html);
   }
@@ -611,8 +618,12 @@ export class OrdersController {
       id,
       adj,
     );
+    const printCount = await this.ordersService.getReceiptPrintCount(branchId, id);
+    const isReprint = query.reprint === 'true' || printCount > 0;
     if (overrides.isProvisional) {
       await this.ordersService.recordBillPrinted(branchId, id, user.id);
+    } else {
+      await this.ordersService.recordReceiptPrinted(branchId, id, user.id);
     }
     const stored = branchPrinterProfile(order.branch);
     const profile =
@@ -637,6 +648,7 @@ export class OrdersController {
       },
       order: {
         ...toEscposOrder(order, overrides),
+        isReprint,
         verifactu: overrides.isProvisional
           ? null
           : await this.verifactu.qrForOrder(order.id),

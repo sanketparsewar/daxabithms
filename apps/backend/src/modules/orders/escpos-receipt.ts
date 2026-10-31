@@ -75,6 +75,8 @@ export interface EscposReceiptOrder {
   discountPercent?: number;
   /** A bill handed over before payment: no "paid in full" wording. */
   isProvisional?: boolean;
+  /** Whether this is a reprint / duplicate copy. */
+  isReprint?: boolean;
   /** Applied so far / still owed; printed when set. */
   amountPaid?: number;
   balanceDue?: number;
@@ -150,6 +152,14 @@ export function buildReceiptEscPosJob({
   if (branch.phone) w.text(`Ph: ${branch.phone}`, { align: 'center' });
   if (taxIdValue) {
     w.text(`${taxIdLabel}: ${taxIdValue}`, { align: 'center' });
+  }
+  if (order.isReprint) {
+    w.rule();
+    w.text('*** DUPLICATE / REPRINT ***', {
+      align: 'center',
+      bold: true,
+      size: 'tall',
+    });
   }
   w.rule();
   w.text(stamp(order.createdAt, { timeZone, locale }));

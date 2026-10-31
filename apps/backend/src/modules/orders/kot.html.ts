@@ -30,13 +30,17 @@ interface KotOrder {
   }[];
 }
 
+export interface KotHtmlOptions {
+  branchName: string;
+  order: KotOrder;
+  reprint?: number;
+}
+
 export function buildKotHtml({
   branchName,
   order,
-}: {
-  branchName: string;
-  order: KotOrder;
-}): string {
+  reprint,
+}: KotHtmlOptions): string {
   const dateStr = new Date(order.createdAt).toLocaleString();
 
   const itemRows = order.items
@@ -88,6 +92,7 @@ export function buildKotHtml({
   </script>
   <div class="kot">
     <h1>Kitchen order</h1>
+    ${reprint ? `<div class="center" style="border: 2px dashed #111; font-weight: 700; font-size: 14px; padding: 4px; margin: 4px 0 6px;">*** REPRINT #${reprint} ***</div>` : ''}
     <p class="center muted">${esc(branchName)}</p>
     <hr class="rule">
     <p class="muted">
