@@ -32,6 +32,7 @@ Mode B provides a lightweight, high-performance desktop application for multi-te
 - **Runs as Standard User:** Requires zero administrator elevation (`requestedExecutionLevel="asInvoker"`). Can be safely deployed on employee-accessible terminals with restricted user accounts.
 - **Native Hardware Integration:** Utilizes the native Windows Print Spooler (`window.print()`), enabling direct receipt and invoice printing across USB, Bluetooth, and network thermal receipt printers.
 - **Real-Time Collaboration:** Synchronizes order additions, table status changes, and kitchen tickets in real-time over WebSocket channels (`/socket.io`) connected to the main server.
+- **Enterprise Security & Isolation:** Restricts WebView2 navigation strictly to trusted restaurant server origins; external links open safely in the system default browser. DevTools and default browser context menus are disabled to prevent staff tampering.
 - **Flexible Distribution:** Deployable via the unified setup installer (`DaxabitHMS-Setup.exe` with "Client" component) or as a packaged modern MSIX app (`DaxabitHMS.msix`) for corporate Microsoft Intune / MDM distribution.
 
 ---
@@ -46,6 +47,7 @@ Mode B provides a lightweight, high-performance desktop application for multi-te
 | **Storage** | 100 MB free disk space | 500 MB free disk space |
 | **Network** | Ethernet (100 Mbps) or 802.11ac Wi-Fi connected to the same LAN as the server | Wired Gigabit Ethernet |
 | **Runtimes** | Microsoft Edge WebView2 Evergreen Runtime (pre-installed on Windows 11 and updated Windows 10) |
+| **DPI & Display** | 1280 x 720 (supports PerMonitorV2 high-DPI scaling) | 1920 x 1080 touchscreen |
 
 ---
 
@@ -96,7 +98,7 @@ When DaxabitHMS launches for the first time on a client terminal:
 |                                                             |
 |  [ 192.168.1.50:1995                                     ]  |
 |                                                             |
-|  Status: [ Connected.                                    ]  |
+|  Status: [ ✓ Connected. (12 ms latency)                  ]  |
 |                                                             |
 |         [ Test Connection ]         [ Connect ]  [ Cancel ] |
 +-------------------------------------------------------------+
@@ -110,7 +112,40 @@ If the server's IP address changes or the terminal is relocated to another branc
 
 ---
 
-## 5. Daily Terminal Operations
+## 5. Desktop Application Features & Keyboard Shortcuts
+
+The DaxabitHMS desktop shell is designed specifically as an enterprise business workstation rather than a generic browser window:
+
+### Keyboard Shortcuts
+| Shortcut | Action | Description |
+| :--- | :--- | :--- |
+| **`Ctrl + R`** | **Reconnect** | Tests connection to the configured server and re-establishes session |
+| **`F5`** | **Reload** | Refreshes the current POS or KDS view |
+| **`Ctrl + P`** | **Print** | Opens the native Windows Print Spooler dialog |
+| **`F11`** | **Toggle Full Screen** | Switches to borderless full-screen kiosk mode (ideal for KDS and cashier counters) |
+| **`Ctrl + +`** | **Zoom In** | Enlarges interface scaling |
+| **`Ctrl + -`** | **Zoom Out** | Decreases interface scaling |
+| **`Ctrl + 0`** | **Reset Zoom** | Resets zoom to 100% standard scaling |
+| **`Alt + F4`** | **Exit** | Closes the desktop client cleanly |
+
+### Connection Error Recovery & Auto-Reconnect
+When network disconnections occur (e.g. Wi-Fi router reboot or cable disconnection):
+1. The app immediately displays an interactive **Connection Error Recovery** screen.
+2. Provides **[Reconnect Now]**, **[Change Server Address]**, and **[Support & Diagnostics]** buttons.
+3. An automatic background timer polls the server's `/api/health` endpoint every 5 seconds. As soon as network connectivity is restored, the application automatically reloads without requiring manual intervention.
+
+### Diagnostics & About Screens
+- **Help -> Support & Diagnostics…**:
+  - Displays complete system hardware, OS build, 64-bit status, and DPI scale.
+  - Tests live server latency to `/api/health`.
+  - Provides a single **[Copy Diagnostics]** button for instant support ticketing.
+  - Provides an **[Open Logs Folder]** button for rapid inspection.
+- **Help -> About DaxabitHMS…**:
+  - Displays version (`1.0.5`), deployment mode, copyright, and GNU AGPLv3 licensing details.
+
+---
+
+## 6. Daily Terminal Operations
 
 ### Staff Authentication
 - Staff members can log in using their assigned Email/Password or their 4-digit quick POS PIN.
@@ -129,7 +164,7 @@ If the server's IP address changes or the terminal is relocated to another branc
 
 ---
 
-## 6. Troubleshooting Client Connectivity
+## 7. Troubleshooting Client Connectivity
 
 ### Problem: "Could not reach that address"
 

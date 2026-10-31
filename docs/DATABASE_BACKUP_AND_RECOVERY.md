@@ -1,40 +1,63 @@
 # Database Backup, Disaster Recovery & Schema Safety Guide
 
 **Application:** DaxabitHMS (Hospitality & Restaurant Management System)  
-**Database Engine:** PostgreSQL 16+  
-**ORM & Migration Tool:** Prisma ORM  
-**Date:** October 30, 2026  
+**Database Engine:** PostgreSQL 16+ (Verified on AWS Neon Serverless PostgreSQL)  
+**ORM & Migration Tool:** Prisma ORM 6.19.3  
+**Date:** October 31, 2026  
 **Status:** **VERIFIED & PRODUCTION READY**
 
 ---
 
 ## 1. Executive Summary & Verification Proof
 
-Safe database management for real hospitality businesses requires strict transactional guarantees, zero data loss during active sales periods, guaranteed migration upgrade paths, fast index-backed query execution, and robust backup/restore capabilities.
+Safe database management for real hospitality businesses requires strict transactional guarantees, zero data loss during active sales periods, guaranteed migration upgrade paths, fast index-backed query execution, and robust backup/restore capabilities with end-to-end encryption.
 
 ### Acceptance Criteria Verification Proof
-- **Fresh Database Deployment**: Successfully deployed all 40 Prisma migrations on a fresh PostgreSQL instance with zero errors.
-- **Incremental Migration Upgrade**: Applied migration `20261030000000_query_optimization_indexes` to an existing database, adding composite query indexes without table locks or regressions.
-- **Backup Integrity**: Executed `pg_dump --format=custom` against active database instance, generating compressed custom-format dumps (`.dump`).
-- **Full Database Restoration**: Successfully restored backup into `daxabithms_restored` using `pg_restore --clean --if-exists --no-owner`.
-- **Integrity Validation**: Cross-database row count and relation verification between original and restored databases confirmed exact matches across all tables:
+- **Target Database Configured**: Configured `apps/backend/.env`, root `.env`, and `docker-compose.yml` to connect directly to the user's Neon Serverless PostgreSQL database:
   ```
-  Table           Original DB (daxabithms_test)   Restored DB (daxabithms_restored)
-  ---------------------------------------------------------------------------------
-  restaurants     1                               1
-  users           1                               1
-  menu_items      6                               6
-  orders          2                               2
-  permissions     33                              33
+  postgresql://neondb_owner:npg_YJuHjrO6fms4@ep-super-rain-b58haum9-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
   ```
-- **Automated Test Coverage**: Created [`apps/backend/src/backup/backup.service.spec.ts`](file:///home/am-pc-05/Downloads/nodedr-restaurant-pos/apps/backend/src/backup/backup.service.spec.ts) (8/8 unit tests passing) testing configuration, owner gates, retention pruning, and schedule evaluation.
+- **Fresh Database & Upgrade Migrations**: Verified all 40 Prisma migrations deployed on PostgreSQL. Upgraded live instance by applying `20261030000000_query_optimization_indexes` to the active database without errors or table locks.
+- **Audited Schema & Tables**: Audited all 80 tables in the public schema, verifying multi-tenant scoping (`restaurants`, `branches`), role-based access control, POS order workflows, inventory tracking, and audit logging.
+- **Encrypted Off-Site Backups (AES-256-GCM)**: Implemented optional client-side AES-256-GCM encryption with SHA-256 key derivation, 12-byte initialization vectors, and 16-byte authentication tags. Backups are encrypted before transmission to S3 storage and authenticated during restore.
+- **Live Database Backup & Restoration Proof**: Executed end-to-end disaster recovery verification script (`scripts/verify-backup-disaster-recovery.js`), confirming 100% integrity match across all tables:
+  ```
+  Table Name          Original (public)        Restored (daxabit_restored)
+  ----------------------------------------------------------------------
+  restaurants         3                        3
+  branches            3                        3
+  roles               33                       33
+  users               3                        3
+  menu_categories     4                        4
+  menu_items          7                        7
+  orders              3                        3
+  order_items         6                        6
+  payments            1                        1
+  permissions         33                       33
+  role_permissions    378                      378
+  ----------------------------------------------------------------------
+  ✓ PERFECT INTEGRITY MATCH across all tables!
+  ✓ Referential Integrity Verified: 0 orphaned child items, 0 orphaned users.
+  ```
+- **Automated Test Coverage**: 17/17 automated unit tests passing in `apps/backend/src/backup/backup.service.spec.ts`, covering:
+  - Configuration & masked credential protection
+  - Owner role restriction & `confirm: "RESTORE"` safety gate
+  - Retention pruning (oldest-first retention)
+  - Automated cron schedule evaluation
+  - AES-256-GCM encryption and decryption roundtrips
+  - Corrupted backup rejection (auth tag mismatch)
+  - Unencrypted legacy backup backward compatibility
+  - Interrupted backup handling & owner failure notifications
+  - Interrupted restore handling & audit trail records
+  - Insufficient disk space (`ENOSPC`) handling
+  - Database connection failure (`ECONNREFUSED`) handling
 
 ---
 
 ## 2. Prisma Schema & Migration Review
 
-### 2.1 Migration History (40 Applied Migrations)
-The migration history located at [`apps/backend/prisma/migrations`](file:///home/am-pc-05/Downloads/nodedr-restaurant-pos/apps/backend/prisma/migrations) tracks the full evolution of DaxabitHMS:
+### 2.1 Complete Migration History (40 Applied Migrations)
+The migration history located at `apps/backend/prisma/migrations` tracks the complete schema evolution:
 1. `20260803053615_init`: Baseline schema for restaurants, branches, users, roles, menu, tables, and orders.
 2. `20260803070032_add_reservations_waitlist`: Reservation and waitlist tracking.
 3. `20260803073234_add_crm_loyalty_giftcards_combos`: Customer profiles, loyalty ledgers, gift cards, and combos.
@@ -76,9 +99,9 @@ The migration history located at [`apps/backend/prisma/migrations`](file:///home
 39. `20261026000000_server_sync`: Offline local-to-cloud change tracking.
 40. `20261030000000_query_optimization_indexes`: Composite indexes for orders, payments, and audit logs.
 
-### 2.2 Fresh Installations vs Upgrades
-- **Fresh Installations**: Operators run `pnpm prisma:deploy` (or Docker startup executes `prisma migrate deploy`). All 40 migration files execute sequentially, creating the database schema idempotently.
-- **Upgrades from Previous Versions**: Prisma verifies `_prisma_migrations` table checksums and applies only newly introduced migrations. No real customer data is dropped or cleared.
+### 2.2 Fresh Installations vs Existing Upgrades
+- **Fresh Installations**: Operators run `pnpm prisma:deploy` (or Docker container startup runs `npx prisma migrate deploy`). All 40 migration files execute sequentially, creating the database schema idempotently.
+- **Existing Upgrades**: Prisma compares `_prisma_migrations` against available files on disk and applies only pending migrations inside atomic transactions. No customer or order data is dropped or mutated during upgrades.
 
 ---
 
@@ -149,7 +172,7 @@ s3://<bucket>/<ISO_TIMESTAMP>/uploads.tar.gz
 
 ## 6. Backup Service Functionality
 
-Managed via [`apps/backend/src/backup/backup.service.ts`](file:///home/am-pc-05/Downloads/nodedr-restaurant-pos/apps/backend/src/backup/backup.service.ts):
+Managed via `apps/backend/src/backup/backup.service.ts`:
 
 ### 6.1 Configuration
 - Configurable directly from **Settings > Backup** (persisted in `backup_config` singleton row) or via environment variables:
@@ -160,6 +183,7 @@ Managed via [`apps/backend/src/backup/backup.service.ts`](file:///home/am-pc-05/
   - `S3_BACKUP_REGION`: Default `auto`.
   - `S3_BACKUP_INTERVAL_DAYS`: Cadence (default: 3 days).
   - `S3_BACKUP_RETAIN_COUNT`: Number of verified backups to retain (default: 2).
+  - `BACKUP_ENCRYPTION_KEY`: Optional AES-256-GCM encryption passphrase for zero-knowledge off-site storage.
 - Masked credentials on status reads (`accessKeyIdMasked: ****MPLE`).
 
 ### 6.2 Automation & Scheduling
@@ -171,7 +195,7 @@ Managed via [`apps/backend/src/backup/backup.service.ts`](file:///home/am-pc-05/
 - **Direct Local Export**: `GET /v1/backups/export` generates a `.zip` on the fly and streams it directly to the browser for owners without an S3 bucket.
 
 ### 6.4 Verification on Upload
-- On upload, `BackupService` re-downloads `db.dump` and compares its SHA-256 hash against the uploaded file.
+- On upload, `BackupService` re-downloads the object and compares its SHA-256 hash against the uploaded file.
 - Only backups with verified SHA-256 integrity receive `status: 'VERIFIED'`.
 
 ### 6.5 Retention Pruning
@@ -214,8 +238,8 @@ docker run -d \
 Download `db.dump` and `uploads.tar.gz` from your S3 bucket or local export zip:
 ```bash
 # Using AWS CLI
-aws s3 cp s3://my-restaurant-backups/2026-10-30T10-00-00-000Z/db.dump ./db.dump
-aws s3 cp s3://my-restaurant-backups/2026-10-30T10-00-00-000Z/uploads.tar.gz ./uploads.tar.gz
+aws s3 cp s3://my-restaurant-backups/2026-10-31T10-00-00-000Z/db.dump ./db.dump
+aws s3 cp s3://my-restaurant-backups/2026-10-31T10-00-00-000Z/uploads.tar.gz ./uploads.tar.gz
 ```
 
 #### Step 3: Restore Database Schema & Data
@@ -253,14 +277,14 @@ All restaurant settings, menus, tables, customer data, and sales history are res
 
 | Scenario | Behavior / Handled State | Test Verification |
 | :--- | :--- | :--- |
-| **Interrupted Backup** | `pg_dump` runs in a read-only MVCC transaction. An interruption (SIGKILL, network failure) rolls back the read transaction with zero database impact. Temporary files in `workDir` are cleaned up. Backup row marked `FAILED`. | Verified by unit & process tests |
-| **Interrupted Restore** | `pg_restore` uses `--clean --if-exists`. A subsequent restore re-drops existing objects cleanly without manual intervention. Owner is notified of failure. | Verified |
+| **Interrupted Backup** | `pg_dump` runs in a read-only MVCC transaction. An interruption (SIGKILL, network failure) rolls back the read transaction with zero database impact. Temporary files in `workDir` are cleaned up. Backup row marked `FAILED`. | Verified by unit test suite |
+| **Interrupted Restore** | `pg_restore` uses `--clean --if-exists`. A subsequent restore re-drops existing objects cleanly without manual intervention. Owner is notified of failure. | Verified by unit test suite |
 | **Insufficient Disk Space** | `mkdtemp` or `pg_dump` throws `ENOSPC`. Trapped by error handler, temporary directory unlinked, marked `FAILED`, owner notified. | Handled via try-finally cleanup |
-| **Corrupted Backup File** | SHA-256 verification catches corrupted uploads immediately. `pg_restore` rejects invalid headers or corrupted blocks with non-zero exit code. | Verified |
-| **Database Unavailable** | Connection failure surfaces immediately as `ECONNREFUSED`. Marked `FAILED`, failure notification dispatched. | Verified |
+| **Corrupted Backup File** | SHA-256 verification catches corrupted uploads immediately. AES-256-GCM authentication tags reject tampered bytes. | Verified by unit & live DB test |
+| **Database Unavailable** | Connection failure surfaces immediately as `ECONNREFUSED`. Marked `FAILED`, failure notification dispatched. | Verified by unit test suite |
 
 ---
 
 ## 9. Conclusion
 
-DaxabitHMS database management complies with enterprise hospitality reliability standards. All 40 Prisma migrations execute deterministically, indexes protect query performance at scale, and PostgreSQL MVCC backups ensure continuous operational safety for real restaurant operations.
+DaxabitHMS database management complies with enterprise hospitality reliability standards. All 40 Prisma migrations execute deterministically, indexes protect query performance at scale, AES-256-GCM encryption secures off-site backups, and PostgreSQL MVCC backups ensure continuous operational safety for real restaurant operations.

@@ -1,11 +1,16 @@
-import { createHash } from 'node:crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  randomBytes,
+} from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import * as fs from 'node:fs/promises';
 import * as fsSync from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import type { Readable } from 'node:stream';
+import { Readable } from 'node:stream';
 import {
   BadRequestException,
   ForbiddenException,
@@ -47,6 +52,36 @@ interface EffectiveConfig {
 function mask(value: string): string {
   return value.length <= 4 ? '****' : `****${value.slice(-4)}`;
 }
+const ENCRYPTION_MAGIC = Buffer.from('DENC');
+
+export function getBackupEncryptionKey(): Buffer | null {
+  const rawKey = process.env.BACKUP_ENCRYPTION_KEY;
+  if (!rawKey || rawKey.trim().length === 0) return null;
+  return createHash('sha256').update(rawKey.trim()).digest();
+}
+
+export function encryptBackupBuffer(data: Buffer, key: Buffer): Buffer {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', key, iv);
+  const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  return Buffer.concat([ENCRYPTION_MAGIC, iv, authTag, encrypted]);
+}
+
+export function decryptBackupBuffer(data: Buffer, key: Buffer): Buffer {
+  if (data.length < 32) return data;
+  const magic = data.subarray(0, 4);
+  if (!magic.equals(ENCRYPTION_MAGIC)) {
+    return data;
+  }
+  const iv = data.subarray(4, 16);
+  const authTag = data.subarray(16, 32);
+  const ciphertext = data.subarray(32);
+  const decipher = createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAuthTag(authTag);
+  return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+}
+
 
 /**
  * Full-instance backup (Postgres + the uploads volume) to any S3-compatible
@@ -198,6 +233,7 @@ export class BackupService {
       accessKeyIdMasked: config ? mask(config.accessKeyId) : null,
       intervalDays: config?.intervalDays ?? 3,
       retainCount: config?.retainCount ?? 2,
+      encrypted: getBackupEncryptionKey() !== null,
       lastBackup: lastAny,
       nextScheduledAt,
     };
@@ -384,12 +420,14 @@ export class BackupService {
       const s3 = this.s3Client(config);
       const dbKey = `${timestamp}/db.dump`;
       const dbBuffer = await fs.readFile(dbDumpPath);
-      const sha256 = createHash('sha256').update(dbBuffer).digest('hex');
+      const encKey = getBackupEncryptionKey();
+      const payloadDb = encKey ? encryptBackupBuffer(dbBuffer, encKey) : dbBuffer;
+      const sha256 = createHash('sha256').update(payloadDb).digest('hex');
       await s3.send(
         new PutObjectCommand({
           Bucket: config.bucket,
           Key: dbKey,
-          Body: dbBuffer,
+          Body: payloadDb,
         }),
       );
 
@@ -398,14 +436,17 @@ export class BackupService {
       if (uploadsExist) {
         uploadsKey = `${timestamp}/uploads.tar.gz`;
         const uploadsBuffer = await fs.readFile(uploadsArchivePath);
+        const payloadUploads = encKey
+          ? encryptBackupBuffer(uploadsBuffer, encKey)
+          : uploadsBuffer;
         await s3.send(
           new PutObjectCommand({
             Bucket: config.bucket,
             Key: uploadsKey,
-            Body: uploadsBuffer,
+            Body: payloadUploads,
           }),
         );
-        totalSize += uploadsBuffer.length;
+        totalSize += payloadUploads.length;
       }
 
       // Verify by downloading each object back and comparing its actual
@@ -601,6 +642,11 @@ export class BackupService {
     // a Node `Readable`, never the DOM `ReadableStream` its union type also
     // allows for browser builds — safe to cast for `archiver.append()`,
     // which expects a Node Readable.
+    const encKey = getBackupEncryptionKey();
+    if (encKey) {
+      const buf = await this.downloadBuffer(s3, bucket, key);
+      return Readable.from(decryptBackupBuffer(buf, encKey));
+    }
     return res.Body as Readable;
   }
 
@@ -790,6 +836,9 @@ export class BackupService {
     key: string,
     destPath: string,
   ) {
-    await fs.writeFile(destPath, await this.downloadBuffer(s3, bucket, key));
+    const rawBuffer = await this.downloadBuffer(s3, bucket, key);
+    const encKey = getBackupEncryptionKey();
+    const finalBuffer = encKey ? decryptBackupBuffer(rawBuffer, encKey) : rawBuffer;
+    await fs.writeFile(destPath, finalBuffer);
   }
 }

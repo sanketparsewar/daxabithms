@@ -115,6 +115,7 @@ if ($isFreshDb) {
 DATABASE_URL="postgresql://daxabit_admin:$encodedPassword@127.0.0.1:$PostgresPort/daxabithms?schema=public"
 JWT_SECRET="$jwtSecret"
 ENCRYPTION_KEY="$encryptionKey"
+BACKUP_ENCRYPTION_KEY="$encryptionKey"
 NODE_ENV="production"
 PORT=4001
 CORS_ORIGIN="http://localhost:1995"

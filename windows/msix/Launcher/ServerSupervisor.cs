@@ -411,6 +411,7 @@ internal sealed class ServerSupervisor : IDisposable
             $"COOKIE_SECURE=false",
             $"UPLOADS_DIR={ServerPaths.UploadsDir}",
             $"NODE_ENV=production",
+            $"BACKUP_ENCRYPTION_KEY={Convert.ToHexString(RandomNumberGenerator.GetBytes(32))}",
         };
         File.WriteAllLines(ServerPaths.BackendEnvPath, lines, Encoding.UTF8);
     }

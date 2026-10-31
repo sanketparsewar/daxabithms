@@ -7,14 +7,13 @@ namespace DaxabitHMS.Launcher;
 internal sealed class MainForm : Form
 {
     private readonly WebView2 _webView = new() { Dock = DockStyle.Fill };
-    private readonly Label _errorLabel = new()
-    {
-        Dock = DockStyle.Fill,
-        TextAlign = ContentAlignment.MiddleCenter,
-        Font = new Font("Segoe UI", 11f),
-        Visible = false,
-    };
+    private Panel? _loadingPanel;
+    private Label? _loadingStatusLabel;
+    private Panel? _connectionErrorPanel;
     private Panel? _fatalErrorPanel;
+    private System.Windows.Forms.Timer? _autoReconnectTimer;
+    private bool _isReconnecting;
+
     private AppConfig _config;
     private ServerSupervisor? _supervisor;
     private TrayIcon? _tray;
@@ -22,29 +21,29 @@ internal sealed class MainForm : Form
     private readonly EventWaitHandle _activateEvent;
     private RegisteredWaitHandle? _activateWaitHandle;
 
+    private bool _isFullScreen;
+    private FormWindowState _previousWindowState = FormWindowState.Normal;
+    private FormBorderStyle _previousBorderStyle = FormBorderStyle.Sizable;
+
     public MainForm(EventWaitHandle activateEvent)
     {
         Text = "DaxabitHMS";
         StartPosition = FormStartPosition.CenterScreen;
         Size = new Size(1360, 860);
         MinimumSize = new Size(900, 600);
+        AutoScaleMode = AutoScaleMode.Dpi;
         Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? SystemIcons.Application;
 
         _config = AppConfig.Load();
         _activateEvent = activateEvent;
 
         BuildMenu();
-        Controls.Add(_errorLabel);
+        BuildLoadingPanel();
         Controls.Add(_webView);
 
         Load += async (_, _) => await InitializeAsync();
         FormClosing += OnFormClosing;
 
-        // A second launch (see Program.cs's single-instance mutex) signals
-        // this event instead of starting its own process — bring THIS
-        // window to the front on a thread-pool callback thread, marshaled
-        // back to the UI thread the same way ServerSupervisor's own status
-        // events already are.
         _activateWaitHandle = ThreadPool.RegisterWaitForSingleObject(
             _activateEvent,
             (_, _) => { if (InvokeRequired) BeginInvoke((Action)RestoreFromTray); else RestoreFromTray(); },
@@ -57,13 +56,9 @@ internal sealed class MainForm : Form
     {
         if (disposing)
         {
+            _autoReconnectTimer?.Stop();
+            _autoReconnectTimer?.Dispose();
             _activateWaitHandle?.Unregister(null);
-            // Safety net for any exit path other than the tray's explicit
-            // "Stop Server & Exit" (which already awaits a graceful
-            // pg_ctl/backend/web shutdown before closing) — e.g. Windows
-            // shutdown/logoff, Task Manager "End task". Not graceful, but
-            // Postgres/Node both tolerate an unclean kill; better than
-            // orphaning the child processes.
             _tray?.Dispose();
             _supervisor?.Dispose();
         }
@@ -73,47 +68,177 @@ internal sealed class MainForm : Form
     private void BuildMenu()
     {
         var menu = new MenuStrip();
-        var fileMenu = new ToolStripMenuItem("File");
 
-        // "Change server address…" only makes sense in thin-client mode —
-        // an embedded-mode install always points at its own localhost
-        // server, there's nothing to change.
-        if (!_config.IsEmbedded)
+        // --- File Menu ---
+        var fileMenu = new ToolStripMenuItem("&File");
+
+        var reconnectItem = new ToolStripMenuItem("&Reconnect", null, async (_, _) => await ReconnectAsync())
         {
-            var changeServer = new ToolStripMenuItem("Change server address…");
-            changeServer.Click += async (_, _) => await ChangeServerAsync();
-            fileMenu.DropDownItems.Add(changeServer);
-            fileMenu.DropDownItems.Add(new ToolStripSeparator());
-        }
+            ShortcutKeys = Keys.Control | Keys.R
+        };
+        fileMenu.DropDownItems.Add(reconnectItem);
 
-        // Two-way sync with a central server lives on the web settings page
-        // (it needs the signed-in owner's session); embedded installs only,
-        // since a thin client already works directly on the server's data.
+        var changeServer = new ToolStripMenuItem("Change server &address…", null, async (_, _) => await ChangeServerAsync());
+        fileMenu.DropDownItems.Add(changeServer);
+
         if (_config.IsEmbedded)
         {
-            var serverSync = new ToolStripMenuItem("Server sync…");
-            serverSync.Click += (_, _) => _webView.CoreWebView2?.Navigate($"{_config.ServerUrl}/settings/sync");
+            var serverSync = new ToolStripMenuItem("Server &sync…", null, (_, _) =>
+            {
+                if (_webView.CoreWebView2 is not null)
+                {
+                    _webView.CoreWebView2.Navigate($"{_config.ServerUrl}/settings/sync");
+                }
+            });
             fileMenu.DropDownItems.Add(serverSync);
         }
 
+        var printItem = new ToolStripMenuItem("&Print…", null, (_, _) =>
+        {
+            if (_webView.CoreWebView2 is not null)
+            {
+                _webView.CoreWebView2.ShowPrintUI(CoreWebView2PrintDialogKind.Browser);
+            }
+        })
+        {
+            ShortcutKeys = Keys.Control | Keys.P
+        };
+        fileMenu.DropDownItems.Add(printItem);
+
         fileMenu.DropDownItems.Add(new ToolStripSeparator());
-        var removeData = new ToolStripMenuItem("Remove All Local Data && Uninstall…");
-        removeData.Click += async (_, _) => await RemoveAllDataAndUninstallAsync();
+
+        var removeData = new ToolStripMenuItem("Remove All Local Data && &Uninstall…", null, async (_, _) => await RemoveAllDataAndUninstallAsync());
         fileMenu.DropDownItems.Add(removeData);
 
-        var exit = new ToolStripMenuItem("Exit");
-        exit.Click += (_, _) => RequestRealExit();
+        var exit = new ToolStripMenuItem("E&xit", null, (_, _) => RequestRealExit())
+        {
+            ShortcutKeys = Keys.Alt | Keys.F4
+        };
         fileMenu.DropDownItems.Add(exit);
 
-        var viewMenu = new ToolStripMenuItem("View");
-        var reload = new ToolStripMenuItem("Reload") { ShortcutKeys = Keys.F5 };
-        reload.Click += (_, _) => _webView.Reload();
+        // --- View Menu ---
+        var viewMenu = new ToolStripMenuItem("&View");
+
+        var reload = new ToolStripMenuItem("&Reload", null, (_, _) => _webView.Reload()) { ShortcutKeys = Keys.F5 };
         viewMenu.DropDownItems.Add(reload);
+
+        viewMenu.DropDownItems.Add(new ToolStripSeparator());
+
+        var zoomIn = new ToolStripMenuItem("Zoom &In", null, (_, _) =>
+        {
+            if (_webView.CoreWebView2 is not null) _webView.CoreWebView2.Settings.IsZoomControlEnabled = true;
+            _webView.ZoomFactor = Math.Min(3.0, _webView.ZoomFactor + 0.1);
+        })
+        {
+            ShortcutKeys = Keys.Control | Keys.Oemplus
+        };
+        viewMenu.DropDownItems.Add(zoomIn);
+
+        var zoomOut = new ToolStripMenuItem("Zoom &Out", null, (_, _) =>
+        {
+            _webView.ZoomFactor = Math.Max(0.5, _webView.ZoomFactor - 0.1);
+        })
+        {
+            ShortcutKeys = Keys.Control | Keys.OemMinus
+        };
+        viewMenu.DropDownItems.Add(zoomOut);
+
+        var resetZoom = new ToolStripMenuItem("Reset &Zoom", null, (_, _) =>
+        {
+            _webView.ZoomFactor = 1.0;
+        })
+        {
+            ShortcutKeys = Keys.Control | Keys.D0
+        };
+        viewMenu.DropDownItems.Add(resetZoom);
+
+        viewMenu.DropDownItems.Add(new ToolStripSeparator());
+
+        var fullScreen = new ToolStripMenuItem("Toggle &Full Screen", null, (_, _) => ToggleFullScreen())
+        {
+            ShortcutKeys = Keys.F11
+        };
+        viewMenu.DropDownItems.Add(fullScreen);
+
+        // --- Help Menu ---
+        var helpMenu = new ToolStripMenuItem("&Help");
+
+        var diagItem = new ToolStripMenuItem("Support && &Diagnostics…", null, (_, _) =>
+        {
+            using var diag = new DiagnosticsForm(_config);
+            diag.ShowDialog(this);
+        });
+        helpMenu.DropDownItems.Add(diagItem);
+
+        var aboutItem = new ToolStripMenuItem("&About DaxabitHMS…", null, (_, _) =>
+        {
+            using var about = new AboutForm(_config);
+            about.ShowDialog(this);
+        });
+        helpMenu.DropDownItems.Add(aboutItem);
 
         menu.Items.Add(fileMenu);
         menu.Items.Add(viewMenu);
+        menu.Items.Add(helpMenu);
+
         MainMenuStrip = menu;
         Controls.Add(menu);
+    }
+
+    private void ToggleFullScreen()
+    {
+        if (!_isFullScreen)
+        {
+            _previousWindowState = WindowState;
+            _previousBorderStyle = FormBorderStyle;
+
+            FormBorderStyle = FormBorderStyle.None;
+            WindowState = FormWindowState.Maximized;
+            _isFullScreen = true;
+        }
+        else
+        {
+            FormBorderStyle = _previousBorderStyle;
+            WindowState = _previousWindowState;
+            _isFullScreen = false;
+        }
+    }
+
+    private void BuildLoadingPanel()
+    {
+        _loadingPanel = new Panel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = Color.FromArgb(248, 249, 250),
+            Visible = false,
+        };
+
+        var title = new Label
+        {
+            Text = "DaxabitHMS",
+            Font = new Font("Segoe UI", 18f, FontStyle.Bold),
+            ForeColor = Color.FromArgb(33, 37, 41),
+            AutoSize = false,
+            Dock = DockStyle.Top,
+            Height = 60,
+            TextAlign = ContentAlignment.BottomCenter,
+        };
+
+        _loadingStatusLabel = new Label
+        {
+            Text = "Connecting to restaurant server…",
+            Font = new Font("Segoe UI", 11f),
+            ForeColor = Color.FromArgb(108, 117, 125),
+            AutoSize = false,
+            Dock = DockStyle.Top,
+            Height = 40,
+            TextAlign = ContentAlignment.MiddleCenter,
+        };
+
+        _loadingPanel.Controls.Add(_loadingStatusLabel);
+        _loadingPanel.Controls.Add(title);
+        Controls.Add(_loadingPanel);
+        _loadingPanel.BringToFront();
     }
 
     private async Task InitializeAsync()
@@ -133,23 +258,17 @@ internal sealed class MainForm : Form
                 _config.Mode = "embedded";
                 _config.ServerUrl = $"http://localhost:{ServerPaths.WebPort}";
                 _config.Save();
-                // Menu was built before this choice existed — rebuild so
-                // "Change server address…" is correctly hidden now.
-                Controls.Remove(MainMenuStrip);
-                BuildMenu();
             }
             else
             {
                 await ChangeServerAsync(isFirstRun: true);
-                if (_config.ServerUrl is null) return; // user cancelled — ChangeServerAsync already closed the form
-                // Must be non-empty so this choice screen doesn't reappear
-                // on every future launch (see the IsNullOrWhiteSpace(Mode)
-                // check above) — "embedded" is the only value anything
-                // else checks for, so any other non-empty string means
-                // "thin client."
+                if (_config.ServerUrl is null) return;
                 _config.Mode = "remote";
                 _config.Save();
             }
+
+            Controls.Remove(MainMenuStrip);
+            BuildMenu();
         }
         else if (!_config.IsEmbedded &&
                  (string.IsNullOrWhiteSpace(_config.ServerUrl) || !AppConfig.IsValidServerUrl(_config.ServerUrl, out _)))
@@ -159,7 +278,7 @@ internal sealed class MainForm : Form
 
         if (_config.IsEmbedded && !await StartEmbeddedServerAsync())
         {
-            return; // fatal error already shown
+            return;
         }
 
         Directory.CreateDirectory(AppConfig.WebView2UserDataFolder);
@@ -171,14 +290,9 @@ internal sealed class MainForm : Form
         }
         catch (WebView2RuntimeNotFoundException)
         {
-            // Present on Windows 11 and most Windows 10 systems, but not
-            // guaranteed — show an actionable message instead of an
-            // unhandled crash (see Program.cs's last-resort handler for
-            // anything this doesn't catch).
             ShowFatalError(
                 "The Microsoft Edge WebView2 Runtime is required but isn't installed on this PC.\n\n" +
-                "Install it from https://go.microsoft.com/fwlink/p/?LinkId=2124703 (Evergreen " +
-                "Bootstrapper), then reopen DaxabitHMS.");
+                "Install it from https://go.microsoft.com/fwlink/p/?LinkId=2124703 (Evergreen Bootstrapper), then reopen DaxabitHMS.");
             return;
         }
         catch (Exception ex)
@@ -187,11 +301,7 @@ internal sealed class MainForm : Form
             return;
         }
 
-        // Minimum-privilege WebView2 settings: no dev tools / no default
-        // context menu with "Inspect" for end users, no crash-reporting
-        // status page noise. Printing stays enabled — window.print() must
-        // keep reaching the native OS print dialog (Windows Print
-        // Spooler), which is the whole point of this client.
+        // Configure native WebView2 security & enterprise isolation
         var settings = _webView.CoreWebView2.Settings;
         settings.AreDevToolsEnabled = false;
         settings.AreDefaultContextMenusEnabled = false;
@@ -199,12 +309,34 @@ internal sealed class MainForm : Form
         settings.IsZoomControlEnabled = true;
         settings.IsSwipeNavigationEnabled = false;
 
-        // Keep everything in one window instead of spawning stray popups —
-        // this must still feel like a normal desktop app, not a browser.
+        // Keep external popups inside or open external URLs in OS browser
         _webView.CoreWebView2.NewWindowRequested += (_, args) =>
         {
             args.Handled = true;
-            _webView.CoreWebView2.Navigate(args.Uri);
+            if (Uri.TryCreate(args.Uri, UriKind.Absolute, out var uri) && IsTrustedServerUri(uri))
+            {
+                _webView.CoreWebView2.Navigate(args.Uri);
+            }
+            else
+            {
+                try { Process.Start(new ProcessStartInfo(args.Uri) { UseShellExecute = true }); } catch { }
+            }
+        };
+
+        // Restrict navigation to trusted application origins
+        _webView.CoreWebView2.NavigationStarting += OnNavigationStarting;
+
+        // Secure download handling: route to Downloads folder
+        _webView.CoreWebView2.DownloadStarting += (_, args) =>
+        {
+            var downloadsFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Downloads");
+            if (Directory.Exists(downloadsFolder))
+            {
+                args.ResultFilePath = Path.Combine(downloadsFolder, Path.GetFileName(args.ResultFilePath));
+            }
+            args.Handled = false;
         };
 
         _webView.NavigationCompleted += (_, args) =>
@@ -215,7 +347,8 @@ internal sealed class MainForm : Form
             }
             else
             {
-                _errorLabel.Visible = false;
+                HideConnectionError();
+                HideLoading();
                 _webView.Visible = true;
             }
         };
@@ -223,10 +356,62 @@ internal sealed class MainForm : Form
         Navigate();
     }
 
+    private void OnNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
+    {
+        if (!Uri.TryCreate(e.Uri, UriKind.Absolute, out var uri))
+        {
+            e.Cancel = true;
+            return;
+        }
+
+        // Block dangerous schemes
+        if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+        {
+            e.Cancel = true;
+            return;
+        }
+
+        // Allow navigation within configured restaurant server
+        if (IsTrustedServerUri(uri))
+        {
+            return;
+        }
+
+        // For untrusted external websites, cancel in-app navigation and open safely in default browser
+        e.Cancel = true;
+        try
+        {
+            Process.Start(new ProcessStartInfo(e.Uri) { UseShellExecute = true });
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private bool IsTrustedServerUri(Uri uri)
+    {
+        if (_config.ServerUrl is null) return false;
+        if (!Uri.TryCreate(_config.ServerUrl, UriKind.Absolute, out var serverUri)) return false;
+
+        if (string.Equals(uri.Host, serverUri.Host, StringComparison.OrdinalIgnoreCase) &&
+            uri.Port == serverUri.Port)
+        {
+            return true;
+        }
+
+        if (_config.IsEmbedded &&
+            (uri.Host is "localhost" or "127.0.0.1") &&
+            (uri.Port == ServerPaths.WebPort || uri.Port == ServerPaths.BackendPort))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private async Task<bool> StartEmbeddedServerAsync()
     {
-        // If a managed Windows Service (e.g. DaxabitHMSServer) or background instance
-        // is already running and healthy on the web port, seamlessly attach to it.
         if (await IsServerAlreadyHealthyAsync())
         {
             ShowStatus("Connected to local DaxabitHMS service.");
@@ -236,10 +421,6 @@ internal sealed class MainForm : Form
         _supervisor = new ServerSupervisor();
         _supervisor.StatusChanged += status =>
         {
-            // Control.BeginInvoke's parameter type is the abstract
-            // System.Delegate, which a bare lambda/method group can't
-            // implicitly convert to — every call here needs an explicit
-            // concrete delegate cast (Action).
             if (InvokeRequired) { BeginInvoke((Action)(() => ShowStatus(status))); return; }
             ShowStatus(status);
         };
@@ -249,33 +430,21 @@ internal sealed class MainForm : Form
             _tray?.ShowBalloon("DaxabitHMS", message);
         };
 
-        ShowStatus("Starting server…");
+        ShowStatus("Starting local server…");
         try
         {
-            // Generous first-run budget: EnsureRuntimeCopyAsync copies the
-            // whole embedded-server payload (Postgres + Node + backend +
-            // web — ~2.8GB, confirmed ~5+ minutes on CI hardware) out of
-            // the read-only MSIX install location on the very first launch
-            // only, before Postgres/migrations/backend/web even start —
-            // every launch after that skips it and starts in seconds.
             using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(15));
             await _supervisor.StartAsync(cts.Token);
         }
         catch (Exception ex)
         {
-            // Without this, the ONLY place a startup failure was visible
-            // was this window's own UI text — invisible to CI (and to
-            // anyone troubleshooting without eyes on the actual screen).
-            // A prior CI run's "backend never became healthy" turned out
-            // to be exactly this: the supervisor had already failed and
-            // given up internally, but nothing on disk showed why.
             try
             {
                 File.AppendAllText(
                     Path.Combine(ServerPaths.ServerLogDir, "supervisor-error.log"),
                     $"{DateTime.UtcNow:O} {ex}\n");
             }
-            catch { /* best-effort */ }
+            catch { }
 
             ShowFatalError(
                 technicalMessage: $"Could not start the embedded server.\n\n{ex.Message}\n\nLogs: {ServerPaths.ServerLogDir}",
@@ -285,9 +454,6 @@ internal sealed class MainForm : Form
             return false;
         }
 
-        // Icon is always set in the constructor (ExtractAssociatedIcon
-        // falls back to SystemIcons.Application) — the compiler just can't
-        // see that far, hence the null-forgiving operator.
         _tray = new TrayIcon(Icon!);
         _tray.OpenRequested += () =>
         {
@@ -341,19 +507,6 @@ internal sealed class MainForm : Form
         Close();
     }
 
-    /// <summary>
-    /// MSIX/Desktop Bridge has no uninstall-hook mechanism (unlike a
-    /// classic MSI's uninstall custom actions) — Windows only auto-cleans
-    /// the package's own sandboxed %LOCALAPPDATA%\Packages\...\LocalState
-    /// folder on removal, which this app deliberately doesn't use (see
-    /// ServerPaths.cs/AppConfig.cs — writable state must survive an
-    /// MSIX upgrade-in-place, which requires a real, stable path). That
-    /// means the restaurant database, uploads, and server runtime under
-    /// %LOCALAPPDATA%\DaxabitHMS would otherwise survive an uninstall as
-    /// residue. This is the app's own equivalent of an uninstaller's
-    /// cleanup step — stop everything, delete it all, then hand off to
-    /// Windows' own "Apps & features" to remove the package itself.
-    /// </summary>
     private async Task RemoveAllDataAndUninstallAsync()
     {
         RestoreFromTray();
@@ -373,21 +526,8 @@ internal sealed class MainForm : Form
         ShowStatus("Stopping server and removing local data…");
         if (_supervisor is not null) await _supervisor.StopAsync();
 
-        // The WebView2 control's own profile lives INSIDE the directory
-        // we're about to delete (AppConfig.WebView2UserDataFolder) and is
-        // held open by WebView2's separate msedgewebview2.exe helper
-        // processes for as long as this control exists — deleting the tree
-        // while it's still alive would hit the exact same "file in use"
-        // class of failure this whole fix is about. Dispose it first, then
-        // still retry briefly: WebView2 process teardown on Dispose isn't
-        // guaranteed instantaneous.
         _webView.Dispose();
 
-        // AppConfig.ConfigDir (%LOCALAPPDATA%\DaxabitHMS) is the single
-        // root for everything this app ever writes: config.json, the
-        // WebView2 profile, logs, and ServerPaths.DataDir (pgdata, uploads,
-        // server-runtime, backend.env) all live underneath it — deleting it
-        // once here is genuinely everything, not a partial cleanup.
         var dataDir = AppConfig.ConfigDir;
         string? deleteError = null;
         for (var attempt = 1; attempt <= 5; attempt++)
@@ -428,25 +568,12 @@ internal sealed class MainForm : Form
                 MessageBoxIcon.Warning);
         }
 
-        try
-        {
-            Process.Start(new ProcessStartInfo("ms-settings:appsfeatures") { UseShellExecute = true });
-        }
-        catch
-        {
-            // Best-effort — local data is already fully cleaned up
-            // regardless of whether Settings opens; the user can still get
-            // there manually.
-        }
-
+        try { Process.Start(new ProcessStartInfo("ms-settings:appsfeatures") { UseShellExecute = true }); } catch { }
         Close();
     }
 
     private void OnFormClosing(object? sender, FormClosingEventArgs e)
     {
-        // Only embedded-mode installs have anything to keep alive in the
-        // background — a pure thin client closes normally, same as before
-        // this feature existed.
         if (_config.IsEmbedded && !_allowClose && e.CloseReason == CloseReason.UserClosing)
         {
             e.Cancel = true;
@@ -461,44 +588,180 @@ internal sealed class MainForm : Form
     private void Navigate()
     {
         if (_config.ServerUrl is null) return;
-        _webView.CoreWebView2.Navigate(_config.ServerUrl);
+        ShowLoading($"Loading {_config.ServerUrl}…");
+        _webView.CoreWebView2?.Navigate(_config.ServerUrl);
+    }
+
+    private async Task ReconnectAsync()
+    {
+        if (_isReconnecting) return;
+        _isReconnecting = true;
+        try
+        {
+            ShowLoading("Reconnecting to server…");
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var (ok, _) = await AppConfig.TestConnectionAsync(_config.ServerUrl ?? "", cts.Token);
+            if (ok)
+            {
+                HideConnectionError();
+                _webView.Reload();
+            }
+            else
+            {
+                ShowConnectionError();
+            }
+        }
+        finally
+        {
+            _isReconnecting = false;
+        }
     }
 
     private void ShowStatus(string message)
     {
-        _webView.Visible = false;
-        _errorLabel.Text = message;
-        _errorLabel.Visible = true;
+        ShowLoading(message);
         _tray?.SetStatus(message);
+    }
+
+    private void ShowLoading(string text)
+    {
+        if (_loadingStatusLabel is not null) _loadingStatusLabel.Text = text;
+        if (_loadingPanel is not null)
+        {
+            _loadingPanel.Visible = true;
+            _loadingPanel.BringToFront();
+        }
+        _webView.Visible = false;
+    }
+
+    private void HideLoading()
+    {
+        if (_loadingPanel is not null) _loadingPanel.Visible = false;
     }
 
     private void ShowConnectionError()
     {
+        HideLoading();
         _webView.Visible = false;
-        _errorLabel.Text =
-            $"Could not reach {_config.ServerUrl}.\n\n" +
-            "Check that the DaxabitHMS server is running and this device is on\n" +
-            "the same network, then choose File → Reload, or File → Change server address…";
-        _errorLabel.Visible = true;
+
+        if (_connectionErrorPanel is null)
+        {
+            _connectionErrorPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(248, 249, 250),
+            };
+
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 4,
+            };
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 35f));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 65f));
+
+            var headline = new Label
+            {
+                Text = "Unable to connect to DaxabitHMS Server",
+                Font = new Font("Segoe UI", 16f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(220, 53, 69),
+                AutoSize = false,
+                Dock = DockStyle.Top,
+                Height = 45,
+                TextAlign = ContentAlignment.MiddleCenter,
+            };
+
+            var body = new Label
+            {
+                Text = $"Could not reach {_config.ServerUrl}\n\n" +
+                       "Check that the DaxabitHMS server is running and this device is on the same local network.",
+                Font = new Font("Segoe UI", 10.5f),
+                ForeColor = Color.FromArgb(73, 80, 87),
+                AutoSize = false,
+                Dock = DockStyle.Top,
+                Height = 60,
+                TextAlign = ContentAlignment.MiddleCenter,
+            };
+
+            var buttons = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                AutoSize = true,
+                Dock = DockStyle.Top,
+                Anchor = AnchorStyles.None,
+            };
+
+            var reconnectBtn = new Button { Text = "Reconnect Now", AutoSize = true, Margin = new Padding(8), Font = new Font("Segoe UI", 10f) };
+            reconnectBtn.Click += async (_, _) => await ReconnectAsync();
+            buttons.Controls.Add(reconnectBtn);
+
+            var changeServerBtn = new Button { Text = "Change Server Address…", AutoSize = true, Margin = new Padding(8), Font = new Font("Segoe UI", 10f) };
+            changeServerBtn.Click += async (_, _) => await ChangeServerAsync();
+            buttons.Controls.Add(changeServerBtn);
+
+            var diagBtn = new Button { Text = "Diagnostics…", AutoSize = true, Margin = new Padding(8), Font = new Font("Segoe UI", 10f) };
+            diagBtn.Click += (_, _) =>
+            {
+                using var diag = new DiagnosticsForm(_config);
+                diag.ShowDialog(this);
+            };
+            buttons.Controls.Add(diagBtn);
+
+            var buttonsWrapper = new Panel { Dock = DockStyle.Top, Height = 60 };
+            buttonsWrapper.Controls.Add(buttons);
+            buttonsWrapper.Resize += (_, _) => buttons.Left = Math.Max(0, (buttonsWrapper.Width - buttons.Width) / 2);
+
+            layout.Controls.Add(headline, 0, 1);
+            layout.Controls.Add(body, 0, 2);
+            layout.Controls.Add(buttonsWrapper, 0, 3);
+
+            _connectionErrorPanel.Controls.Add(layout);
+            Controls.Add(_connectionErrorPanel);
+        }
+
+        _connectionErrorPanel.Visible = true;
+        _connectionErrorPanel.BringToFront();
+
+        // Start background auto-reconnect timer
+        if (_autoReconnectTimer is null)
+        {
+            _autoReconnectTimer = new System.Windows.Forms.Timer { Interval = 5000 };
+            _autoReconnectTimer.Tick += async (_, _) =>
+            {
+                if (!_isReconnecting && _connectionErrorPanel?.Visible == true && !string.IsNullOrWhiteSpace(_config.ServerUrl))
+                {
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                    var (ok, _) = await AppConfig.TestConnectionAsync(_config.ServerUrl, cts.Token);
+                    if (ok)
+                    {
+                        _autoReconnectTimer.Stop();
+                        HideConnectionError();
+                        _webView.Reload();
+                    }
+                }
+            };
+        }
+        _autoReconnectTimer.Start();
     }
 
-    /// <summary>
-    /// Fatal-error UI: a friendly headline for non-technical users, with
-    /// the full technical detail still one click away (Copy Diagnostic
-    /// Information) and the log folder itself (Open Logs) — instead of
-    /// putting a raw Windows filesystem path front-and-center as the
-    /// primary experience. This is presentation only: it never changes
-    /// WHETHER something failed or WHY, only how that failure is shown —
-    /// the actual startup-lifecycle fix lives in ServerSupervisor.
-    /// </summary>
+    private void HideConnectionError()
+    {
+        _autoReconnectTimer?.Stop();
+        if (_connectionErrorPanel is not null) _connectionErrorPanel.Visible = false;
+    }
+
     private void ShowFatalError(
         string technicalMessage,
         string? friendlyHeadline = null,
         string? friendlyBody = null,
         Func<Task>? retry = null)
     {
+        HideLoading();
+        HideConnectionError();
         _webView.Visible = false;
-        _errorLabel.Visible = false;
         _fatalErrorPanel?.Dispose();
 
         var layout = new TableLayoutPanel
@@ -515,6 +778,7 @@ internal sealed class MainForm : Form
         {
             Text = friendlyHeadline ?? "DaxabitHMS couldn't start",
             Font = new Font("Segoe UI", 14f, FontStyle.Bold),
+            ForeColor = Color.FromArgb(220, 53, 69),
             AutoSize = false,
             Dock = DockStyle.Top,
             Height = 50,
@@ -554,18 +818,14 @@ internal sealed class MainForm : Form
                 Directory.CreateDirectory(ServerPaths.ServerLogDir);
                 Process.Start(new ProcessStartInfo(ServerPaths.ServerLogDir) { UseShellExecute = true });
             }
-            catch
-            {
-                // best-effort — the log path is also in the copyable diagnostic text below
-            }
+            catch { }
         };
         buttons.Controls.Add(openLogsButton);
 
         var copyButton = new Button { Text = "Copy Diagnostic Information", AutoSize = true, Margin = new Padding(6) };
         copyButton.Click += (_, _) =>
         {
-            try { Clipboard.SetText(technicalMessage); }
-            catch { /* best-effort */ }
+            try { Clipboard.SetText(technicalMessage); } catch { }
         };
         buttons.Controls.Add(copyButton);
 
@@ -598,6 +858,7 @@ internal sealed class MainForm : Form
         }
         _config.ServerUrl = dialog.Result;
         _config.Save();
+        HideConnectionError();
         if (_webView.CoreWebView2 is not null) Navigate();
         await Task.CompletedTask;
     }
