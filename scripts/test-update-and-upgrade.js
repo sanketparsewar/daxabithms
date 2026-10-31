@@ -185,7 +185,7 @@ async function run() {
         create: {
           amount: 24.5,
           method: 'CARD',
-          recordedById: userId,
+          createdById: userId,
         },
       },
     },
@@ -240,7 +240,7 @@ async function run() {
   await prisma.table.update({ where: { id: tableId }, data: { status: 'OCCUPIED' } });
 
   openCount = await prisma.order.count({ where: { branchId, status: 'OPEN' } });
-  const occupiedCount = await prisma.table.count({ where: { branchId, status: 'OCCUPIED' } });
+  const occupiedCount = await prisma.table.count({ where: { floor: { branchId }, status: 'OCCUPIED' } });
   isSafe = openCount === 0 && occupiedCount === 0;
   console.log(`  - Active billing state: ${openCount} open orders, ${occupiedCount} occupied tables -> Safe to update: ${isSafe}`);
   if (isSafe) throw new Error('Safety check should flag unsafe when active orders are open!');
