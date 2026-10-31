@@ -15,7 +15,7 @@ import { UpdateService, type VersionInfo } from './update.service';
 @ApiTags('system')
 @Controller('v1/system')
 export class UpdateController {
-  constructor(private readonly updateService: UpdateService) { }
+  constructor(private readonly updateService: UpdateService) {}
 
   /**
    * Public system version information for clients and administrators.

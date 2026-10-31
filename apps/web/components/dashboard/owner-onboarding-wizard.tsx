@@ -14,7 +14,6 @@ import {
   CreditCard,
   ChevronDown,
   ChevronUp,
-  HelpCircle,
   Sparkles,
   BookOpen,
   ChefHat,
@@ -72,14 +71,17 @@ export function OwnerOnboardingWizard() {
   const [activeTourTab, setActiveTourTab] = useState<number>(0);
 
   useEffect(() => {
-    try {
-      const savedMin = localStorage.getItem(STORAGE_KEY_MINIMIZED);
-      if (savedMin === "true") setMinimized(true);
-      const savedDismiss = localStorage.getItem(STORAGE_KEY_DISMISSED);
-      if (savedDismiss === "true") setDismissed(true);
-    } catch {
-      // LocalStorage unavailable
-    }
+    const timer = setTimeout(() => {
+      try {
+        const savedMin = localStorage.getItem(STORAGE_KEY_MINIMIZED);
+        if (savedMin === "true") setMinimized(true);
+        const savedDismiss = localStorage.getItem(STORAGE_KEY_DISMISSED);
+        if (savedDismiss === "true") setDismissed(true);
+      } catch {
+        // LocalStorage unavailable
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const toggleMinimized = () => {
@@ -408,7 +410,7 @@ export function OwnerOnboardingWizard() {
                     size="sm"
                     onClick={() => setTourOpen(false)}
                   >
-                    Got it, let's setup!
+                    Got it, let&apos;s setup!
                   </Button>
                 )}
               </div>

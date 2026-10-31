@@ -104,10 +104,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(
-    @Res({ passthrough: true }) res: Response,
-    @Req() req: Request,
-  ) {
+  logout(@Res({ passthrough: true }) res: Response, @Req() req: Request) {
     const cookieOpts = {
       httpOnly: true,
       sameSite: 'lax' as const,

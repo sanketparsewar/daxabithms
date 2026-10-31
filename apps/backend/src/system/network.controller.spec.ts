@@ -55,4 +55,3 @@ describe('NetworkController', () => {
     expect(res.security.cookieSecure).toBe(true);
   });
 });
-

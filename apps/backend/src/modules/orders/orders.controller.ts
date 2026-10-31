@@ -439,7 +439,10 @@ export class OrdersController {
       id,
       adj,
     );
-    const printCount = await this.ordersService.getReceiptPrintCount(branchId, id);
+    const printCount = await this.ordersService.getReceiptPrintCount(
+      branchId,
+      id,
+    );
     const isReprint = query.reprint === 'true' || printCount > 0;
     if (overrides.isProvisional) {
       await this.ordersService.recordBillPrinted(branchId, id, user.id);
@@ -618,7 +621,10 @@ export class OrdersController {
       id,
       adj,
     );
-    const printCount = await this.ordersService.getReceiptPrintCount(branchId, id);
+    const printCount = await this.ordersService.getReceiptPrintCount(
+      branchId,
+      id,
+    );
     const isReprint = query.reprint === 'true' || printCount > 0;
     if (overrides.isProvisional) {
       await this.ordersService.recordBillPrinted(branchId, id, user.id);

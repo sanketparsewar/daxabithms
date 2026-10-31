@@ -2,7 +2,7 @@
 
 import { ChevronLeft, MonitorSmartphone, ShoppingCart } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { StatusNote, useNoteToast } from "@/components/ui/status-note";
 import { publishDisplay } from "@/lib/customer-display";
 import { BranchNotice } from "@/components/layout/branch-notice";
@@ -239,6 +239,14 @@ function PosPageInner() {
     setScheduledFor("");
   };
 
+  const handleSubmitRef = useRef(handleSubmit);
+  const viewExistingOrderRef = useRef(viewExistingOrder);
+
+  useEffect(() => {
+    handleSubmitRef.current = handleSubmit;
+    viewExistingOrderRef.current = viewExistingOrder;
+  });
+
   // Fast keyboard shortcuts for desktop & touch-terminal POS operators
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -278,7 +286,7 @@ function PosPageInner() {
       if ((e.key === "F8" || (e.ctrlKey && e.key === "Enter")) && !activeOrder) {
         e.preventDefault();
         if (lines.length > 0 && !createOrder.isPending && !addOrderItems.isPending && !checkingTable) {
-          handleSubmit();
+          handleSubmitRef.current();
         }
         return;
       }
@@ -287,9 +295,9 @@ function PosPageInner() {
       if (e.key === "F2") {
         e.preventDefault();
         if (existingOrder && !activeOrder) {
-          viewExistingOrder();
+          viewExistingOrderRef.current();
         } else if (lines.length > 0 && !activeOrder && !createOrder.isPending) {
-          handleSubmit();
+          handleSubmitRef.current();
         }
         return;
       }
@@ -297,7 +305,7 @@ function PosPageInner() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [pickerItem, cartOpen, lines, activeOrder, existingOrder, createOrder.isPending, addOrderItems.isPending, checkingTable]);
+  }, [pickerItem, cartOpen, lines.length, activeOrder, existingOrder, createOrder.isPending, addOrderItems.isPending, checkingTable]);
 
   const handleTablePick = (table: RestaurantTable) => setTableId(table.id);
 

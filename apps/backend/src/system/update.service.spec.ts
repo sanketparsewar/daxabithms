@@ -103,7 +103,9 @@ describe('UpdateService & Semantic Version Management', () => {
       expect(safety.safeToUpdate).toBe(false);
       expect(safety.activeOrdersCount).toBe(4);
       expect(safety.unsettledTablesCount).toBe(3);
-      expect(safety.warning).toContain('Active restaurant operations in progress');
+      expect(safety.warning).toContain(
+        'Active restaurant operations in progress',
+      );
     });
   });
 
@@ -143,4 +145,3 @@ describe('UpdateService & Semantic Version Management', () => {
     });
   });
 });
-

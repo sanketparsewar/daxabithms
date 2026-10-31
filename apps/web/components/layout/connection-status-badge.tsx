@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, RefreshCw, Wifi, WifiOff } from "lucide-react";
+import { AlertCircle, RefreshCw, WifiOff } from "lucide-react";
 import { useRealtimeState } from "@/lib/realtime-status";
 
 export function ConnectionStatusBadge() {

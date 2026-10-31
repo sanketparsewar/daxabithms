@@ -247,7 +247,9 @@ describe('BackupService', () => {
   describe('Encrypted Off-Site Backups (AES-256-GCM)', () => {
     it('encrypts and decrypts buffer with AES-256-GCM seamlessly', () => {
       const key = Buffer.alloc(32, 'a');
-      const original = Buffer.from('CREATE TABLE test (id INT); INSERT INTO test VALUES (1);');
+      const original = Buffer.from(
+        'CREATE TABLE test (id INT); INSERT INTO test VALUES (1);',
+      );
       const encrypted = encryptBackupBuffer(original, key);
 
       expect(encrypted).not.toEqual(original);
@@ -298,23 +300,35 @@ describe('BackupService', () => {
 
     it('handles interrupted backup (pg_dump failure / SIGKILL / network error)', async () => {
       mockPrisma.backup.create.mockResolvedValue({ id: 'backup-fail' });
-      mockPrisma.backup.update.mockResolvedValue({ id: 'backup-fail', status: 'FAILED' });
-
-      jest.spyOn<any, any>(service, 'requireConfig').mockResolvedValue(mockConfig);
-      jest.spyOn<any, any>(service, 'runBackup').mockImplementation(async () => {
-        await mockPrisma.backup.update({
-          where: { id: 'backup-fail' },
-          data: { status: 'FAILED', failureReason: 'pg_dump: connection to server was lost' },
-        });
-        await mockNotifications.notifyUser('user-owner', 'branch-1', {
-          type: 'backup.failed',
-          title: 'Backup failed',
-          body: 'pg_dump: connection to server was lost',
-        });
-        throw new Error('pg_dump: connection to server was lost');
+      mockPrisma.backup.update.mockResolvedValue({
+        id: 'backup-fail',
+        status: 'FAILED',
       });
 
-      await expect(service.triggerManual(ownerUser)).rejects.toThrow('pg_dump: connection to server was lost');
+      jest
+        .spyOn<any, any>(service, 'requireConfig')
+        .mockResolvedValue(mockConfig);
+      jest
+        .spyOn<any, any>(service, 'runBackup')
+        .mockImplementation(async () => {
+          await mockPrisma.backup.update({
+            where: { id: 'backup-fail' },
+            data: {
+              status: 'FAILED',
+              failureReason: 'pg_dump: connection to server was lost',
+            },
+          });
+          await mockNotifications.notifyUser('user-owner', 'branch-1', {
+            type: 'backup.failed',
+            title: 'Backup failed',
+            body: 'pg_dump: connection to server was lost',
+          });
+          throw new Error('pg_dump: connection to server was lost');
+        });
+
+      await expect(service.triggerManual(ownerUser)).rejects.toThrow(
+        'pg_dump: connection to server was lost',
+      );
       expect(mockPrisma.backup.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ status: 'FAILED' }),
@@ -346,7 +360,9 @@ describe('BackupService', () => {
         createdAt: new Date(),
       });
 
-      jest.spyOn<any, any>(service, 'downloadTo').mockRejectedValue(new Error('Connection reset by peer'));
+      jest
+        .spyOn<any, any>(service, 'downloadTo')
+        .mockRejectedValue(new Error('Connection reset by peer'));
 
       await expect(
         service.restore(ownerUser, 'backup-valid', { confirm: 'RESTORE' }),
@@ -363,17 +379,25 @@ describe('BackupService', () => {
     });
 
     it('handles corrupted backup (checksum verification mismatch)', async () => {
-      const verifyError = new Error('Verification failed: downloaded db backup does not match the uploaded content');
-      jest.spyOn<any, any>(service, 'requireConfig').mockResolvedValue(mockConfig);
-      jest.spyOn<any, any>(service, 'runBackup').mockImplementation(async () => {
-        await mockPrisma.backup.update({
-          where: { id: 'backup-corrupt' },
-          data: { status: 'FAILED', failureReason: verifyError.message },
+      const verifyError = new Error(
+        'Verification failed: downloaded db backup does not match the uploaded content',
+      );
+      jest
+        .spyOn<any, any>(service, 'requireConfig')
+        .mockResolvedValue(mockConfig);
+      jest
+        .spyOn<any, any>(service, 'runBackup')
+        .mockImplementation(async () => {
+          await mockPrisma.backup.update({
+            where: { id: 'backup-corrupt' },
+            data: { status: 'FAILED', failureReason: verifyError.message },
+          });
+          throw verifyError;
         });
-        throw verifyError;
-      });
 
-      await expect(service.triggerManual(ownerUser)).rejects.toThrow('Verification failed');
+      await expect(service.triggerManual(ownerUser)).rejects.toThrow(
+        'Verification failed',
+      );
       expect(mockPrisma.backup.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ status: 'FAILED' }),
@@ -383,30 +407,40 @@ describe('BackupService', () => {
 
     it('handles insufficient disk space (ENOSPC)', async () => {
       const enospcError = new Error('ENOSPC: no space left on device');
-      jest.spyOn<any, any>(service, 'requireConfig').mockResolvedValue(mockConfig);
-      jest.spyOn<any, any>(service, 'runBackup').mockImplementation(async () => {
-        await mockPrisma.backup.update({
-          where: { id: 'backup-nospace' },
-          data: { status: 'FAILED', failureReason: enospcError.message },
+      jest
+        .spyOn<any, any>(service, 'requireConfig')
+        .mockResolvedValue(mockConfig);
+      jest
+        .spyOn<any, any>(service, 'runBackup')
+        .mockImplementation(async () => {
+          await mockPrisma.backup.update({
+            where: { id: 'backup-nospace' },
+            data: { status: 'FAILED', failureReason: enospcError.message },
+          });
+          throw enospcError;
         });
-        throw enospcError;
-      });
 
       await expect(service.triggerManual(ownerUser)).rejects.toThrow('ENOSPC');
     });
 
     it('handles database unavailable (ECONNREFUSED)', async () => {
       const econnError = new Error('connect ECONNREFUSED 127.0.0.1:5432');
-      jest.spyOn<any, any>(service, 'requireConfig').mockResolvedValue(mockConfig);
-      jest.spyOn<any, any>(service, 'runBackup').mockImplementation(async () => {
-        await mockPrisma.backup.update({
-          where: { id: 'backup-db-down' },
-          data: { status: 'FAILED', failureReason: econnError.message },
+      jest
+        .spyOn<any, any>(service, 'requireConfig')
+        .mockResolvedValue(mockConfig);
+      jest
+        .spyOn<any, any>(service, 'runBackup')
+        .mockImplementation(async () => {
+          await mockPrisma.backup.update({
+            where: { id: 'backup-db-down' },
+            data: { status: 'FAILED', failureReason: econnError.message },
+          });
+          throw econnError;
         });
-        throw econnError;
-      });
 
-      await expect(service.triggerManual(ownerUser)).rejects.toThrow('ECONNREFUSED');
+      await expect(service.triggerManual(ownerUser)).rejects.toThrow(
+        'ECONNREFUSED',
+      );
     });
   });
 });

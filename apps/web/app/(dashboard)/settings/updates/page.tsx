@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { AlertCircle, CheckCircle2, History, RefreshCw, ShieldAlert, ShieldCheck } from "lucide-react";
+import { AlertCircle, CheckCircle2, History, ShieldAlert, ShieldCheck } from "lucide-react";
 import { NavDot } from "@/components/layout/nav-dot";
 import { SettingsTabs } from "@/components/settings/settings-tabs";
 import { Badge } from "@/components/ui/badge";

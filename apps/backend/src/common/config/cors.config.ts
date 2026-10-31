@@ -38,7 +38,9 @@ function isPrivateLan(hostname: string): boolean {
  * Range: 100.64.0.0 - 100.127.255.255
  */
 function isTailscaleVpn(hostname: string): boolean {
-  return /^100\.(6[4-9]|[7-9]\d|1[0-1]\d|12[0-7])\.\d{1,3}\.\d{1,3}$/.test(hostname);
+  return /^100\.(6[4-9]|[7-9]\d|1[0-1]\d|12[0-7])\.\d{1,3}\.\d{1,3}$/.test(
+    hostname,
+  );
 }
 
 /**
@@ -125,8 +127,9 @@ export function corsOriginDelegate(
     // Reflecting the valid origin with credentials
     callback(null, true);
   } else {
-    logger.warn(`Blocked cross-origin request from untrusted origin: ${origin}`);
+    logger.warn(
+      `Blocked cross-origin request from untrusted origin: ${origin}`,
+    );
     callback(null, false);
   }
 }
-

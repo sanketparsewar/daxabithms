@@ -82,7 +82,6 @@ export function decryptBackupBuffer(data: Buffer, key: Buffer): Buffer {
   return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
 }
 
-
 /**
  * Full-instance backup (Postgres + the uploads volume) to any S3-compatible
  * bucket, ported from zulivio's real, working `backup/` module
@@ -509,7 +508,9 @@ export class BackupService {
       const dbKey = `${timestamp}/db.dump`;
       const dbBuffer = await fs.readFile(dbDumpPath);
       const encKey = getBackupEncryptionKey();
-      const payloadDb = encKey ? encryptBackupBuffer(dbBuffer, encKey) : dbBuffer;
+      const payloadDb = encKey
+        ? encryptBackupBuffer(dbBuffer, encKey)
+        : dbBuffer;
       const sha256 = createHash('sha256').update(payloadDb).digest('hex');
       await s3.send(
         new PutObjectCommand({
@@ -926,7 +927,9 @@ export class BackupService {
   ) {
     const rawBuffer = await this.downloadBuffer(s3, bucket, key);
     const encKey = getBackupEncryptionKey();
-    const finalBuffer = encKey ? decryptBackupBuffer(rawBuffer, encKey) : rawBuffer;
+    const finalBuffer = encKey
+      ? decryptBackupBuffer(rawBuffer, encKey)
+      : rawBuffer;
     await fs.writeFile(destPath, finalBuffer);
   }
 }

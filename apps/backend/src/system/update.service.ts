@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -14,7 +13,6 @@ import type {
   ReleaseNoteItem,
   ServerVersionInfo,
   UpdateLogEntry,
-  UpdateManifest,
   UpdateStatus,
 } from '@daxabithms/types';
 import { PrismaService } from '../prisma/prisma.service';
@@ -132,7 +130,9 @@ export class UpdateService {
       minRequiredVersion: minRequired,
       message,
       isMandatoryUpgrade: !compatible,
-      downloadUrl: isDesktop ? `https://github.com/${GITHUB_REPO}/releases` : undefined,
+      downloadUrl: isDesktop
+        ? `https://github.com/${GITHUB_REPO}/releases`
+        : undefined,
     };
   }
 
@@ -215,19 +215,23 @@ export class UpdateService {
     const releaseNotes: ReleaseNoteItem[] = [
       {
         type: 'feature',
-        description: 'Automatic pre-update database backup and rollback verification.',
+        description:
+          'Automatic pre-update database backup and rollback verification.',
       },
       {
         type: 'security',
-        description: 'Strict client-server semantic version compatibility gating.',
+        description:
+          'Strict client-server semantic version compatibility gating.',
       },
       {
         type: 'fix',
-        description: 'PostgreSQL concurrency serialization for sequential order numbers.',
+        description:
+          'PostgreSQL concurrency serialization for sequential order numbers.',
       },
       {
         type: 'migration',
-        description: 'Adds performance indexes for orders, order items, and customers.',
+        description:
+          'Adds performance indexes for orders, order items, and customers.',
       },
     ];
 
@@ -327,7 +331,8 @@ export class UpdateService {
     // Case A: Container deployment with updater sidecar
     if (base) {
       this.currentUpdateStatus.state = 'downloading';
-      this.currentUpdateStatus.step = 'Instructing updater sidecar to pull images';
+      this.currentUpdateStatus.step =
+        'Instructing updater sidecar to pull images';
       this.currentUpdateStatus.progressPercent = 50;
 
       try {

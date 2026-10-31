@@ -1445,7 +1445,11 @@ export class OrdersService {
     });
   }
 
-  async recordReceiptPrinted(branchId: string, orderId: string, userId: string) {
+  async recordReceiptPrinted(
+    branchId: string,
+    orderId: string,
+    userId: string,
+  ) {
     await this.audit.record({
       userId,
       action: 'order.receipt_printed',
@@ -1455,7 +1459,10 @@ export class OrdersService {
     });
   }
 
-  async getReceiptPrintCount(branchId: string, orderId: string): Promise<number> {
+  async getReceiptPrintCount(
+    branchId: string,
+    orderId: string,
+  ): Promise<number> {
     return this.prisma.auditLog.count({
       where: {
         entity: 'Order',

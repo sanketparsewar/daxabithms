@@ -6,7 +6,6 @@ import type {
   ActiveBillingStatus,
   ReleaseNoteItem,
   UpdateLogEntry,
-  UpdateStatus,
 } from "@daxabithms/types";
 
 export interface VersionInfo {

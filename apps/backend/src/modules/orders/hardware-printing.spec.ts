@@ -1,8 +1,5 @@
 import * as net from 'net';
-import {
-  CMD,
-  resolveProfile,
-} from './escpos/encoder';
+import { resolveProfile } from './escpos/encoder';
 import {
   buildReceiptEscPosJob,
   buildKotEscPosJob,
@@ -40,7 +37,10 @@ describe('Hardware, POS & Thermal Printing Suite', () => {
         lineTotal: 40.0,
         taxRateSnapshot: 10,
         modifiers: [
-          { nameSnapshot: 'Extra Fresh Buffalo Mozzarella', priceAdjSnapshot: 3.0 },
+          {
+            nameSnapshot: 'Extra Fresh Buffalo Mozzarella',
+            priceAdjSnapshot: 3.0,
+          },
         ],
       },
       {
@@ -101,7 +101,7 @@ describe('Hardware, POS & Thermal Printing Suite', () => {
         profile: profile80,
       });
 
-      const { lines, text } = readJob(job.buffer);
+      const { lines } = readJob(job.buffer);
       lines.forEach((l) => expect(l.length).toBeLessThanOrEqual(48));
       const totalLine = lines.find((l) => l.startsWith('TOTAL'));
       expect(totalLine).toBeDefined();
@@ -158,7 +158,9 @@ describe('Hardware, POS & Thermal Printing Suite', () => {
         order: { ...mockOrder, isReprint: false },
       });
 
-      expect(escpos.buffer.toString('binary')).not.toContain('DUPLICATE / REPRINT');
+      expect(escpos.buffer.toString('binary')).not.toContain(
+        'DUPLICATE / REPRINT',
+      );
       expect(html).not.toContain('DUPLICATE / REPRINT');
     });
 
@@ -176,7 +178,9 @@ describe('Hardware, POS & Thermal Printing Suite', () => {
         order: { ...mockOrder, isReprint: true },
       });
 
-      expect(escpos.buffer.toString('binary')).toContain('*** DUPLICATE / REPRINT ***');
+      expect(escpos.buffer.toString('binary')).toContain(
+        '*** DUPLICATE / REPRINT ***',
+      );
       expect(html).toContain('*** DUPLICATE / REPRINT ***');
     });
   });
@@ -212,7 +216,9 @@ describe('Hardware, POS & Thermal Printing Suite', () => {
 
       expect(escpos.buffer.toString('binary')).not.toContain('REPRINT #');
       expect(html).not.toContain('REPRINT #');
-      expect(escpos.buffer.toString('binary')).toContain('Grilled Ribeye Steak');
+      expect(escpos.buffer.toString('binary')).toContain(
+        'Grilled Ribeye Steak',
+      );
       expect(escpos.buffer.toString('binary')).toContain('Medium rare');
       expect(escpos.buffer.toString('binary')).toContain('Gluten allergy');
     });
@@ -286,7 +292,7 @@ describe('Hardware, POS & Thermal Printing Suite', () => {
   });
 
   describe('Stage 6: Safe error decoupling (printer offline never fails sale)', () => {
-    it('safely decouples printer errors so committed transactions are never lost or double-billed', async () => {
+    it('safely decouples printer errors so committed transactions are never lost or double-billed', () => {
       // Simulate committed database transaction
       const confirmedSale = {
         orderId: 'ord_safe_101',
@@ -300,7 +306,9 @@ describe('Hardware, POS & Thermal Printing Suite', () => {
       // Attempt printing to disconnected / out-of-paper hardware
       let caughtPrinterError: Error | null = null;
       try {
-        throw new PrinterNotFoundError('Thermal printer is offline / out of paper on /dev/usb/lp0');
+        throw new PrinterNotFoundError(
+          'Thermal printer is offline / out of paper on /dev/usb/lp0',
+        );
       } catch (err) {
         caughtPrinterError = err as Error;
       }
@@ -342,7 +350,9 @@ describe('Hardware, POS & Thermal Printing Suite', () => {
     });
 
     it('delivers raw byte-for-byte ESC/POS payload over TCP port 9100', async () => {
-      const testPayload = Buffer.from([0x1b, 0x40, 0x48, 0x45, 0x4c, 0x4c, 0x4f, 0x0a]);
+      const testPayload = Buffer.from([
+        0x1b, 0x40, 0x48, 0x45, 0x4c, 0x4c, 0x4f, 0x0a,
+      ]);
       await sendViaNetwork({ host: '127.0.0.1', port }, testPayload);
 
       await new Promise((r) => setTimeout(r, 100));
@@ -350,7 +360,10 @@ describe('Hardware, POS & Thermal Printing Suite', () => {
     });
 
     it('reports clear error when network printer target is unreachable', async () => {
-      const offlineProbe = await probeNetworkPrinter({ host: '127.0.0.1', port: 19999 });
+      const offlineProbe = await probeNetworkPrinter({
+        host: '127.0.0.1',
+        port: 19999,
+      });
       expect(offlineProbe.reachable).toBe(false);
       expect(offlineProbe.error).toBeDefined();
     });

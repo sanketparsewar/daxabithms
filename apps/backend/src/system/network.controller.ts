@@ -64,7 +64,8 @@ export class NetworkController {
       }
     }
 
-    const primaryLan = serverAddresses[0]?.recommendedUrl ?? `${proto}://localhost:${webPort}`;
+    const primaryLan =
+      serverAddresses[0]?.recommendedUrl ?? `${proto}://localhost:${webPort}`;
 
     return {
       hostname: os.hostname(),
@@ -91,4 +92,3 @@ export class NetworkController {
     };
   }
 }
-
