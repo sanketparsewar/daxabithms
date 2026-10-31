@@ -75,7 +75,7 @@ export const TAX_REGIME_PRESETS: Record<TaxRegime, TaxRegimePreset> = {
     taxLabel: "IVA",
     taxIdLabel: "NIF/CIF",
     splitCgstSgst: false,
-    exampleRates: "10% (hospitality reduced rate) / 21% (general rate)",
+    exampleRates: "10% (hotel/restaurant reduced rate) / 21% (general rate)",
     defaultCountry: "ES",
   },
   CUSTOM: {

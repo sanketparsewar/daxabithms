@@ -15,10 +15,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Daxabit — Restaurant & Hospitality Management System",
+    default: "Daxabit — Restaurant & Hotel Management System",
     template: "%s · Daxabit",
   },
-  description: "Daxabit — Restaurant & Hospitality Management System",
+  description: "Daxabit — Restaurant & Hotel Management System",
   manifest: "/manifest.json",
   icons: {
     icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }],

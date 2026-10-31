@@ -1,6 +1,6 @@
 # Database Backup, Disaster Recovery & Schema Safety Guide
 
-**Application:** DaxabitHMS (Hospitality & Restaurant Management System)  
+**Application:** DaxabitHMS (Restaurant & Hotel Management System)  
 **Database Engine:** PostgreSQL 16+ (Verified on AWS Neon Serverless PostgreSQL)  
 **ORM & Migration Tool:** Prisma ORM 6.19.3  
 **Date:** October 31, 2026  
@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary & Verification Proof
 
-Safe database management for real hospitality businesses requires strict transactional guarantees, zero data loss during active sales periods, guaranteed migration upgrade paths, fast index-backed query execution, and robust backup/restore capabilities with end-to-end encryption.
+Safe database management for real restaurant and hotel businesses requires strict transactional guarantees, zero data loss during active sales periods, guaranteed migration upgrade paths, fast index-backed query execution, and robust backup/restore capabilities with end-to-end encryption.
 
 ### Acceptance Criteria Verification Proof
 - **Target Database Configured**: Configured `apps/backend/.env`, root `.env`, and `docker-compose.yml` to connect directly to the user's Neon Serverless PostgreSQL database:
@@ -287,4 +287,4 @@ All restaurant settings, menus, tables, customer data, and sales history are res
 
 ## 9. Conclusion
 
-DaxabitHMS database management complies with enterprise hospitality reliability standards. All 40 Prisma migrations execute deterministically, indexes protect query performance at scale, AES-256-GCM encryption secures off-site backups, and PostgreSQL MVCC backups ensure continuous operational safety for real restaurant operations.
+DaxabitHMS database management complies with enterprise restaurant and hotel reliability standards. All 40 Prisma migrations execute deterministically, indexes protect query performance at scale, AES-256-GCM encryption secures off-site backups, and PostgreSQL MVCC backups ensure continuous operational safety for real restaurant operations.

@@ -1,4 +1,4 @@
-# Daxabit Hospitality Suite — Automated Windows Setup & Launcher
+# Daxabit Restaurant & Hotel Suite — Automated Windows Setup & Launcher
 # Online & Offline desktop installation
 param(
     [string]$ServerUrl = "http://localhost:3000",
@@ -8,7 +8,7 @@ param(
 $ErrorActionPreference = "Continue"
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "     DAXABIT HOSPITALITY MANAGEMENT SYSTEM FOR WINDOWS     " -ForegroundColor White
+Write-Host "     DAXABIT RESTAURANT & HOTEL MANAGEMENT SYSTEM FOR WINDOWS     " -ForegroundColor White
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -24,7 +24,7 @@ try {
     $Shortcut = $WshShell.CreateShortcut([System.IO.Path]::Combine($DesktopPath, "Daxabit HMS.lnk"))
     $Shortcut.TargetPath = $EdgePath
     $Shortcut.Arguments = "--app=$ServerUrl --window-size=1280,800"
-    $Shortcut.Description = "Daxabit Restaurant & Hospitality Management System"
+    $Shortcut.Description = "Daxabit Restaurant & Hotel Management System"
     $Shortcut.Save()
     Write-Host "[+] Desktop shortcut created: Daxabit HMS.lnk" -ForegroundColor Green
 } catch {

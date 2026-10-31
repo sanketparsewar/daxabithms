@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary & Safety Principles
 
-DaxabitHMS is mission-critical hospitality infrastructure. Restaurants rely on uninterrupted operation for ordering, kitchen display systems (KDS), fiscal compliance, and payment settlement. A poorly managed update can halt service, lose active table carts, or corrupt financial records.
+DaxabitHMS is mission-critical restaurant and hotel infrastructure. Businesses rely on uninterrupted operation for ordering, kitchen display systems (KDS), fiscal compliance, and payment settlement. A poorly managed update can halt service, lose active table carts, or corrupt financial records.
 
 Our update architecture is built on five inviolable production principles:
 

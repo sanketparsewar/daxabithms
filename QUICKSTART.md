@@ -1,6 +1,6 @@
 # Daxabit — Quick Start Guide
 
-Welcome to **Daxabit**, a modern, offline-first Restaurant & Hospitality Management System (POS, Kitchen Display System, Table Management, Inventory, and CRM).
+Welcome to **Daxabit**, a modern, offline-first Restaurant & Hotel Management System (POS, Kitchen Display System, Table Management, Inventory, and CRM).
 
 This step-by-step guide walks you through setting up and running Daxabit on your local machine in under 5 minutes.
 

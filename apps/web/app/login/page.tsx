@@ -77,7 +77,7 @@ export default function LoginPage() {
                 Sign in to Daxabit
               </h1>
               <p className="mt-1 text-xs font-medium text-muted-foreground">
-                Hospitality &amp; Restaurant Operations System
+                Restaurant &amp; Hotel Management System
               </p>
             </div>
           </div>

@@ -37,7 +37,7 @@ export function Hero() {
           </span>
           <span>Daxabit</span>
           <span className="text-muted-foreground">·</span>
-          <span className="text-muted-foreground">AGPL-3.0 Self-Hosted Hospitality Stack</span>
+          <span className="text-muted-foreground">AGPL-3.0 Self-Hosted Restaurant & Hotel Stack</span>
         </motion.div>
 
         <h1 className="flex flex-wrap justify-center gap-x-3 text-4xl font-extrabold tracking-tight text-foreground sm:text-6xl">

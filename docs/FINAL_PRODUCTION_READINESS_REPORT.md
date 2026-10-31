@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-DaxabitHMS is an enterprise-grade Restaurant & Hospitality Management System (HMS) built for high-reliability on-premise and cloud deployments. The platform unifies Point of Sale (POS), Kitchen Display Systems (KDS), Table Management, Multi-Tenant Inventory Control, ESC/POS Thermal Printing, Realtime Push Synchronization, Daily Financial Reconciliation, and Disaster Recovery.
+DaxabitHMS is an enterprise-grade Restaurant & Hotel Management System (HMS) built for high-reliability on-premise and cloud deployments. The platform unifies Point of Sale (POS), Kitchen Display Systems (KDS), Table Management, Multi-Tenant Inventory Control, ESC/POS Thermal Printing, Realtime Push Synchronization, Daily Financial Reconciliation, and Disaster Recovery.
 
 This comprehensive audit confirms that all 10 architectural phases have been built, hardened, verified on real hardware and databases, and documented for production release.
 

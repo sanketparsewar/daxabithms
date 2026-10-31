@@ -50,7 +50,7 @@ export default function DownloadWindowsPage() {
                 Daxabit
               </span>
               <span className="text-[9px] font-semibold uppercase tracking-wider text-primary -mt-1">
-                Hospitality Suite
+                Restaurant & Hotel Suite
               </span>
             </div>
           </Link>

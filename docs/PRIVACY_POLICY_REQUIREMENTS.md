@@ -35,7 +35,7 @@ Restaurants collecting customer personal details (mobile numbers at the billing 
 **Registered Address: [Insert Address]**
 
 #### 1. Information We Collect
-We only collect personal information that is reasonably necessary to provide you with dining, billing, and hospitality services:
+We only collect personal information that is reasonably necessary to provide you with dining, billing, and hotel/restaurant services:
 - **Contact Details**: Name, mobile telephone number, and optional email address.
 - **Order & Billing History**: Dishes ordered, table numbers, date and time of visit, total bill amount, payment method (Cash / Card / UPI reference). *We do not store complete credit/debit card numbers or CVV codes.*
 - **Delivery Information**: Delivery street address, landmark, and delivery instructions (for takeaway and direct delivery orders).

@@ -377,7 +377,7 @@ jobs:
           cat << 'EOF' > release_notes.md
           ## DaxabitHMS Release ${{ steps.meta.outputs.tag }}
 
-          Official production release of DaxabitHMS — Offline-First Restaurant & Hospitality Management System.
+          Official production release of DaxabitHMS — Offline-First Restaurant & Hotel Management System.
 
           ### Release Artifacts & Downloads
 

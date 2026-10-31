@@ -39,7 +39,7 @@ internal sealed class AboutForm : Form
 
         var descLabel = new Label
         {
-            Text = "Hospitality & Restaurant Management System\nPoint of Sale (POS) • Kitchen Display • Inventory • GST/VAT Billing",
+            Text = "Restaurant & Hotel Management System\nPoint of Sale (POS) • Kitchen Display • Inventory • GST/VAT Billing",
             Font = new Font("Segoe UI", 9.5f),
             Location = new Point(24, 104),
             Size = new Size(410, 38),

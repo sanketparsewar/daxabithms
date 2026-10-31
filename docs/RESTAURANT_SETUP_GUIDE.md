@@ -24,7 +24,7 @@ DaxabitHMS is organized into a clean multi-branch model:
 └───────────────────────────────┘       └───────────────────────────────┘
 ```
 
-1. **Restaurant**: The top-level company/legal entity (e.g., *Saffron Hospitality Group LLC*). Defines common brand assets, master currency, and company logo.
+1. **Restaurant**: The top-level company/legal entity (e.g., *Saffron Hotel & Restaurant Group LLC*). Defines common brand assets, master currency, and company logo.
 2. **Branch**: An individual physical dining outlet, food truck, or ghost kitchen (e.g., *Downtown Flagship*, *Airport Kiosk*). Each branch maintains its own floors, tables, staff assignments, inventory warehouses, and tax identification numbers.
 
 ---
@@ -59,7 +59,7 @@ DaxabitHMS supports specialized international and domestic tax calculation regim
 ### Option B: Spain VERI*FACTU & IVA (`ES_IVA` / `ES_CANARY_IGIC`)
 - **NIF/CIF**: Enter your Spanish Tax Identification Number.
 - **Chained Invoice Cryptographic Hash**: Generates SHA-256 chained hashes linking each invoice to its predecessor in compliance with Ley Antifraude 11/2021 and RD 1007/2023.
-- **Tax Breakdown**: Itemizes standard IVA (10% restaurant hospitality rate, 21% bar/spirits, 4% basic items).
+- **Tax Breakdown**: Itemizes standard IVA (10% restaurant and hotel reduced rate, 21% bar/spirits, 4% basic items).
 - **Direct AEAT Dispatch**: Configure digital certificate (mTLS) for immediate or batch transmission to the Agencia Tributaria under `/settings/verifactu`.
 
 ### Option C: Universal Sales Tax / VAT (`UNIVERSAL_VAT` / `US_SALES_TAX`)

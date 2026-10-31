@@ -2,7 +2,7 @@
   "name": "daxabithms",
   "private": true,
   "version": "0.1.0",
-  "description": "Daxabit — Restaurant & Hospitality Management System",
+  "description": "Daxabit — Restaurant & Hotel Management System",
   "author": "Daxabit",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   "license": "AGPL-3.0-only",
   "keywords": [
     "daxabit",
-    "hospitality-management",
+    "hotel-management",
     "restaurant-management",
     "restaurant-pos",
     "point-of-sale",

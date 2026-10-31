@@ -1,6 +1,6 @@
 # Restaurant Owner Onboarding & Operations Guide
 
-Welcome to **DaxabitHMS**, a modern, self-hosted Restaurant & Hospitality Management System. This guide walks restaurant owners and managers through configuring their establishment from day one, setting up hardware, and running daily operations without requiring developer assistance.
+Welcome to **DaxabitHMS**, a modern, self-hosted Restaurant & Hotel Management System. This guide walks restaurant owners and managers through configuring their establishment from day one, setting up hardware, and running daily operations without requiring developer assistance.
 
 ---
 

@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary & Production Readiness Verdict
 
-DaxabitHMS is a full-featured, offline-first Restaurant & Hospitality Management System designed for self-hosted deployments (single-site restaurants, multi-branch chains, and all-in-one touch terminals). It combines:
+DaxabitHMS is a full-featured, offline-first Restaurant & Hotel Management System designed for self-hosted deployments (single-site restaurants, multi-branch chains, and all-in-one touch terminals). It combines:
 - A high-performance **NestJS 11** backend on Node.js 22 with **Prisma ORM 6** and **PostgreSQL**.
 - A modern **Next.js 16** web frontend built with React 19, Tailwind CSS v4, Base UI / Radix primitives, and TanStack Query/Table.
 - A native **Windows MSIX** desktop client (C# / .NET 8 WinForms with WebView2), supporting both thin-client and embedded-server modes.

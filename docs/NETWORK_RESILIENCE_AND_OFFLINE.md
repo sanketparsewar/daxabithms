@@ -9,7 +9,7 @@ This document outlines the architectural strategy and concrete mechanisms that e
 > [!IMPORTANT]
 > **Internet disconnection must NEVER stop a healthy local restaurant server.**
 
-In hospitality environments, broadband and fiber connections frequently experience temporary drops, ISP maintenance, or router resets during busy meal services. DaxabitHMS is engineered so that **100% of core operations are self-contained on the local premises**:
+In restaurant and hotel environments, broadband and fiber connections frequently experience temporary drops, ISP maintenance, or router resets during busy meal services. DaxabitHMS is engineered so that **100% of core operations are self-contained on the local premises**:
 
 ```
                        ┌───────────────────────────────┐

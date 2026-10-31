@@ -6,7 +6,7 @@ This guide details how restaurant owners can customize product branding, set up 
 
 ## 1. White-Label Branding Philosophy
 
-DaxabitHMS is designed as an operator-first, white-label hospitality system:
+DaxabitHMS is designed as an operator-first, white-label restaurant and hotel system:
 - **Your Restaurant Brand Leads**: The operator's business name and custom logo take the prime visual spot on the desktop sidebar header, mobile nav bar, and customer display screen.
 - **Customer Receipts**: Receipts prominently display the restaurant's trade name, legal entity, address, phone number, and tax ID, without intrusive third-party watermarks.
 - **Product Mark**: The DaxabitHMS mark is placed respectfully in a small credit footer (`BrandFooter`) at the bottom of the navigation bar.

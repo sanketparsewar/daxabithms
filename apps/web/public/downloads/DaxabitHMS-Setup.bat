@@ -1,9 +1,9 @@
 @echo off
 setlocal EnableDelayedExpansion
-title Daxabit Hospitality Suite - Windows Setup
+title Daxabit Restaurant & Hotel Suite - Windows Setup
 
 echo ====================================================================
-echo             DAXABIT HOSPITALITY MANAGEMENT SYSTEM
+echo             DAXABIT RESTAURANT & HOTEL MANAGEMENT SYSTEM
 echo             Windows Desktop Setup ^& Launcher (Offline/Online)
 echo ====================================================================
 echo.
@@ -64,7 +64,7 @@ echo --------------------------------------------------------------------
 set /p SHORTCUT_URL="Target URL [default: http://localhost:3000]: "
 if "%SHORTCUT_URL%"=="" set SHORTCUT_URL=http://localhost:3000
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut([System.IO.Path]::Combine([System.Environment]::GetFolderPath('Desktop'), 'Daxabit HMS.lnk')); $Shortcut.TargetPath = '%EDGE_PATH%'; $Shortcut.Arguments = '--app=' + '%SHORTCUT_URL%'; $Shortcut.Description = 'Daxabit Hospitality Suite'; $Shortcut.Save(); Write-Host 'Desktop shortcut created successfully!'"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut([System.IO.Path]::Combine([System.Environment]::GetFolderPath('Desktop'), 'Daxabit HMS.lnk')); $Shortcut.TargetPath = '%EDGE_PATH%'; $Shortcut.Arguments = '--app=' + '%SHORTCUT_URL%'; $Shortcut.Description = 'Daxabit Restaurant & Hotel Suite'; $Shortcut.Save(); Write-Host 'Desktop shortcut created successfully!'"
 pause
 goto End
 
