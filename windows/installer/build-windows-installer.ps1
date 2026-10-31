@@ -73,6 +73,12 @@ if (-not $SkipServerStaging) {
     }
 } else {
     Write-Host "-- Skipping server staging as requested." -ForegroundColor DarkGray
+    $serverStageDir = Join-Path $StageDir 'server'
+    New-Item -ItemType Directory -Force -Path $serverStageDir | Out-Null
+    $placeholder = Join-Path $serverStageDir '.staging-placeholder'
+    if (-not (Test-Path $placeholder) -and ((Get-ChildItem $serverStageDir -ErrorAction SilentlyContinue).Count -eq 0)) {
+        Set-Content -Path $placeholder -Value "Server staging was skipped during this build."
+    }
 }
 
 # 4. Compile Installer with Inno Setup

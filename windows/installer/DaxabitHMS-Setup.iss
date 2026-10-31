@@ -50,7 +50,7 @@ Name: "autostart_service"; Description: "Register and start local background ser
 Source: "..\msix\out\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: client_core
 
 ; Server binaries and runtimes (Server mode only)
-Source: "..\msix\out\stage\server\*"; DestDir: "{app}\server"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: server_core
+Source: "..\msix\out\stage\server\*"; DestDir: "{app}\server"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Components: server_core
 Source: "service-runner.ps1"; DestDir: "{app}\service"; Flags: ignoreversion; Components: server_core
 Source: "setup-server.ps1"; DestDir: "{app}\service"; Flags: ignoreversion; Components: server_core
 
