@@ -27,6 +27,7 @@ import {
   updateOrderItemSchema,
   updateOrderSchema,
   type BillPreviewDto,
+  type CreateOrderDto,
   type CheckoutDto,
   type RemoveOrderItemDto,
   type UpdateOrderDto,
@@ -226,7 +227,10 @@ export class OrdersController {
     @Body() body: unknown,
   ) {
     await this.branchAccess.assertAccess(user.restaurantId, branchId);
-    return this.ordersService.createOrder(branchId, user.id, body as never);
+    const dto = body as CreateOrderDto;
+    return this.ordersService.createOrder(branchId, user.id, dto, {
+      clientRequestId: dto.clientRequestId,
+    });
   }
 
   @Auth('orders.edit')

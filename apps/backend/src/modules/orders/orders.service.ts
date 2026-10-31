@@ -167,6 +167,25 @@ export class OrdersService {
       clientRequestId?: string;
     } = {},
   ) {
+    if (options.clientRequestId) {
+      const existing = await this.prisma.order.findUnique({
+        where: {
+          branchId_clientRequestId: {
+            branchId,
+            clientRequestId: options.clientRequestId,
+          },
+        },
+        include: {
+          items: { include: { modifiers: true } },
+          table: true,
+          customer: true,
+        },
+      });
+      if (existing) {
+        return this.getOrder(branchId, existing.id);
+      }
+    }
+
     const channel = options.channel ?? 'STAFF';
     // Online orders wait for a staff member to accept them unless this
     // branch is set to auto-confirm (Settings > Online orders).

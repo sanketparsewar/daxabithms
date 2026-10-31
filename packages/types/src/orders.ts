@@ -95,6 +95,7 @@ export const createOrderSchema = z.object({
   customerId: z.string().optional(),
   guestName: z.string().trim().min(1).max(60).optional(),
   notes: z.string().optional(),
+  clientRequestId: z.string().optional(),
   // Required when type is DELIVERY (validated against the branch's zones).
   delivery: deliveryInfoSchema.optional(),
   // Scheduled order: ISO time in the future; the kitchen starts then.

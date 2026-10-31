@@ -10,6 +10,7 @@ import { useBranch } from "@/hooks/use-branch";
 import { useSettings } from "@/hooks/use-settings";
 import { BrandFooter } from "./brand-footer";
 import { BranchSwitcher } from "./branch-switcher";
+import { ConnectionStatusBadge, OfflineBanner } from "./connection-status-badge";
 import { LanguageSwitcher } from "./language-switcher";
 import { Logo } from "./logo";
 import { MobileBottomNav } from "./mobile-bottom-nav";
@@ -29,24 +30,23 @@ function RestaurantBrand() {
 
   if (restaurant?.logoUrl) {
     return (
-      <>
-        {/* eslint-disable-next-line @next/next/no-img-element -- uploaded asset served from the backend, not a Next-optimizable remote source */}
+      <div className="flex items-center gap-2.5 min-w-0">
         <img
           src={restaurant.logoUrl}
           alt={restaurant.name}
-          className="h-8 w-8 shrink-0 rounded-lg object-contain"
+          className="h-8 w-8 rounded-lg object-contain shrink-0"
         />
-        <span className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">
+        <span className="truncate text-base font-semibold tracking-tight text-sidebar-foreground">
           {restaurant.name}
         </span>
-      </>
+      </div>
     );
   }
 
   return (
     <>
-      <Logo />
-      <span className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">
+      <Logo className="h-8 w-8 text-primary shrink-0" />
+      <span className="truncate text-base font-semibold tracking-tight text-sidebar-foreground">
         {restaurant?.name ?? "Daxabit"}
       </span>
     </>
@@ -112,11 +112,13 @@ export function AppShell({
           </div>
           <div className="hidden lg:block" />
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <ConnectionStatusBadge />
             <LanguageSwitcher compact />
             <NotificationBell />
             <UserMenu user={user} />
           </div>
         </header>
+        <OfflineBanner />
         <main className="flex-1 min-w-0 max-w-full overflow-y-auto overflow-x-hidden p-3 pb-24 sm:p-6 sm:pb-24 lg:p-8">{children}</main>
         <EntityDialogHost />
       </div>
