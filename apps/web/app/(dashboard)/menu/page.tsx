@@ -352,11 +352,24 @@ export default function MenuPage() {
             </div>
             </>
           ) : (
-            <div className="flex flex-col items-center gap-2 py-16 text-center">
-              <p className="text-sm font-medium text-foreground">No items yet</p>
-              <p className="text-sm text-muted-foreground">
-                Add a category, then add your first menu item.
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
+              <p className="text-sm font-medium text-foreground">
+                {!categories || categories.length === 0 ? "No categories yet" : "No items yet"}
               </p>
+              <p className="text-xs text-muted-foreground max-w-sm">
+                {!categories || categories.length === 0
+                  ? "Create a category (such as Starters, Mains, or Drinks) to organize your dishes."
+                  : "Add your first dish, set its selling price, tax rate, and optional portions."}
+              </p>
+              {canManage && (
+                <div className="mt-2 flex gap-2">
+                  {!categories || categories.length === 0 ? (
+                    <AddCategoryDialog branchId={branchId} />
+                  ) : (
+                    <AddItemDialog branchId={branchId} categories={categories ?? []} />
+                  )}
+                </div>
+              )}
             </div>
           )}
         </Card>

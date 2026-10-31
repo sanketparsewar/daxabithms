@@ -6,7 +6,8 @@ import { ScanOrderInput } from "@/components/orders/scan-order-input";
 import { DeleteOrdersDialog } from "@/components/orders/delete-orders-dialog";
 import { ChannelBadge, TypeBadge } from "@/components/orders/channel-badges";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -150,13 +151,28 @@ export default function OrdersPage() {
             />
           ))
         ) : (
-          <div className="flex flex-col items-center gap-1 py-16 text-center">
+          <div className="flex flex-col items-center gap-2 py-16 text-center">
             <p className="text-sm font-medium text-foreground">
-              {tab === "pending" ? "No orders waiting for you" : "No orders here"}
+              {tab === "pending"
+                ? "No pending online orders"
+                : tab === "active"
+                ? "No orders currently in progress"
+                : "No order history yet"}
             </p>
-            <p className="text-sm text-muted-foreground">
-              New online orders appear here with a sound alert.
+            <p className="text-xs text-muted-foreground max-w-sm">
+              {tab === "pending"
+                ? "Customer orders from QR codes, kiosks, or delivery will appear here for review."
+                : tab === "active"
+                ? "Dine-in and takeaway orders being prepared by the kitchen appear here."
+                : "Fully paid and cancelled orders will be archived here with detailed audit trails."}
             </p>
+            {tab === "active" && (
+              <div className="mt-3">
+                <Link href="/pos" className={cn(buttonVariants({ size: "sm" }), "gap-2")}>
+                  Open POS Terminal
+                </Link>
+              </div>
+            )}
           </div>
         )}
       </Card>

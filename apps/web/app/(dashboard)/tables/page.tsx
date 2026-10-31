@@ -180,9 +180,18 @@ export default function TablesPage() {
                   ),
                 )}
                 {activeFloor?.tables.length === 0 && (
-                  <p className="py-10 text-center text-sm text-muted-foreground">
-                    No tables on this floor yet.
-                  </p>
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <p className="text-sm font-medium text-foreground">No tables on this floor yet</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Add dining tables or booths to this floor to start seating guests.
+                    </p>
+                    {canManage && (
+                      <Button variant="outline" size="sm" onClick={openAddTable} className="mt-4 gap-1.5">
+                        <Plus className="h-4 w-4" />
+                        Add Table
+                      </Button>
+                    )}
+                  </div>
                 )}
                 </div>
               </div>

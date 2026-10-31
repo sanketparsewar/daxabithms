@@ -151,9 +151,14 @@ export default function StaffPage() {
             </TableBody>
           </Table>
         ) : (
-          <div className="flex flex-col items-center gap-2 py-16 text-center">
-            <p className="text-sm font-medium text-foreground">No staff accounts yet</p>
-            <p className="text-sm text-muted-foreground">Add your first staff account above.</p>
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <p className="text-sm font-medium text-foreground">No staff accounts added yet</p>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              Create accounts for your cashiers, waitstaff, and kitchen cooks, and set up fast 4-digit PINs for quick terminal switching.
+            </p>
+            <div className="mt-2">
+              <AddStaffDialog />
+            </div>
           </div>
         )}
       </Card>

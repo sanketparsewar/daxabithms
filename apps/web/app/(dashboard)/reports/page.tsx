@@ -138,7 +138,12 @@ export default function ReportsPage() {
                 </tbody>
               </table>
             ) : (
-              <p className="py-8 text-center text-sm text-muted-foreground">No data for this period.</p>
+              <div className="py-12 text-center flex flex-col items-center gap-1.5">
+                <p className="text-sm font-medium text-foreground">No data for this date range</p>
+                <p className="text-xs text-muted-foreground">
+                  Try widening the date range or completing orders through the POS terminal.
+                </p>
+              </div>
             )}
           </Card>
 

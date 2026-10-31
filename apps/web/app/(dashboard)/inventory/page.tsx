@@ -123,11 +123,20 @@ export default function InventoryPage() {
             </TableBody>
           </Table>
         ) : (
-          <div className="flex flex-col items-center gap-2 py-16 text-center">
-            <p className="text-sm font-medium text-foreground">No ingredients yet</p>
-            <p className="text-sm text-muted-foreground">
-              Add your raw materials to start recipe costing and stock tracking.
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <p className="text-sm font-medium text-foreground">
+              {search ? `No ingredients match "${search}"` : "No ingredients yet"}
             </p>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              {search
+                ? "Try a different search term or clear the filter."
+                : "Add your raw ingredients, set units (kg, L, pcs), cost per unit, and reorder levels."}
+            </p>
+            {!search && (
+              <div className="mt-2">
+                <AddIngredientDialog branchId={branchId} />
+              </div>
+            )}
           </div>
         )}
       </Card>

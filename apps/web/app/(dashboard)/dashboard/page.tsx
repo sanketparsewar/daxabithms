@@ -4,6 +4,7 @@ import { BranchNotice } from "@/components/layout/branch-notice";
 import { ChefHat, ClipboardList, Flame, Globe, ReceiptText, Store, Timer, TrendingUp, Trash2, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { OwnerOnboardingWizard } from "@/components/dashboard/owner-onboarding-wizard";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { TrendChart } from "@/components/dashboard/trend-chart";
 import { OrderDetailDialog } from "@/components/orders/order-detail-dialog";
@@ -88,6 +89,8 @@ export default function DashboardPage() {
       <BranchNotice />
 
       <PendingOrdersBanner branchId={branchId} />
+
+      <OwnerOnboardingWizard />
 
       <QuickActions />
 
@@ -200,7 +203,13 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : data.recentOrders.length === 0 ? (
-              <p className="py-4 text-sm text-muted-foreground">No sales yet today.</p>
+              <div className="py-6 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
+                <ReceiptText className="h-6 w-6 text-muted-foreground/40" />
+                <span>No sales yet today. Completed orders will appear here.</span>
+                <Link href="/pos" className="text-xs font-semibold text-primary hover:underline">
+                  Open POS Terminal →
+                </Link>
+              </div>
             ) : (
               data.recentOrders.map((order) => {
                 const isOnline = ONLINE_ORDER_TYPES.has(order.type);

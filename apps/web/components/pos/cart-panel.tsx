@@ -212,31 +212,34 @@ export function CartPanel({
                     {formatCurrency(line.unitPrice * line.quantity)}
                   </p>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-7 w-7 shrink-0"
+                    className="h-8.5 w-8.5 shrink-0 touch-manipulation rounded-lg active:scale-95 transition-transform"
                     onClick={() => onDecrement(line.key)}
+                    aria-label="Decrease quantity"
                   >
-                    <Minus className="h-3 w-3" />
+                    <Minus className="h-3.5 w-3.5" />
                   </Button>
-                  <span className="w-5 text-center text-sm tabular-nums">{line.quantity}</span>
+                  <span className="w-6 text-center text-sm font-semibold tabular-nums">{line.quantity}</span>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-7 w-7 shrink-0"
+                    className="h-8.5 w-8.5 shrink-0 touch-manipulation rounded-lg active:scale-95 transition-transform"
                     onClick={() => onIncrement(line.key)}
+                    aria-label="Increase quantity"
                   >
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-3.5 w-3.5" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                    className="h-8.5 w-8.5 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg active:scale-95 transition-transform"
                     onClick={() => onRemove(line.key)}
+                    aria-label="Remove item"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

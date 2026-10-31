@@ -122,7 +122,12 @@ function Expenses({ branchId }: { branchId: string | null }) {
             </div>
           </>
         ) : (
-          <p className="p-6 text-center text-sm text-muted-foreground">No expenses in this range.</p>
+              <div className="p-8 text-center flex flex-col items-center gap-1">
+                <p className="text-sm font-medium text-foreground">No expenses recorded for this period</p>
+                <p className="text-xs text-muted-foreground">
+                  Log daily supplies, rent, utilities, or till disbursements using the form above.
+                </p>
+              </div>
         )}
       </Card>
     </div>

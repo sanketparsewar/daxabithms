@@ -7,6 +7,7 @@ import { useCurrentUser } from "@/hooks/use-auth";
 import { BranchProvider, useBranch } from "@/hooks/use-branch";
 import { useRealtime } from "@/hooks/use-realtime";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
+import { ForbiddenScreen } from "@/components/layout/forbidden-screen";
 import { canOpen, firstAllowedHref } from "@/lib/route-access";
 
 // Subscribes every route in this layout group to realtime push (order/KOT/
@@ -61,9 +62,13 @@ export default function DashboardGroupLayout({ children }: { children: React.Rea
 
   if (!allowed) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-6 text-center text-sm text-muted-foreground">
-        {fallback ? "Redirecting…" : "Your role has no access to this page. Ask an administrator."}
-      </div>
+
+        <ForbiddenScreen
+          roleName={data.user.roleName}
+          fallbackHref={fallback || "/login"}
+          pathname={pathname}
+        />
+
     );
   }
 

@@ -239,6 +239,66 @@ function PosPageInner() {
     setScheduledFor("");
   };
 
+  // Fast keyboard shortcuts for desktop & touch-terminal POS operators
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInput =
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT");
+
+      // [/] or [F3] to quickly jump to menu search
+      if ((e.key === "/" || e.key === "F3") && !isInput) {
+        e.preventDefault();
+        const searchInput = document.getElementById("pos-menu-search");
+        if (searchInput) {
+          searchInput.focus();
+          (searchInput as HTMLInputElement).select();
+        }
+        return;
+      }
+
+      // [Esc] to exit search, close modifier picker, or close mobile cart
+      if (e.key === "Escape") {
+        if (pickerItem) {
+          setPickerItem(null);
+          return;
+        }
+        if (isInput) {
+          target.blur();
+          return;
+        }
+        if (cartOpen) {
+          setCartOpen(false);
+          return;
+        }
+      }
+
+      // [F8] or [Ctrl+Enter] to Send to Kitchen
+      if ((e.key === "F8" || (e.ctrlKey && e.key === "Enter")) && !activeOrder) {
+        e.preventDefault();
+        if (lines.length > 0 && !createOrder.isPending && !addOrderItems.isPending && !checkingTable) {
+          handleSubmit();
+        }
+        return;
+      }
+
+      // [F2] to Checkout / View Bill
+      if (e.key === "F2") {
+        e.preventDefault();
+        if (existingOrder && !activeOrder) {
+          viewExistingOrder();
+        } else if (lines.length > 0 && !activeOrder && !createOrder.isPending) {
+          handleSubmit();
+        }
+        return;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [pickerItem, cartOpen, lines, activeOrder, existingOrder, createOrder.isPending, addOrderItems.isPending, checkingTable]);
+
   const handleTablePick = (table: RestaurantTable) => setTableId(table.id);
 
   // Click-to-order: for a fresh dine-in ticket, land on a visual table grid
@@ -369,6 +429,29 @@ function PosPageInner() {
         onConfirm={handleModifierConfirm}
         allowCustom
       />
+
+      {/* POS Keyboard Shortcut Bar for Fast Desktop Operation */}
+      <footer className="hidden lg:flex items-center justify-between border-t border-border/60 pt-2 px-2 text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-4">
+          <span className="flex items-center gap-1">
+            <kbd className="font-mono bg-secondary px-1.5 py-0.5 rounded border border-border/80 font-semibold text-foreground">/</kbd>
+            <span>Search</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="font-mono bg-secondary px-1.5 py-0.5 rounded border border-border/80 font-semibold text-foreground">F2</kbd>
+            <span>Checkout</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="font-mono bg-secondary px-1.5 py-0.5 rounded border border-border/80 font-semibold text-foreground">F8 / Ctrl+↵</kbd>
+            <span>Send KOT</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="font-mono bg-secondary px-1.5 py-0.5 rounded border border-border/80 font-semibold text-foreground">Esc</kbd>
+            <span>Clear / Cancel</span>
+          </span>
+        </div>
+        <span className="text-muted-foreground/75 font-medium">Terminal active · Realtime synced</span>
+      </footer>
     </div>
   );
 }
