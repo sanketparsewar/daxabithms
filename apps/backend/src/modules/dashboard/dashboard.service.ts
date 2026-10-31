@@ -5,7 +5,30 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Micro-cache (3s TTL for summary, 10s for trends) to coalesce concurrent
+  // terminal requests, protecting the database while maintaining fresh operational views.
+  private readonly summaryCache = new Map<
+    string,
+    { data: unknown; expiresAt: number }
+  >();
+  private readonly trendsCache = new Map<
+    string,
+    { data: unknown; expiresAt: number }
+  >();
+
   async getSummary(branchId: string) {
+    const now = Date.now();
+    const cached = this.summaryCache.get(branchId);
+    if (cached && cached.expiresAt > now) {
+      return cached.data as Awaited<ReturnType<typeof this.computeSummary>>;
+    }
+
+    const result = await this.computeSummary(branchId);
+    this.summaryCache.set(branchId, { data: result, expiresAt: now + 3000 });
+    return result;
+  }
+
+  private async computeSummary(branchId: string) {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -98,6 +121,19 @@ export class DashboardService {
   }
 
   async getTrends(branchId: string, days = 14) {
+    const cacheKey = `${branchId}:${days}`;
+    const now = Date.now();
+    const cached = this.trendsCache.get(cacheKey);
+    if (cached && cached.expiresAt > now) {
+      return cached.data as Awaited<ReturnType<typeof this.computeTrends>>;
+    }
+
+    const result = await this.computeTrends(branchId, days);
+    this.trendsCache.set(cacheKey, { data: result, expiresAt: now + 10000 });
+    return result;
+  }
+
+  private async computeTrends(branchId: string, days: number) {
     const since = new Date();
     since.setHours(0, 0, 0, 0);
     since.setDate(since.getDate() - (days - 1));

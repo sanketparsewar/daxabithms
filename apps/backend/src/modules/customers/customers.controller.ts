@@ -31,9 +31,16 @@ export class CustomersController {
     @CurrentUser() user: SessionUser,
     @Query('branchId') branchId: string,
     @Query('search') search?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
   ) {
     await this.branchAccess.assertAccess(user.restaurantId, branchId);
-    return this.customersService.list(branchId, search);
+    return this.customersService.list(
+      branchId,
+      search,
+      limit ? Number(limit) : undefined,
+      offset ? Number(offset) : undefined,
+    );
   }
 
   @Auth('customers.manage')

@@ -328,9 +328,9 @@ export class OrdersService {
       }
     }
 
-    const orderNumber = await this.nextOrderNumber(branchId);
-
     const order = await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${branchId}))`;
+      const orderNumber = await this.nextOrderNumber(branchId, tx);
       const created = await tx.order.create({
         data: {
           branchId,
@@ -2123,9 +2123,12 @@ export class OrdersService {
   // count collides with an existing number as soon as any earlier order of the
   // day has been deleted (orders.delete), and that surfaced as a 409 on the
   // unique (branchId, orderNumber) index.
-  private async nextOrderNumber(branchId: string): Promise<string> {
+  private async nextOrderNumber(
+    branchId: string,
+    client: Prisma.TransactionClient | PrismaService = this.prisma,
+  ): Promise<string> {
     const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const latest = await this.prisma.order.findFirst({
+    const latest = await client.order.findFirst({
       where: { branchId, orderNumber: { startsWith: `${datePart}-` } },
       orderBy: { orderNumber: 'desc' },
       select: { orderNumber: true },

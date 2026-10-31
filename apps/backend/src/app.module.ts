@@ -48,7 +48,7 @@ import { VerifactuModule } from './modules/verifactu/verifactu.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
-    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 300 }]),
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: Number(process.env.RATE_LIMIT_MAX) || 600 }]),
     PrismaModule,
     RealtimeModule,
     AuthModule,

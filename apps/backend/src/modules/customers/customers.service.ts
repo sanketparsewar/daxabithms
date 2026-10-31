@@ -6,7 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class CustomersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  list(branchId: string, search?: string) {
+  list(branchId: string, search?: string, limit = 200, offset = 0) {
     return this.prisma.customer.findMany({
       where: {
         branchId,
@@ -21,6 +21,8 @@ export class CustomersService {
           : {}),
       },
       orderBy: { createdAt: 'desc' },
+      take: Math.min(Number(limit) || 200, 1000),
+      skip: Number(offset) || 0,
     });
   }
 

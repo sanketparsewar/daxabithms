@@ -1,0 +1,134 @@
+[
+  {
+    "scenarioName": "Scenario 1: Small Shift",
+    "concurrentUsers": 5,
+    "totalRequests": 100,
+    "successCount": 98,
+    "failCount": 2,
+    "errorRate": 2,
+    "durationSec": 116.96,
+    "rps": 0.9,
+    "ordersCreated": 18,
+    "orderThroughput": 0.2,
+    "latency": {
+      "min": 1,
+      "mean": 5440,
+      "p50": 1661,
+      "p95": 26340,
+      "p99": 40091,
+      "max": 41201,
+      "orderP50": 16947,
+      "orderP95": 40091
+    },
+    "system": {
+      "rssMb": 32.7,
+      "heapMb": 12.7,
+      "cpuPercent": 0,
+      "dbPingMs": 845
+    },
+    "websocket": {
+      "connectedCount": 5,
+      "errorCount": 0,
+      "successRate": 100
+    }
+  },
+  {
+    "scenarioName": "Scenario 2: Lunch Rush",
+    "concurrentUsers": 20,
+    "totalRequests": 300,
+    "successCount": 259,
+    "failCount": 41,
+    "errorRate": 13.67,
+    "durationSec": 120.32,
+    "rps": 2.5,
+    "ordersCreated": 19,
+    "orderThroughput": 0.2,
+    "latency": {
+      "min": 1,
+      "mean": 6461,
+      "p50": 1421,
+      "p95": 33094,
+      "p99": 36505,
+      "max": 39249,
+      "orderP50": 16828,
+      "orderP95": 39249
+    },
+    "system": {
+      "rssMb": 32.8,
+      "heapMb": 14.6,
+      "cpuPercent": 0,
+      "dbPingMs": 565
+    },
+    "websocket": {
+      "connectedCount": 20,
+      "errorCount": 0,
+      "successRate": 100
+    }
+  },
+  {
+    "scenarioName": "Scenario 3: Dinner Peak",
+    "concurrentUsers": 50,
+    "totalRequests": 500,
+    "successCount": 411,
+    "failCount": 89,
+    "errorRate": 17.8,
+    "durationSec": 76.08,
+    "rps": 6.6,
+    "ordersCreated": 11,
+    "orderThroughput": 0.1,
+    "latency": {
+      "min": 1,
+      "mean": 7268,
+      "p50": 2549,
+      "p95": 33650,
+      "p99": 33691,
+      "max": 35570,
+      "orderP50": 19356,
+      "orderP95": 35570
+    },
+    "system": {
+      "rssMb": 56.5,
+      "heapMb": 15.2,
+      "cpuPercent": 1,
+      "dbPingMs": 2611
+    },
+    "websocket": {
+      "connectedCount": 50,
+      "errorCount": 0,
+      "successRate": 100
+    }
+  },
+  {
+    "scenarioName": "Scenario 4: High Stress",
+    "concurrentUsers": 100,
+    "totalRequests": 1000,
+    "successCount": 815,
+    "failCount": 185,
+    "errorRate": 18.5,
+    "durationSec": 119.93,
+    "rps": 8.3,
+    "ordersCreated": 15,
+    "orderThroughput": 0.1,
+    "latency": {
+      "min": 1,
+      "mean": 10585,
+      "p50": 3764,
+      "p95": 41893,
+      "p99": 46453,
+      "max": 56160,
+      "orderP50": 38963,
+      "orderP95": 56160
+    },
+    "system": {
+      "rssMb": 68.5,
+      "heapMb": 19.9,
+      "cpuPercent": 1,
+      "dbPingMs": 583
+    },
+    "websocket": {
+      "connectedCount": 50,
+      "errorCount": 0,
+      "successRate": 100
+    }
+  }
+]

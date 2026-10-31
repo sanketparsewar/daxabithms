@@ -126,6 +126,8 @@ async function bootstrap() {
     }),
   );
   app.use(cookieParser());
+  app.useBodyParser('json', { limit: '2mb' });
+  app.useBodyParser('urlencoded', { extended: true, limit: '2mb' });
   app.enableCors({
     origin: corsOriginDelegate,
     credentials: true,

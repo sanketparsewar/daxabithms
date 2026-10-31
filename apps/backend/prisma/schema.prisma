@@ -1174,6 +1174,7 @@ model Customer {
   giftCards GiftCard[]
 
   @@index([branchId, phone])
+  @@index([branchId, createdAt])
   @@map("customers")
 }
 
@@ -1374,6 +1375,7 @@ model Order {
   @@unique([branchId, orderNumber])
   @@unique([branchId, clientRequestId])
   @@index([branchId, status])
+  @@index([branchId, status, billedAt])
   @@index([branchId, deliveryStatus])
   @@index([branchId, createdAt])
   @@map("orders")
@@ -1402,6 +1404,7 @@ model OrderItem {
   stockReturns OrderItemStockReturn[]
 
   @@index([orderId])
+  @@index([menuItemId])
   @@map("order_items")
 }
 
