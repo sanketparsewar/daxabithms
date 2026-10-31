@@ -21,7 +21,7 @@ don't need to wait for this to land in the official app store:
 2. Paste this URL (or the raw file contents):
 
    ```
-   https://raw.githubusercontent.com/DaxabitHMS/daxabithms/master/casaos/docker-compose.yml
+   https://raw.githubusercontent.com/sanketparsewar/daxabithms/main/casaos/docker-compose.yml
    ```
 
 3. **Before starting the app**, change the two placeholder secrets in the
@@ -43,7 +43,7 @@ convention CasaOS's own backup/restore UI expects for every other app.
 
 ## Why three containers
 
-Unlike sibling project [daxabithms](https://github.com/DaxabitHMS/daxabithms)
+Unlike sibling project [daxabithms](https://github.com/sanketparsewar/daxabithms)
 (SQLite, two containers), this app uses Postgres for concurrency across
 500+ tables/100+ staff — see the main [ARCHITECTURE.md](../ARCHITECTURE.md).
 The manifest declares `main: web` since that's the browsable service;
@@ -81,7 +81,7 @@ not `:latest`, tags). To publish a new version:
    pushed from a public repo — a CasaOS install on someone else's box would
    get an auth error pulling a private image. Check/set visibility to
    Public once under each package's own Settings on GitHub
-   (`github.com/DaxabitHMS?tab=packages` → the package → Package settings →
+   (`github.com/sanketparsewar?tab=packages` → the package → Package settings →
    Change visibility). Not needed again on later pushes to the same package.
 
 ## Submitting to the official CasaOS App Store

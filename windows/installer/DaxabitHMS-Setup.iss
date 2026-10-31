@@ -4,7 +4,7 @@
 #define MyAppName "DaxabitHMS"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "Daxabit Technologies"
-#define MyAppURL "https://github.com/daxabit/daxabithms"
+#define MyAppURL "https://github.com/sanketparsewar/daxabithms"
 #define MyAppExeName "DaxabitHMS.exe"
 
 [Setup]

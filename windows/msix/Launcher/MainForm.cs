@@ -716,7 +716,7 @@ internal sealed class MainForm : Form
             {
                 try
                 {
-                    Process.Start(new ProcessStartInfo("https://github.com/daxabithms/daxabithms/releases") { UseShellExecute = true });
+                    Process.Start(new ProcessStartInfo("https://github.com/sanketparsewar/daxabithms/releases") { UseShellExecute = true });
                 }
                 catch { }
             };

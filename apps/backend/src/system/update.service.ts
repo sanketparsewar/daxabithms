@@ -29,7 +29,7 @@ export interface VersionInfo {
   releaseNotes?: ReleaseNoteItem[];
 }
 
-const GITHUB_REPO = process.env.UPDATE_GITHUB_REPO ?? 'daxabithms/daxabithms';
+const GITHUB_REPO = process.env.UPDATE_GITHUB_REPO ?? 'sanketparsewar/daxabithms';
 const CACHE_TTL_MS = 60 * 60 * 1000;
 const BUILDING_CACHE_TTL_MS = 60 * 1000;
 
@@ -468,7 +468,7 @@ export class UpdateService {
   private async imageTagExists(tag: string): Promise<boolean | null> {
     try {
       const repo =
-        process.env.UPDATE_IMAGE_REPO ?? 'daxabithms/daxabithms-backend';
+        process.env.UPDATE_IMAGE_REPO ?? 'sanketparsewar/daxabithms-backend';
       const version = tag.replace(/^v/i, '');
       const tokRes = await fetch(
         `https://ghcr.io/token?scope=repository:${repo}:pull`,

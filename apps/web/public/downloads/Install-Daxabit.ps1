@@ -33,7 +33,7 @@ try {
 
 if ($StandaloneOffline) {
     Write-Host "[*] Starting Offline Embedded Server environment..." -ForegroundColor Cyan
-    irm https://raw.githubusercontent.com/daxabithms/daxabithms/master/scripts/quickstart.ps1 | iex
+    irm https://raw.githubusercontent.com/sanketparsewar/daxabithms/main/scripts/quickstart.ps1 | iex
 } else {
     Write-Host "[*] Launching Daxabit Desktop App window..." -ForegroundColor Green
     if (Test-Path $EdgePath) {

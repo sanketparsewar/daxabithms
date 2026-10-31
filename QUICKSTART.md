@@ -22,8 +22,8 @@ Before you begin, ensure you have the following installed on your machine:
 
 ```bash
 # Clone the repository
-git clone https://github.com/daxabit/daxabit.git
-cd daxabit
+git clone https://github.com/sanketparsewar/daxabithms.git
+cd daxabithms
 
 # Install all workspace dependencies
 pnpm install
@@ -147,5 +147,5 @@ Your app will be live at [http://localhost:3000](http://localhost:3000).
 ## 💬 Support & Contributing
 
 - **Documentation**: Visit `/docs` within the running app or browse the [docs/](./docs) folder.
-- **Reporting Issues**: [https://github.com/daxabit/daxabit/issues](https://github.com/daxabit/daxabit/issues)
+- **Reporting Issues**: [https://github.com/sanketparsewar/daxabithms/issues](https://github.com/sanketparsewar/daxabithms/issues)
 - **Company**: Daxabit — [https://daxabit.com](https://daxabit.com)

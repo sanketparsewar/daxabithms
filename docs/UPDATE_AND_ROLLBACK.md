@@ -66,7 +66,7 @@ Returns server runtime version and minimum client requirements:
   "recommendedDesktopVersion": "1.0.5",
   "databaseSchemaVersion": "20261031000000",
   "environment": "production",
-  "releaseNotesUrl": "https://github.com/daxabithms/daxabithms/releases",
+  "releaseNotesUrl": "https://github.com/sanketparsewar/daxabithms/releases",
   "buildTimestamp": "2026-10-31T09:00:00.000Z"
 }
 ```
@@ -93,7 +93,7 @@ If the client is outdated (e.g., `version=0.9.0` when minimum required is `1.0.0
   "minRequiredVersion": "1.0.0",
   "message": "Incompatible DESKTOP client: Server v1.5.0 requires client v1.0.0 or higher. You are running v0.9.0. Please update your client before continuing.",
   "isMandatoryUpgrade": true,
-  "downloadUrl": "https://github.com/daxabithms/daxabithms/releases"
+  "downloadUrl": "https://github.com/sanketparsewar/daxabithms/releases"
 }
 ```
 

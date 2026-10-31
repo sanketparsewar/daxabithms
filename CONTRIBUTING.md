@@ -70,7 +70,7 @@ Docker for it.
 ### Option A — full stack via Docker
 
 ```bash
-git clone https://github.com/daxabithms/daxabithms.git
+git clone https://github.com/sanketparsewar/daxabithms.git
 cd daxabithms
 cp .env.example .env                 # edit JWT_SECRET / POSTGRES_PASSWORD for anything beyond local dev
 docker compose up -d --build
@@ -245,7 +245,7 @@ PR.
 
 ## Questions & discussion
 
-Use [GitHub Discussions](https://github.com/daxabithms/daxabithms/discussions)
+Use [GitHub Discussions](https://github.com/sanketparsewar/daxabithms/discussions)
 for "how do I…" / "why does X work this way" / general chat. Use Issues
 for concrete bugs and feature requests. Keep architecture debates in
 Discussions or a tagged issue rather than scattered across PR comments,

@@ -53,7 +53,7 @@ server on the restaurant's own LAN: order-taking, billing, KDS, and
 printing all keep working with the WAN cable unplugged. No subscription,
 no forced cloud dependency, self-hosted by design.
 
-It's a sister project to [`daxabithms`](https://github.com/daxabithms/daxabithms)
+It's a sister project to [`daxabithms`](https://github.com/sanketparsewar/daxabithms)
 (the retail-shop POS), reusing its proven patterns — auth/session model,
 receipt rendering, ESC/POS printing, currency-rounding discipline — but
 built as its own codebase, because restaurant floor/kitchen/reservation
@@ -171,7 +171,7 @@ costing, suppliers, purchase orders, goods receipts with batch/lot +
 expiry tracking, FIFO waste logging, and automatic ingredient deduction
 on checkout (combo-aware, never blocks a sale on a stock shortfall).
 Also shipped: printable receipts (opens the browser's print dialog, same
-"any printer, or Save as PDF" approach as [`daxabithms`](https://github.com/daxabithms/daxabithms)),
+"any printer, or Save as PDF" approach as [`daxabithms`](https://github.com/sanketparsewar/daxabithms)),
 a Settings area (restaurant + branch details, per-branch tax regime — India
 GST/US Sales Tax/EU VAT/Spain IVA, tax-inclusive or -exclusive menu
 pricing) and staff account management (create/deactivate staff, assign
@@ -344,7 +344,7 @@ already bundled, which is all this project requires.
 ### One-click install
 
 ```bash
-git clone https://github.com/daxabithms/daxabithms.git && cd daxabithms && ./install.sh
+git clone https://github.com/sanketparsewar/daxabithms.git && cd daxabithms && ./install.sh
 ```
 
 [`install.sh`](install.sh) generates a `.env` with random secrets (only if
@@ -365,7 +365,7 @@ If you'd rather run each step yourself (e.g. to set your own secrets instead
 of generated ones):
 
 ```bash
-git clone https://github.com/daxabithms/daxabithms.git
+git clone https://github.com/sanketparsewar/daxabithms.git
 cd daxabithms
 cp .env.example .env        # edit JWT_SECRET / POSTGRES_PASSWORD for anything beyond local dev
 docker compose up -d --build

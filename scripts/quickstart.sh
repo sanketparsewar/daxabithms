@@ -9,14 +9,14 @@
 # installer (which generates a .env with random secrets on first run).
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/daxabithms/daxabithms/master/scripts/quickstart.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/sanketparsewar/daxabithms/main/scripts/quickstart.sh | bash
 #
 # Safe to re-run: every step only acts if the previous one didn't already
 # succeed, and an existing ./daxabithms checkout is updated in
 # place rather than clobbered.
 set -euo pipefail
 
-REPO_URL="https://github.com/daxabithms/daxabithms.git"
+REPO_URL="https://github.com/sanketparsewar/daxabithms.git"
 REPO_DIR="daxabithms"
 SUDO=""
 

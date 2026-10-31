@@ -53,7 +53,7 @@ echo --------------------------------------------------------------------
 echo Setting up Complete Standalone Offline Restaurant Server...
 echo --------------------------------------------------------------------
 echo This will check your local dependencies and start the offline stack.
-powershell -NoProfile -ExecutionPolicy Bypass -Command "if (Test-Path '..\..\scripts\quickstart.ps1') { & '..\..\scripts\quickstart.ps1' } else { irm https://raw.githubusercontent.com/daxabithms/daxabithms/master/scripts/quickstart.ps1 | iex }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "if (Test-Path '..\..\scripts\quickstart.ps1') { & '..\..\scripts\quickstart.ps1' } else { irm https://raw.githubusercontent.com/sanketparsewar/daxabithms/main/scripts/quickstart.ps1 | iex }"
 goto End
 
 :CreateShortcut

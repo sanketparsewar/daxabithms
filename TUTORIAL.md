@@ -11,13 +11,13 @@ Get from zero to your first UPI-paid order in about ten minutes, then set up sta
 You need a machine that stays on in the restaurant (a mini PC, an old laptop, a NAS or a VPS) with Docker. The database is created for you on first start.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daxabithms/daxabithms/master/scripts/quickstart.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sanketparsewar/daxabithms/main/scripts/quickstart.sh | bash
 ```
 
 Or from a clone:
 
 ```bash
-git clone https://github.com/daxabithms/daxabithms.git
+git clone https://github.com/sanketparsewar/daxabithms.git
 cd daxabithms
 ./install.sh
 ```
@@ -287,7 +287,7 @@ DaxabitHMS has a REST API (`/api/v1`, docs at `/api/docs`), API keys, webhooks a
 
 Everything lives in your Postgres volume. Use **Settings → Backup** for scheduled backups, and test a restore before you need one.
 
-Questions or bugs: [open an issue](https://github.com/daxabithms/daxabithms/issues).
+Questions or bugs: [open an issue](https://github.com/sanketparsewar/daxabithms/issues).
 
 ---
 

@@ -140,12 +140,12 @@ x-casaos:
   author: DaxabitHMS
   developer: DaxabitHMS
   category: Finance
-  icon: https://cdn.jsdelivr.net/gh/DaxabitHMS/daxabithms@master/casaos/icon.png
-  thumbnail: https://cdn.jsdelivr.net/gh/DaxabitHMS/daxabithms@master/casaos/thumbnail.png
+  icon: https://cdn.jsdelivr.net/gh/sanketparsewar/daxabithms@main/casaos/icon.png
+  thumbnail: https://cdn.jsdelivr.net/gh/sanketparsewar/daxabithms@main/casaos/thumbnail.png
   screenshot_link:
-    - https://cdn.jsdelivr.net/gh/DaxabitHMS/daxabithms@master/casaos/screenshot-1.png
-    - https://cdn.jsdelivr.net/gh/DaxabitHMS/daxabithms@master/casaos/screenshot-2.png
-    - https://cdn.jsdelivr.net/gh/DaxabitHMS/daxabithms@master/casaos/screenshot-3.png
+    - https://cdn.jsdelivr.net/gh/sanketparsewar/daxabithms@main/casaos/screenshot-1.png
+    - https://cdn.jsdelivr.net/gh/sanketparsewar/daxabithms@main/casaos/screenshot-2.png
+    - https://cdn.jsdelivr.net/gh/sanketparsewar/daxabithms@main/casaos/screenshot-3.png
   title:
     en_US: DaxabitHMS
   tagline:
@@ -227,6 +227,6 @@ x-casaos:
       management with QR ordering, reservations, inventory, customer
       loyalty/CRM, and billing.
   website: "https://daxabit.com/"
-  repo: "https://github.com/daxabit/daxabit"
+  repo: "https://github.com/sanketparsewar/daxabithms"
   support: "https://daxabit.com/contact"
-  docs: "https://github.com/daxabit/daxabit#readme"
+  docs: "https://github.com/sanketparsewar/daxabithms#readme"

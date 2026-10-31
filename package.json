@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "description": "Daxabit — Restaurant & Hospitality Management System",
   "author": "Daxabit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sanketparsewar/daxabithms.git"
+  },
   "license": "AGPL-3.0-only",
   "keywords": [
     "daxabit",
