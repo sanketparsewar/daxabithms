@@ -146,6 +146,22 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Add Windows SDK tools to PATH
+        shell: pwsh
+        run: |
+          $sdkBin = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Directory -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -match '^\d+\.\d+\.\d+\.\d+$' } |
+            Sort-Object { [version]$_.Name } -Descending |
+            ForEach-Object { Join-Path $_.FullName 'x64' } |
+            Where-Object { Test-Path (Join-Path $_ 'makeappx.exe') } |
+            Select-Object -First 1
+          if ($sdkBin) {
+            Write-Host "Adding Windows SDK to PATH: $sdkBin" -ForegroundColor Cyan
+            echo "$sdkBin" >> $env:GITHUB_PATH
+          } else {
+            Write-Warning "Windows SDK makeappx.exe not found in Windows Kits"
+          }
+
       - name: Decode Production Signing Certificate (if configured in secrets)
         id: cert
         shell: pwsh
@@ -220,6 +236,22 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+
+      - name: Add Windows SDK tools to PATH
+        shell: pwsh
+        run: |
+          $sdkBin = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Directory -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -match '^\d+\.\d+\.\d+\.\d+$' } |
+            Sort-Object { [version]$_.Name } -Descending |
+            ForEach-Object { Join-Path $_.FullName 'x64' } |
+            Where-Object { Test-Path (Join-Path $_ 'makeappx.exe') } |
+            Select-Object -First 1
+          if ($sdkBin) {
+            Write-Host "Adding Windows SDK to PATH: $sdkBin" -ForegroundColor Cyan
+            echo "$sdkBin" >> $env:GITHUB_PATH
+          } else {
+            Write-Warning "Windows SDK makeappx.exe not found in Windows Kits"
+          }
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4

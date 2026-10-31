@@ -287,6 +287,27 @@ try {
         }
     }
 
+    if (-not (Get-Command signtool -ErrorAction SilentlyContinue)) {
+        $sdkRoots = @(
+            "${env:ProgramFiles(x86)}\Windows Kits\10\bin",
+            "${env:ProgramFiles}\Windows Kits\10\bin"
+        )
+        foreach ($sdkRoot in $sdkRoots) {
+            if (Test-Path $sdkRoot) {
+                $sdkBin = Get-ChildItem -Path $sdkRoot -Directory -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Name -match '^\d+\.\d+\.\d+\.\d+$' } |
+                    Sort-Object { [version]$_.Name } -Descending |
+                    ForEach-Object { Join-Path $_.FullName 'x64' } |
+                    Where-Object { Test-Path (Join-Path $_ 'signtool.exe') } |
+                    Select-Object -First 1
+                if ($sdkBin) {
+                    $env:PATH = "$sdkBin;$env:PATH"
+                    break
+                }
+            }
+        }
+    }
+
     if (Get-Command signtool -ErrorAction SilentlyContinue) {
         Write-Host "==> Signature check (signtool verify /pa)" -ForegroundColor Cyan
         & signtool verify /pa $MsixPath 2>&1 | Out-Null

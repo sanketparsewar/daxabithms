@@ -80,6 +80,31 @@ $msixOut = Join-Path $root 'out/DaxabitHMS.msix'
 Write-Host "== DaxabitHMS Windows MSIX build ==" -ForegroundColor Cyan
 Write-Host "Configuration=$Configuration Platform=$Platform" -ForegroundColor Cyan
 
+# Auto-detect Windows 10/11 SDK bin directory (contains makeappx.exe, signtool.exe)
+if (-not (Get-Command 'makeappx' -ErrorAction SilentlyContinue) -or -not (Get-Command 'signtool' -ErrorAction SilentlyContinue)) {
+    $sdkRoots = @(
+        "${env:ProgramFiles(x86)}\Windows Kits\10\bin",
+        "${env:ProgramFiles}\Windows Kits\10\bin"
+    )
+
+    foreach ($sdkRoot in $sdkRoots) {
+        if (Test-Path $sdkRoot) {
+            $sdkBin = Get-ChildItem -Path $sdkRoot -Directory -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -match '^\d+\.\d+\.\d+\.\d+$' } |
+                Sort-Object { [version]$_.Name } -Descending |
+                ForEach-Object { Join-Path $_.FullName 'x64' } |
+                Where-Object { Test-Path (Join-Path $_ 'makeappx.exe') } |
+                Select-Object -First 1
+
+            if ($sdkBin) {
+                Write-Host "Auto-detected Windows SDK tools at: $sdkBin" -ForegroundColor Cyan
+                $env:PATH = "$sdkBin;$env:PATH"
+                break
+            }
+        }
+    }
+}
+
 foreach ($tool in 'dotnet', 'makeappx') {
     if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) {
         throw "$tool not found on PATH. Install the .NET 8 SDK and the Windows " +
