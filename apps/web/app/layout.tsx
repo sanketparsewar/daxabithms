@@ -28,6 +28,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#2563EB",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
   // Lets the bottom nav / sheets sit inside the notch + home-indicator safe areas.
   viewportFit: "cover",
 };

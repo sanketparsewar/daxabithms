@@ -7,6 +7,7 @@ import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { AppModule } from './app.module';
+import { corsOriginDelegate } from './common/config/cors.config';
 import { uploadsDir } from './common/upload/image-upload.config';
 
 // Known example/placeholder secrets that appear verbatim in this repo's own
@@ -97,6 +98,25 @@ async function bootstrap() {
   process.env.JWT_SECRET = resolveJwtSecret();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Configure trust proxy: allows Express to accurately determine client IP and protocol
+  // from reverse proxy headers (X-Forwarded-For, X-Forwarded-Proto) set by Next.js rewrite (port 1995)
+  // or external reverse proxies (Nginx, Caddy, Cloudflare, Traefik). This ensures multi-device LAN
+  // rate limiting accurately isolates individual tablet/POS clients rather than grouping all
+  // terminals under 127.0.0.1.
+  const trustProxyEnv = process.env.TRUST_PROXY?.trim();
+  if (trustProxyEnv === 'true') {
+    app.set('trust proxy', true);
+  } else if (trustProxyEnv === 'false') {
+    app.set('trust proxy', false);
+  } else if (trustProxyEnv && !isNaN(Number(trustProxyEnv))) {
+    app.set('trust proxy', Number(trustProxyEnv));
+  } else if (trustProxyEnv) {
+    app.set('trust proxy', trustProxyEnv);
+  } else {
+    // Default to 1 (trust nearest reverse proxy hop, e.g. Next.js standalone rewrite or Nginx)
+    app.set('trust proxy', 1);
+  }
+
   app.use(
     helmet({
       // Uploaded images are fetched cross-origin-ish (via the frontend's
@@ -107,7 +127,7 @@ async function bootstrap() {
   );
   app.use(cookieParser());
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:1995',
+    origin: corsOriginDelegate,
     credentials: true,
   });
   app.setGlobalPrefix('api');

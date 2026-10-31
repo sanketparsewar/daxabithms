@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Req,
   Res,
   UseGuards,
   UsePipes,
@@ -18,7 +19,7 @@ import {
   type SessionUser,
 } from '@daxabithms/types';
 import { Throttle } from '@nestjs/throttler';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
@@ -32,14 +33,17 @@ const COOKIE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
 // A `Secure` cookie is silently dropped by every browser on a plain
 // `http://` origin — including the default `http://<lan-ip>:1995` this app
-// is normally reached at. Deriving this from `NODE_ENV === 'production'`
-// (the old behavior) meant every Docker deployment set `Secure` on the
-// session cookie yet was served over HTTP, so login "succeeded" but the
-// browser never stored the cookie and every following request came back
-// 401 Unauthorized. Default to false; opt in explicitly via COOKIE_SECURE
-// once the app is actually served over HTTPS (see README).
-function isCookieSecure(): boolean {
-  return process.env.COOKIE_SECURE === 'true';
+// is normally reached at. When running behind an HTTPS reverse proxy (Caddy,
+// Nginx, Cloudflare Tunnel), or when explicitly configured via COOKIE_SECURE=true,
+// cookies are issued with the `Secure` flag.
+function isCookieSecure(req?: Request): boolean {
+  if (process.env.COOKIE_SECURE === 'true') return true;
+  if (process.env.COOKIE_SECURE === 'false') return false;
+  return Boolean(
+    req?.secure ||
+    req?.headers?.['x-forwarded-proto'] === 'https' ||
+    req?.headers?.['x-forwarded-ssl'] === 'on',
+  );
 }
 
 @ApiTags('auth')
@@ -58,9 +62,10 @@ export class AuthController {
   async register(
     @Body() body: unknown,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
   ) {
     const { token, user } = await this.authService.register(body as never);
-    this.setSessionCookie(res, token);
+    this.setSessionCookie(res, token, req);
     return { user };
   }
 
@@ -72,9 +77,10 @@ export class AuthController {
   async login(
     @Body() body: unknown,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
   ) {
     const { token, user } = await this.authService.login(body as never);
-    this.setSessionCookie(res, token);
+    this.setSessionCookie(res, token, req);
     return { user };
   }
 
@@ -90,18 +96,22 @@ export class AuthController {
   async pinLogin(
     @Body() body: unknown,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
   ) {
     const { token, user } = await this.authService.pinLogin(body as never);
-    this.setSessionCookie(res, token);
+    this.setSessionCookie(res, token, req);
     return { user };
   }
 
   @Post('logout')
-  logout(@Res({ passthrough: true }) res: Response) {
+  logout(
+    @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
+  ) {
     const cookieOpts = {
       httpOnly: true,
       sameSite: 'lax' as const,
-      secure: isCookieSecure(),
+      secure: isCookieSecure(req),
     };
     res.clearCookie(SESSION_COOKIE, cookieOpts);
     res.clearCookie(LEGACY_SESSION_COOKIE, cookieOpts);
@@ -115,7 +125,7 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('2fa/setup')
+  @Get('2fa/setup')
   twoFactorSetup(@CurrentUser() user: SessionUser) {
     return this.twoFactor.setup(user.id);
   }
@@ -169,11 +179,11 @@ export class AuthController {
     return { isSetup };
   }
 
-  private setSessionCookie(res: Response, token: string) {
+  private setSessionCookie(res: Response, token: string, req?: Request) {
     res.cookie(SESSION_COOKIE, token, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: isCookieSecure(),
+      secure: isCookieSecure(req),
       maxAge: COOKIE_MAX_AGE_MS,
     });
   }

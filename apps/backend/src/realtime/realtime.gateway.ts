@@ -7,6 +7,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
+import { corsOriginDelegate } from '../common/config/cors.config';
 import { BranchAccessService } from '../common/services/branch-access.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -16,16 +17,13 @@ import { PrismaService } from '../prisma/prisma.service';
 // injectable service (not split per concern) until there's a real reason
 // to scale gateways independently.
 //
-// CORS: explicit origin (same env var main.ts uses for the REST API), not
-// `origin: true` — the WS handshake's initial polling request is a normal
-// CORS-checked HTTP request, and `origin: true` + `credentials: true`
-// together would reflect any calling origin while still allowing the
-// session cookie through, which defeats the point of restricting origins at
-// all on the REST side.
+// CORS: uses shared corsOriginDelegate to safely allow localhost, private LAN
+// subnets (RFC 1918), Tailscale VPN, mDNS (.local), and explicitly configured
+// CORS_ORIGIN domains with credentials enabled.
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:1995',
+    origin: corsOriginDelegate,
     credentials: true,
   },
 })
