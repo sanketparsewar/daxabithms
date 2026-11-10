@@ -1,6 +1,6 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from "@/lib/zod-resolver";
 import { registerSchema, type RegisterDto } from "@daxabithms/types";
 import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
