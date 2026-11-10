@@ -69,7 +69,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     this.sessionCache.set(payload.sub, {
       user: sessionUser,
-      expiresAt: now + 15_000,
+      expiresAt: now + 300_000,
     });
     return sessionUser;
   }
