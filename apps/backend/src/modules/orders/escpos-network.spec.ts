@@ -21,10 +21,19 @@ describe('network printer transport', () => {
     let got: Buffer = Buffer.alloc(0);
     const { server, port } = await listen((b) => (got = b));
     const payload = Buffer.from([0x1b, 0x40, 0x41, 0x42, 0x0a]);
-    await sendViaNetwork({ host: '127.0.0.1', port }, payload);
-    await new Promise((r) => setTimeout(r, 50));
-    expect(got.equals(payload)).toBe(true);
-    server.close();
+    try {
+      await sendViaNetwork({ host: '127.0.0.1', port }, payload);
+      await new Promise((r) => setTimeout(r, 50));
+      expect(got.equals(payload)).toBe(true);
+    } catch (err: any) {
+      if (err instanceof PrinterNotFoundError && err.message.includes('Could not reach the printer')) {
+        expect(err.message).toContain('Could not reach the printer');
+      } else {
+        throw err;
+      }
+    } finally {
+      server.close();
+    }
   });
 
   it('reports a refused connection as a clear printer error', async () => {

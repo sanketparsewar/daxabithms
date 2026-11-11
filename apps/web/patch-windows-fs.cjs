@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Patch transient Windows filesystem locks (EPERM / EBUSY) on mkdir, and EPERM on symlink
 const fs = require('fs');
 const pathModule = require('path');

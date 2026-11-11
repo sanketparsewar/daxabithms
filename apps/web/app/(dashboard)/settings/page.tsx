@@ -10,6 +10,7 @@ import {
   type TaxMode,
   type TaxRegime,
 } from "@daxabithms/types";
+import { AddBranchDialog } from "@/components/settings/add-branch-dialog";
 import { KioskCard } from "@/components/settings/kiosk-card";
 import { PrinterDiagnosticsCard } from "@/components/settings/printer-diagnostics-card";
 import { SettingsTabs } from "@/components/settings/settings-tabs";
@@ -44,9 +45,12 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6 min-w-0 max-w-full">
-      <div>
-        <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Settings</h1>
-        <p className="text-sm text-muted-foreground">Restaurant, branch, and staff configuration</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
+        <div>
+          <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Settings</h1>
+          <p className="text-sm text-muted-foreground">Restaurant, branch, and staff configuration</p>
+        </div>
+        <AddBranchDialog />
       </div>
 
       <SettingsTabs />

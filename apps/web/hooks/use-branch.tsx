@@ -1,7 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useMemo, useState } from "react";
+import type { CreateBranchDto } from "@daxabithms/types";
 import { api } from "@/lib/api";
 import { branchViewState, type BranchViewState } from "@/lib/branch-state";
 
@@ -76,4 +77,18 @@ export function useBranch() {
   const ctx = useContext(BranchContext);
   if (!ctx) throw new Error("useBranch must be used within a BranchProvider");
   return ctx;
+}
+
+export function useCreateBranch() {
+  const queryClient = useQueryClient();
+  const { setBranchId } = useBranch();
+  return useMutation({
+    mutationFn: (dto: CreateBranchDto) => api.post<Branch>("/branches", dto),
+    onSuccess: (newBranch) => {
+      queryClient.invalidateQueries({ queryKey: ["branches"] });
+      if (newBranch?.id) {
+        setBranchId(newBranch.id);
+      }
+    },
+  });
 }
