@@ -65,3 +65,16 @@ export const branchSettingsSchema = z.object({
   printerPort: z.number().int().min(1).max(65535).optional(),
 });
 export type BranchSettingsDto = z.infer<typeof branchSettingsSchema>;
+
+export const createBranchSchema = z.object({
+  name: z.string().trim().min(1, "Branch name is required").max(100),
+  address: z.string().trim().max(300).optional(),
+  phone: z.string().trim().max(30).optional(),
+  gstNumber: z.string().trim().max(30).optional(),
+  country: z.string().length(2).default("IN"),
+  taxRegime: z.enum(TAX_REGIMES).default("INDIA_GST"),
+  taxMode: z.enum(TAX_MODES).default("INCLUSIVE"),
+  taxLabel: z.string().max(30).optional().nullable(),
+  taxId: z.string().max(50).optional().nullable(),
+});
+export type CreateBranchDto = z.infer<typeof createBranchSchema>;

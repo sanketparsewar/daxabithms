@@ -7,8 +7,10 @@ import type { NextConfig } from "next";
 // at build time, so in Docker this must come from a build ARG, not a runtime env var.
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4001";
 
+const isWindows = process.platform === "win32";
+
 const nextConfig: NextConfig = {
-  output: "standalone",
+  output: isWindows && !process.env.FORCE_STANDALONE ? undefined : "standalone",
   experimental: {
     cpus: 1,
   },

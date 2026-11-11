@@ -1,9 +1,14 @@
-// Patch transient Windows filesystem locks (EPERM / EBUSY) on mkdir
+// Patch transient Windows filesystem locks (EPERM / EBUSY) on mkdir, and EPERM on symlink
 const fs = require('fs');
+const pathModule = require('path');
 
 const origMkdir = fs.mkdir;
 const origMkdirSync = fs.mkdirSync;
 const origPromisesMkdir = fs.promises ? fs.promises.mkdir : null;
+
+const origSymlink = fs.symlink;
+const origSymlinkSync = fs.symlinkSync;
+const origPromisesSymlink = fs.promises ? fs.promises.symlink : null;
 
 function sleepSync(ms) {
   try {
@@ -69,3 +74,60 @@ if (origPromisesMkdir) {
   };
 }
 
+// Windows symlink fallback: if Windows denies symlink with EPERM, copy the directory/file instead
+function resolveTarget(target, destPath) {
+  if (pathModule.isAbsolute(target)) return target;
+  return pathModule.resolve(pathModule.dirname(destPath), target);
+}
+
+fs.symlinkSync = function (target, destPath, type) {
+  try {
+    return origSymlinkSync.call(fs, target, destPath, type);
+  } catch (err) {
+    if (err.code === 'EPERM' || err.code === 'EACCES') {
+      const actualTarget = resolveTarget(target, destPath);
+      if (fs.existsSync(actualTarget)) {
+        try {
+          fs.cpSync(actualTarget, destPath, { recursive: true, dereference: true });
+          return;
+        } catch {}
+      }
+    }
+    throw err;
+  }
+};
+
+fs.symlink = function (target, destPath, type, callback) {
+  if (typeof type === 'function') {
+    callback = type;
+    type = null;
+  }
+  origSymlink.call(fs, target, destPath, type, (err) => {
+    if (err && (err.code === 'EPERM' || err.code === 'EACCES')) {
+      const actualTarget = resolveTarget(target, destPath);
+      if (fs.existsSync(actualTarget)) {
+        return fs.cp(actualTarget, destPath, { recursive: true, dereference: true }, callback);
+      }
+    }
+    if (callback) callback(err);
+  });
+};
+
+if (origPromisesSymlink) {
+  fs.promises.symlink = async function (target, destPath, type) {
+    try {
+      return await origPromisesSymlink.call(fs.promises, target, destPath, type);
+    } catch (err) {
+      if (err.code === 'EPERM' || err.code === 'EACCES') {
+        const actualTarget = resolveTarget(target, destPath);
+        if (fs.existsSync(actualTarget)) {
+          try {
+            await fs.promises.cp(actualTarget, destPath, { recursive: true, dereference: true });
+            return;
+          } catch {}
+        }
+      }
+      throw err;
+    }
+  };
+}
