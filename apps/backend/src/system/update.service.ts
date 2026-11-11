@@ -29,7 +29,8 @@ export interface VersionInfo {
   releaseNotes?: ReleaseNoteItem[];
 }
 
-const GITHUB_REPO = process.env.UPDATE_GITHUB_REPO ?? 'sanketparsewar/daxabithms';
+const GITHUB_REPO =
+  process.env.UPDATE_GITHUB_REPO ?? 'sanketparsewar/daxabithms';
 const CACHE_TTL_MS = 60 * 60 * 1000;
 const BUILDING_CACHE_TTL_MS = 60 * 1000;
 

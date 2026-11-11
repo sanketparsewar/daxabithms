@@ -40,7 +40,9 @@ export function sendViaNetwork(
     );
     socket.once('error', (err: NodeJS.ErrnoException) => {
       const why =
-        err.code === 'ECONNREFUSED' || err.code === 'EACCES' || err.code === 'EPERM'
+        err.code === 'ECONNREFUSED' ||
+        err.code === 'EACCES' ||
+        err.code === 'EPERM'
           ? 'connection refused (is raw/9100 printing enabled on the printer?)'
           : err.code === 'EHOSTUNREACH' || err.code === 'ENETUNREACH'
             ? 'host unreachable from the server'

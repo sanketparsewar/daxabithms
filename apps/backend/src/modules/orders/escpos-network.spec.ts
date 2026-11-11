@@ -26,7 +26,10 @@ describe('network printer transport', () => {
       await new Promise((r) => setTimeout(r, 50));
       expect(got.equals(payload)).toBe(true);
     } catch (err: any) {
-      if (err instanceof PrinterNotFoundError && err.message.includes('Could not reach the printer')) {
+      if (
+        err instanceof PrinterNotFoundError &&
+        err.message.includes('Could not reach the printer')
+      ) {
         expect(err.message).toContain('Could not reach the printer');
       } else {
         throw err;

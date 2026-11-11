@@ -46,10 +46,7 @@ export class BranchesController {
 
   @Auth()
   @Get(':id')
-  async getBranch(
-    @CurrentUser() user: SessionUser,
-    @Param('id') id: string,
-  ) {
+  async getBranch(@CurrentUser() user: SessionUser, @Param('id') id: string) {
     const branch = await this.prisma.branch.findFirst({
       where: { id, restaurantId: user.restaurantId },
     });

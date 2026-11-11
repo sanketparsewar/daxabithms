@@ -361,8 +361,9 @@ describe('Hardware, POS & Thermal Printing Suite', () => {
         await sendViaNetwork({ host: '127.0.0.1', port }, testPayload);
         await new Promise((r) => setTimeout(r, 100));
         expect(receivedData).toEqual(testPayload);
-      } catch (err: any) {
-        expect(err.message).toContain('Could not reach the printer');
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        expect(msg).toContain('Could not reach the printer');
       }
     });
 
