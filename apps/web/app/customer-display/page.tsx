@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState } from "react";
 import { subscribeDisplay, type DisplayState } from "@/lib/customer-display";
 import { formatCurrency } from "@/lib/format";
