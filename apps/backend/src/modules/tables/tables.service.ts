@@ -17,6 +17,58 @@ import type {
 import { PrismaService } from '../../prisma/prisma.service';
 import { RealtimeGateway } from '../../realtime/realtime.gateway';
 
+function isTableOverlapping(
+  boxA: { posX: number; posY: number; width: number; height: number },
+  boxB: { posX: number; posY: number; width: number; height: number },
+  padding = 10,
+): boolean {
+  return !(
+    boxA.posX + boxA.width + padding <= boxB.posX ||
+    boxA.posX >= boxB.posX + boxB.width + padding ||
+    boxA.posY + boxA.height + padding <= boxB.posY ||
+    boxA.posY >= boxB.posY + boxB.height + padding
+  );
+}
+
+function findNextSlot(
+  occupied: Array<{
+    posX: number;
+    posY: number;
+    width: number;
+    height: number;
+  }>,
+  width = 80,
+  height = 80,
+  cols = 5,
+  startX = 20,
+  startY = 20,
+  gap = 40,
+): { posX: number; posY: number } {
+  const stepX = width + gap;
+  const stepY = height + gap;
+
+  for (let slot = 0; slot < 500; slot++) {
+    const col = slot % cols;
+    const row = Math.floor(slot / cols);
+    const candidate = {
+      posX: startX + col * stepX,
+      posY: startY + row * stepY,
+      width,
+      height,
+    };
+    const collides = occupied.some((t) => isTableOverlapping(candidate, t, 10));
+    if (!collides) {
+      return { posX: candidate.posX, posY: candidate.posY };
+    }
+  }
+
+  const maxBottom = occupied.reduce(
+    (max, t) => Math.max(max, t.posY + t.height),
+    startY,
+  );
+  return { posX: startX, posY: maxBottom + gap };
+}
+
 @Injectable()
 export class TablesService {
   constructor(
@@ -47,7 +99,29 @@ export class TablesService {
 
   async createTable(branchId: string, dto: TableDto) {
     await this.assertFloorInBranch(branchId, dto.floorId);
-    const table = await this.prisma.table.create({ data: dto });
+
+    const existing = await this.prisma.table.findMany({
+      where: { floorId: dto.floorId },
+      select: { posX: true, posY: true, width: true, height: true },
+    });
+
+    let { posX, posY } = dto;
+    const width = dto.width || 80;
+    const height = dto.height || 80;
+
+    const collides = existing.some((t) =>
+      isTableOverlapping({ posX, posY, width, height }, t, 10),
+    );
+
+    if (collides || (posX === 0 && posY === 0)) {
+      const free = findNextSlot(existing, width, height);
+      posX = free.posX;
+      posY = free.posY;
+    }
+
+    const table = await this.prisma.table.create({
+      data: { ...dto, posX, posY },
+    });
     this.realtime.emitToBranch(branchId, 'table.updated', table);
     return table;
   }
@@ -66,30 +140,49 @@ export class TablesService {
     }
 
     const existing = await this.prisma.table.findMany({
-      where: { floorId: dto.floorId, number: { in: numbers } },
-      select: { number: true },
+      where: { floorId: dto.floorId },
+      select: {
+        number: true,
+        posX: true,
+        posY: true,
+        width: true,
+        height: true,
+      },
     });
-    if (existing.length > 0) {
-      const clashes = existing.map((t) => t.number).join(', ');
+    const clashes = existing
+      .filter((t) => numbers.includes(t.number))
+      .map((t) => t.number);
+    if (clashes.length > 0) {
       throw new BadRequestException(
-        `These table numbers already exist on this floor: ${clashes}. Choose different numbers.`,
+        `These table numbers already exist on this floor: ${clashes.join(', ')}. Choose different numbers.`,
       );
     }
 
+    const occupied = existing.map((t) => ({
+      posX: t.posX,
+      posY: t.posY,
+      width: t.width,
+      height: t.height,
+    }));
+
+    const tablesData = numbers.map((number) => {
+      const { posX, posY } = findNextSlot(occupied, 80, 80);
+      occupied.push({ posX, posY, width: 80, height: 80 });
+      return {
+        floorId: dto.floorId,
+        number,
+        capacity: dto.capacity,
+        shape: dto.shape,
+        color: dto.color,
+        posX,
+        posY,
+        width: 80,
+        height: 80,
+      };
+    });
+
     const tables = await this.prisma.$transaction(
-      numbers.map((number, index) =>
-        this.prisma.table.create({
-          data: {
-            floorId: dto.floorId,
-            number,
-            capacity: dto.capacity,
-            shape: dto.shape,
-            color: dto.color,
-            posX: 20 + (index % 5) * 100,
-            posY: 20 + Math.floor(index / 5) * 100,
-          },
-        }),
-      ),
+      tablesData.map((data) => this.prisma.table.create({ data })),
     );
     tables.forEach((table) =>
       this.realtime.emitToBranch(branchId, 'table.updated', table),

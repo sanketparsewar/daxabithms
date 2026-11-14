@@ -27,17 +27,20 @@ import {
   type RestaurantTable,
 } from "@/hooks/use-tables";
 import { ApiError } from "@/lib/api";
+import { findNextAvailableTablePosition } from "@/lib/table-layout";
 
 export function TableEditorDialog({
   branchId,
   floorId,
   table,
+  existingTables = [],
   open,
   onOpenChange,
 }: {
   branchId: string | null;
   floorId: string;
   table: RestaurantTable | null;
+  existingTables?: RestaurantTable[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -114,8 +117,10 @@ export function TableEditorDialog({
       return;
     }
 
+    const { posX, posY } = findNextAvailableTablePosition(existingTables, 80, 80);
+
     createTable.mutate(
-      { floorId, ...dto, posX: 20, posY: 20, width: 80, height: 80, rotation: 0 },
+      { floorId, ...dto, posX, posY, width: 80, height: 80, rotation: 0 },
       {
         onSuccess: () => {
           toast.success(`Table ${number} added`);

@@ -221,6 +221,7 @@ export default function TablesPage() {
           branchId={branchId}
           floorId={activeFloor.id}
           table={editorTable}
+          existingTables={activeFloor.tables}
           open={editorOpen}
           onOpenChange={setEditorOpen}
         />
