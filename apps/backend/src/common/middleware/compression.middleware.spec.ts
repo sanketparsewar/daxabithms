@@ -90,3 +90,4 @@ describe('compressionMiddleware', () => {
     expect(sentBody).toBe(smallPayload);
   });
 });
+
