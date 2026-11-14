@@ -13,22 +13,50 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class MenuService {
+  private readonly menuCache = new Map<
+    string,
+    { data: unknown; expiresAt: number }
+  >();
+  private readonly MENU_CACHE_TTL_MS = 15_000;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
   ) {}
 
+  private invalidateMenuCache(branchId: string) {
+    for (const key of this.menuCache.keys()) {
+      if (key.startsWith(`${branchId}:`)) {
+        this.menuCache.delete(key);
+      }
+    }
+  }
+
   // --- Categories ---------------------------------------------------------
 
-  listCategories(branchId: string) {
-    return this.prisma.menuCategory.findMany({
+  async listCategories(branchId: string) {
+    const key = `${branchId}:categories`;
+    const now = Date.now();
+    const cached = this.menuCache.get(key);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
+
+    const categories = await this.prisma.menuCategory.findMany({
       where: { branchId },
       orderBy: { sortOrder: 'asc' },
       include: { _count: { select: { items: true } } },
     });
+
+    this.menuCache.set(key, {
+      data: categories,
+      expiresAt: now + this.MENU_CACHE_TTL_MS,
+    });
+    return categories;
   }
 
   createCategory(branchId: string, dto: MenuCategoryDto) {
+    this.invalidateMenuCache(branchId);
     return this.prisma.menuCategory.create({ data: { ...dto, branchId } });
   }
 
@@ -38,11 +66,13 @@ export class MenuService {
     dto: Partial<MenuCategoryDto>,
   ) {
     await this.assertCategoryInBranch(branchId, id);
+    this.invalidateMenuCache(branchId);
     return this.prisma.menuCategory.update({ where: { id }, data: dto });
   }
 
   async deleteCategory(branchId: string, id: string) {
     await this.assertCategoryInBranch(branchId, id);
+    this.invalidateMenuCache(branchId);
     await this.prisma.menuCategory.delete({ where: { id } });
     return { ok: true };
   }
@@ -56,11 +86,26 @@ export class MenuService {
 
   // --- Kitchen stations -----------------------------------------------------
 
-  listStations(branchId: string) {
-    return this.prisma.kitchenStation.findMany({ where: { branchId } });
+  async listStations(branchId: string) {
+    const key = `${branchId}:stations`;
+    const now = Date.now();
+    const cached = this.menuCache.get(key);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
+
+    const stations = await this.prisma.kitchenStation.findMany({
+      where: { branchId },
+    });
+    this.menuCache.set(key, {
+      data: stations,
+      expiresAt: now + 30_000,
+    });
+    return stations;
   }
 
   createStation(branchId: string, name: string, printerName?: string) {
+    this.invalidateMenuCache(branchId);
     return this.prisma.kitchenStation.create({
       data: { branchId, name, printerName },
     });
@@ -68,8 +113,15 @@ export class MenuService {
 
   // --- Menu items -----------------------------------------------------------
 
-  listItems(branchId: string, categoryId?: string) {
-    return this.prisma.menuItem.findMany({
+  async listItems(branchId: string, categoryId?: string) {
+    const key = `${branchId}:items:${categoryId ?? 'all'}`;
+    const now = Date.now();
+    const cached = this.menuCache.get(key);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
+
+    const items = await this.prisma.menuItem.findMany({
       where: { branchId, ...(categoryId ? { categoryId } : {}) },
       orderBy: { sortOrder: 'asc' },
       include: {
@@ -80,6 +132,12 @@ export class MenuService {
         },
       },
     });
+
+    this.menuCache.set(key, {
+      data: items,
+      expiresAt: now + this.MENU_CACHE_TTL_MS,
+    });
+    return items;
   }
 
   async getItem(branchId: string, id: string) {
@@ -98,6 +156,7 @@ export class MenuService {
   async createItem(branchId: string, dto: MenuItemDto) {
     const { modifierGroupIds, ...rest } = dto;
     await this.assertModifierGroupsInBranch(branchId, modifierGroupIds);
+    this.invalidateMenuCache(branchId);
     return this.prisma.menuItem.create({
       data: {
         ...rest,
@@ -158,6 +217,7 @@ export class MenuService {
       },
     });
 
+    this.invalidateMenuCache(branchId);
     return updated;
   }
 
@@ -179,6 +239,7 @@ export class MenuService {
   async deleteItem(branchId: string, id: string) {
     await this.getItem(branchId, id);
     await this.prisma.menuItem.delete({ where: { id } });
+    this.invalidateMenuCache(branchId);
     return { ok: true };
   }
 
@@ -193,6 +254,7 @@ export class MenuService {
 
   createModifierGroup(branchId: string, dto: ModifierGroupDto) {
     const { modifiers, ...rest } = dto;
+    this.invalidateMenuCache(branchId);
     return this.prisma.modifierGroup.create({
       data: { ...rest, branchId, modifiers: { create: modifiers } },
       include: { modifiers: true },
@@ -207,7 +269,7 @@ export class MenuService {
     await this.assertModifierGroupInBranch(branchId, id);
 
     const { modifiers, ...rest } = dto;
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       if (modifiers) {
         await tx.modifier.deleteMany({ where: { groupId: id } });
         await tx.modifier.createMany({
@@ -220,11 +282,14 @@ export class MenuService {
         include: { modifiers: true },
       });
     });
+    this.invalidateMenuCache(branchId);
+    return result;
   }
 
   async deleteModifierGroup(branchId: string, id: string) {
     await this.assertModifierGroupInBranch(branchId, id);
     await this.prisma.modifierGroup.delete({ where: { id } });
+    this.invalidateMenuCache(branchId);
     return { ok: true };
   }
 
@@ -260,7 +325,7 @@ export class MenuService {
       }
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const res = await this.prisma.$transaction(async (tx) => {
       await tx.comboComponent.deleteMany({ where: { comboItemId } });
       if (components.length > 0) {
         await tx.comboComponent.createMany({
@@ -278,6 +343,8 @@ export class MenuService {
         },
       });
     });
+    this.invalidateMenuCache(branchId);
+    return res;
   }
 
   async getComboComponents(branchId: string, comboItemId: string) {

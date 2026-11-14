@@ -8,6 +8,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { AppModule } from './app.module';
 import { corsOriginDelegate } from './common/config/cors.config';
+import { compressionMiddleware } from './common/middleware/compression.middleware';
 import { uploadsDir } from './common/upload/image-upload.config';
 
 // Known example/placeholder secrets that appear verbatim in this repo's own
@@ -125,6 +126,7 @@ async function bootstrap() {
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
+  app.use(compressionMiddleware);
   app.use(cookieParser());
   app.useBodyParser('json', { limit: '2mb' });
   app.useBodyParser('urlencoded', { extended: true, limit: '2mb' });

@@ -11,12 +11,37 @@ const isWindows = process.platform === "win32";
 
 const nextConfig: NextConfig = {
   output: isWindows && !process.env.FORCE_STANDALONE ? undefined : "standalone",
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
   experimental: {
-    cpus: 1,
+    optimizePackageImports: [
+      "lucide-react",
+      "recharts",
+      "motion",
+      "@tanstack/react-query",
+      "@tanstack/react-table",
+      "clsx",
+      "tailwind-merge",
+      "sonner",
+    ],
   },
   // socket.io's endpoint is literally "/socket.io/" — the backend 404s on the
   // slash-less form, so Next must not redirect it.
   skipTrailingSlashRedirect: true,
+  async headers() {
+    return [
+      {
+        source: "/icons/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       { source: "/api/:path*", destination: `${BACKEND_URL}/api/:path*` },

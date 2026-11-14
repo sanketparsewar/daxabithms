@@ -4,6 +4,8 @@
 // first terminal showing a stale or missing order for the table.
 export function realtimeInvalidations(event: string, branchId: string): string[][] {
   switch (event) {
+    case "notification.created":
+      return [["notifications"]];
     case "kot.created":
     case "kot.updated":
       return [["kds"], ["dashboard"], ["orders"]];
@@ -27,6 +29,7 @@ export function realtimeInvalidations(event: string, branchId: string): string[]
 }
 
 export const REALTIME_EVENTS = [
+  "notification.created",
   "kot.created",
   "kot.updated",
   "kot.reprinted",

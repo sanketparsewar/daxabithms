@@ -2,7 +2,6 @@
 
 import { Bell, CheckCheck, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { io } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useBranch } from "@/hooks/use-branch";
 import { useNotificationMute } from "@/hooks/use-notification-mute";
 import {
   useMarkAllNotificationsRead,
@@ -22,7 +20,6 @@ import {
 } from "@/hooks/use-notifications";
 import { openEntity } from "@/lib/entity-events";
 import { playNotificationFeedback } from "@/lib/notification-feedback";
-import { resolveWsUrl } from "@/lib/ws-url";
 
 // How many alerts the live socket already rang for but the refresh has not
 // listed yet (module-level: only one bell is ever mounted).
@@ -47,7 +44,6 @@ function timeAgo(iso: string): string {
 // this component never needs to filter events client-side; anything it
 // receives is genuinely meant for the logged-in user.
 export function NotificationBell() {
-  const { branchId } = useBranch();
   const queryClient = useQueryClient();
   const { data } = useNotifications();
   const markRead = useMarkNotificationRead();
@@ -68,31 +64,19 @@ export function NotificationBell() {
   }, [muted]);
 
   useEffect(() => {
-    if (!branchId) return;
-
-    const socket = io(resolveWsUrl(), {
-      query: { branchId },
-      withCredentials: true,
-      transports: ["polling", "websocket"],
-      reconnection: true,
-      reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      timeout: 20000,
-    });
-
-    socket.on("notification.created", () => {
-      // The refresh below will list this one; remember its id (via the poll
+    const handleNotification = () => {
+      // The refresh will list this one; remember its id (via the poll
       // effect) as already announced by skipping it there.
       socketAnnounce.pending += 1;
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
       if (!mutedRef.current) playNotificationFeedback();
-    });
-
-    return () => {
-      socket.disconnect();
     };
-  }, [branchId, queryClient]);
+
+    window.addEventListener("daxabit:notification", handleNotification);
+    return () => {
+      window.removeEventListener("daxabit:notification", handleNotification);
+    };
+  }, [queryClient]);
 
   // Fallback for when the live socket is down or was asleep: if the periodic
   // refresh turns up an unread notification we haven't announced yet, ring

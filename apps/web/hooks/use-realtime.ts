@@ -25,7 +25,7 @@ export function useRealtime(branchId: string | null) {
     const socket = io(resolveWsUrl(), {
       query: { branchId },
       withCredentials: true,
-      transports: ["polling", "websocket"],
+      transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
@@ -49,7 +49,10 @@ export function useRealtime(branchId: string | null) {
     socket.on("connect_error", down);
 
     for (const event of REALTIME_EVENTS) {
-      socket.on(event, () => {
+      socket.on(event, (data) => {
+        if (event === "notification.created" && typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("daxabit:notification", { detail: data }));
+        }
         realtimeInvalidations(event, branchId).forEach((queryKey) =>
           queryClient.invalidateQueries({ queryKey }),
         );

@@ -24,6 +24,14 @@ export class PrismaService
             process.env.DATABASE_POOL_TIMEOUT || '30',
           );
         }
+        if (
+          (parsed.pathname.includes('pooler') ||
+            parsed.searchParams.get('options')?.includes('pooler') ||
+            parsed.host.includes('pooler')) &&
+          !parsed.searchParams.has('pgbouncer')
+        ) {
+          parsed.searchParams.set('pgbouncer', 'true');
+        }
         formattedUrl = parsed.toString();
       } catch {
         formattedUrl = rawUrl;

@@ -71,29 +71,55 @@ function findNextSlot(
 
 @Injectable()
 export class TablesService {
+  private readonly floorsCache = new Map<
+    string,
+    { data: unknown; expiresAt: number }
+  >();
+  private readonly FLOORS_CACHE_TTL_MS = 10_000;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly realtime: RealtimeGateway,
   ) {}
 
-  listFloors(branchId: string) {
-    return this.prisma.floor.findMany({
+  private invalidateFloorsCache(branchId: string) {
+    this.floorsCache.delete(branchId);
+  }
+
+  async listFloors(branchId: string) {
+    const now = Date.now();
+    const cached = this.floorsCache.get(branchId);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
+
+    const floors = await this.prisma.floor.findMany({
       where: { branchId },
       orderBy: { sortOrder: 'asc' },
       include: {
         tables: {
+          orderBy: [{ posY: 'asc' }, { posX: 'asc' }],
           include: { assignedWaiter: { select: { id: true, name: true } } },
         },
       },
     });
+
+    this.floorsCache.set(branchId, {
+      data: floors,
+      expiresAt: now + this.FLOORS_CACHE_TTL_MS,
+    });
+
+    return floors;
   }
 
-  createFloor(branchId: string, dto: FloorDto) {
+  async createFloor(branchId: string, dto: FloorDto) {
+    this.invalidateFloorsCache(branchId);
     return this.prisma.floor.create({ data: { ...dto, branchId } });
   }
 
   async updateFloor(branchId: string, id: string, dto: FloorUpdateDto) {
     await this.assertFloorInBranch(branchId, id);
+    this.invalidateFloorsCache(branchId);
     return this.prisma.floor.update({ where: { id }, data: dto });
   }
 
@@ -122,6 +148,7 @@ export class TablesService {
     const table = await this.prisma.table.create({
       data: { ...dto, posX, posY },
     });
+    this.invalidateFloorsCache(branchId);
     this.realtime.emitToBranch(branchId, 'table.updated', table);
     return table;
   }
@@ -184,6 +211,7 @@ export class TablesService {
     const tables = await this.prisma.$transaction(
       tablesData.map((data) => this.prisma.table.create({ data })),
     );
+    this.invalidateFloorsCache(branchId);
     tables.forEach((table) =>
       this.realtime.emitToBranch(branchId, 'table.updated', table),
     );
@@ -193,6 +221,7 @@ export class TablesService {
   async updateTable(branchId: string, id: string, dto: TableUpdateDto) {
     await this.assertTableInBranch(branchId, id);
     const table = await this.prisma.table.update({ where: { id }, data: dto });
+    this.invalidateFloorsCache(branchId);
     this.realtime.emitToBranch(branchId, 'table.updated', table);
     return table;
   }
@@ -213,6 +242,7 @@ export class TablesService {
         this.prisma.table.update({ where: { id }, data: rest }),
       ),
     );
+    this.invalidateFloorsCache(branchId);
     this.realtime.emitToBranch(branchId, 'table.layout.updated', results);
     return results;
   }
@@ -246,6 +276,7 @@ export class TablesService {
         ...(assignedWaiterId ? { assignedWaiterId } : {}),
       },
     });
+    this.invalidateFloorsCache(branchId);
     this.realtime.emitToBranch(branchId, 'table.updated', table);
     return table;
   }
@@ -253,6 +284,7 @@ export class TablesService {
   async deleteTable(branchId: string, id: string) {
     await this.assertTableInBranch(branchId, id);
     await this.prisma.table.delete({ where: { id } });
+    this.invalidateFloorsCache(branchId);
     this.realtime.emitToBranch(branchId, 'table.deleted', { id });
     return { ok: true };
   }
@@ -266,7 +298,12 @@ export class TablesService {
     // opaque, unguessable token — not the table's own id, so a leaked QR
     // image can't be used to enumerate other tables' ids/data
     const qrToken = randomBytes(16).toString('hex');
-    return this.prisma.table.update({ where: { id }, data: { qrToken } });
+    const updated = await this.prisma.table.update({
+      where: { id },
+      data: { qrToken },
+    });
+    this.invalidateFloorsCache(branchId);
+    return updated;
   }
 
   private async assertFloorInBranch(branchId: string, floorId: string) {
