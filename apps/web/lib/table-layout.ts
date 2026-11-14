@@ -73,3 +73,4 @@ export function findNextAvailableTablePosition(
   );
   return { posX: startX, posY: maxBottom + gap };
 }
+
