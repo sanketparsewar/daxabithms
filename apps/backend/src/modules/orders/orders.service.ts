@@ -55,6 +55,19 @@ const KOT_FORWARD_STATUSES = [
 @Injectable()
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
+  private readonly openOrdersCache = new Map<
+    string,
+    { data: unknown; expiresAt: number }
+  >();
+  private readonly OPEN_ORDERS_CACHE_TTL_MS = 3_000;
+
+  invalidateOpenOrdersCache(branchId: string) {
+    for (const key of this.openOrdersCache.keys()) {
+      if (key.startsWith(`${branchId}:`)) {
+        this.openOrdersCache.delete(key);
+      }
+    }
+  }
 
   constructor(
     private readonly prisma: PrismaService,
@@ -69,11 +82,24 @@ export class OrdersService {
   ) {}
 
   async listOpen(branchId: string, tableId?: string) {
-    return this.prisma.order.findMany({
+    const key = `${branchId}:${tableId ?? 'all'}`;
+    const now = Date.now();
+    const cached = this.openOrdersCache.get(key);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
+
+    const orders = await this.prisma.order.findMany({
       where: { branchId, status: 'OPEN', ...(tableId ? { tableId } : {}) },
       include: { table: true, items: true, customer: true },
       orderBy: { createdAt: 'desc' },
     });
+
+    this.openOrdersCache.set(key, {
+      data: orders,
+      expiresAt: now + this.OPEN_ORDERS_CACHE_TTL_MS,
+    });
+    return orders;
   }
 
   async getOrder(branchId: string, id: string) {
@@ -401,6 +427,7 @@ export class OrdersService {
       return created;
     });
 
+    this.invalidateOpenOrdersCache(branchId);
     // `acceptance` rides along so a kitchen screen can sound the alert for an
     // order that is waiting on a yes/no (it has no ticket to announce yet).
     this.realtime.emitToBranch(branchId, 'order.created', {
@@ -560,6 +587,7 @@ export class OrdersService {
       return result;
     });
 
+    this.invalidateOpenOrdersCache(branchId);
     this.realtime.emitToBranch(branchId, 'order.updated', { id: orderId });
     return this.getOrder(branchId, updated.id);
   }
@@ -643,6 +671,7 @@ export class OrdersService {
         await this.generateKots(tx, orderId, branchId, order.items);
       }
     });
+    this.invalidateOpenOrdersCache(branchId);
     this.realtime.emitToBranch(branchId, 'order.updated', {
       id: orderId,
       acceptance: 'ACCEPTED',
@@ -757,6 +786,7 @@ export class OrdersService {
       });
       await tx.order.deleteMany({ where: { id: { in: ids }, branchId } });
     });
+    this.invalidateOpenOrdersCache(branchId);
     this.realtime.emitToBranch(branchId, 'order.deleted', { orderIds: ids });
     return { deleted: ids.length };
   }
@@ -1074,6 +1104,7 @@ export class OrdersService {
       }
     });
 
+    this.invalidateOpenOrdersCache(branchId);
     this.realtime.emitToBranch(branchId, 'order.updated', { id: orderId });
     this.realtime.emitToBranch(branchId, 'kot.updated', { orderId });
     if (moving) {
@@ -1147,6 +1178,7 @@ export class OrdersService {
       await this.recomputeTotals(tx, orderId);
     });
 
+    this.invalidateOpenOrdersCache(branchId);
     this.realtime.emitToBranch(branchId, 'order.updated', { id: orderId });
     this.realtime.emitToBranch(branchId, 'kot.updated', { orderId });
     await this.audit.record({
@@ -1198,6 +1230,7 @@ export class OrdersService {
       await this.recomputeTotals(tx, orderId);
     });
 
+    this.invalidateOpenOrdersCache(branchId);
     this.realtime.emitToBranch(branchId, 'order.updated', { id: orderId });
     this.realtime.emitToBranch(branchId, 'kot.updated', { orderId });
     await this.audit.record({
@@ -1768,6 +1801,7 @@ export class OrdersService {
       },
     });
 
+    this.invalidateOpenOrdersCache(branchId);
     this.realtime.emitToBranch(branchId, 'order.updated', {
       id: updated.id,
       ...(settlement.fullyPaid
@@ -1945,6 +1979,7 @@ export class OrdersService {
       return created;
     });
 
+    this.invalidateOpenOrdersCache(branchId);
     this.realtime.emitToBranch(branchId, 'order.updated', { id: orderId });
 
     await this.audit.record({
