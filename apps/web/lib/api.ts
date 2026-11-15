@@ -16,14 +16,28 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   // browser sets one with the multipart boundary itself; forcing
   // application/json here makes the upload arrive unparseable server-side.
   const isFormData = options.body instanceof FormData;
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    credentials: "include",
-    headers: {
-      ...(isFormData ? {} : { "Content-Type": "application/json" }),
-      ...options.headers,
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      credentials: "include",
+      headers: {
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
+        ...options.headers,
+      },
+    });
+  } catch (err: unknown) {
+    if (err instanceof ApiError) throw err;
+    const msg =
+      err instanceof Error && err.name === "AbortError"
+        ? "Request timed out"
+        : typeof navigator !== "undefined" && !navigator.onLine
+          ? "Network offline — check your device connection"
+          : err instanceof Error && err.message
+            ? err.message
+            : "Network error — could not reach the server";
+    throw new ApiError(msg, 0);
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ message: res.statusText }));

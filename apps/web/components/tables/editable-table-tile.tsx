@@ -41,9 +41,12 @@ export function EditableTableTile({
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragStart.current) return;
     const { pointerX, pointerY, posX: startX, posY: startY } = dragStart.current;
+    const rawX = Math.max(0, startX + (e.clientX - pointerX));
+    const rawY = Math.max(0, startY + (e.clientY - pointerY));
+    // Snap to 10px grid so restaurant floor layouts align cleanly
     setDragPos({
-      x: Math.max(0, startX + (e.clientX - pointerX)),
-      y: Math.max(0, startY + (e.clientY - pointerY)),
+      x: Math.round(rawX / 10) * 10,
+      y: Math.round(rawY / 10) * 10,
     });
   };
 

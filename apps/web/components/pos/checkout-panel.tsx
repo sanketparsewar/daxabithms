@@ -604,6 +604,38 @@ export function CheckoutPanel({
                 placeholder={String(remainingDue)}
                 onChange={(e) => setAmountText(e.target.value)}
               />
+              {method === "CASH" && (
+                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                  <Button
+                    type="button"
+                    variant={amountText === String(remainingDue) ? "default" : "outline"}
+                    size="sm"
+                    className="h-8 text-xs font-semibold px-2.5"
+                    onClick={() => setAmountText(String(remainingDue))}
+                  >
+                    Exact ({formatCurrency(remainingDue)})
+                  </Button>
+                  {[
+                    Math.ceil(remainingDue / 10) * 10,
+                    Math.ceil(remainingDue / 50) * 50,
+                    Math.ceil(remainingDue / 100) * 100,
+                  ]
+                    .filter((val, idx, arr) => val > remainingDue && arr.indexOf(val) === idx)
+                    .slice(0, 3)
+                    .map((val) => (
+                      <Button
+                        key={val}
+                        type="button"
+                        variant={amountText === String(val) ? "default" : "secondary"}
+                        size="sm"
+                        className="h-8 text-xs font-medium px-2.5"
+                        onClick={() => setAmountText(String(val))}
+                      >
+                        {formatCurrency(val)}
+                      </Button>
+                    ))}
+                </div>
+              )}
               {plan.valid && plan.change > 0 && (
                 <p className="rounded-lg bg-success/10 px-3 py-2 text-base font-semibold tabular-nums text-success" role="status">
                   Change due {formatCurrency(plan.change)}
