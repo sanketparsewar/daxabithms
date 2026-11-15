@@ -30,23 +30,56 @@ const ALL_BRANCH_ROLES = ['OWNER', 'ADMINISTRATOR'];
 @ApiTags('branches')
 @Controller('v1/branches')
 export class BranchesController {
+  private readonly branchCache = new Map<
+    string,
+    { data: unknown; expiresAt: number }
+  >();
+  private readonly CACHE_TTL_MS = 60_000;
+
   constructor(private readonly prisma: PrismaService) {}
+
+  private invalidate(restaurantId: string) {
+    for (const key of this.branchCache.keys()) {
+      if (key.startsWith(`${restaurantId}:`)) {
+        this.branchCache.delete(key);
+      }
+    }
+  }
 
   @Auth()
   @Get()
-  listBranches(@CurrentUser() user: SessionUser) {
+  async listBranches(@CurrentUser() user: SessionUser) {
+    const key = `${user.restaurantId}:list:${user.roleName}:${user.id}`;
+    const now = Date.now();
+    const cached = this.branchCache.get(key);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
+
     const sees = ALL_BRANCH_ROLES.includes(user.roleName)
       ? {}
       : { users: { some: { userId: user.id } } };
-    return this.prisma.branch.findMany({
+    const branches = await this.prisma.branch.findMany({
       where: { restaurantId: user.restaurantId, isActive: true, ...sees },
       orderBy: { name: 'asc' },
     });
+    this.branchCache.set(key, {
+      data: branches,
+      expiresAt: now + this.CACHE_TTL_MS,
+    });
+    return branches;
   }
 
   @Auth()
   @Get(':id')
   async getBranch(@CurrentUser() user: SessionUser, @Param('id') id: string) {
+    const key = `${user.restaurantId}:branch:${id}`;
+    const now = Date.now();
+    const cached = this.branchCache.get(key);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
+
     const branch = await this.prisma.branch.findFirst({
       where: { id, restaurantId: user.restaurantId },
     });
@@ -61,6 +94,10 @@ export class BranchesController {
         throw new ForbiddenException('No access to this branch');
       }
     }
+    this.branchCache.set(key, {
+      data: branch,
+      expiresAt: now + this.CACHE_TTL_MS,
+    });
     return branch;
   }
 
@@ -113,6 +150,7 @@ export class BranchesController {
         });
       }
 
+      this.invalidate(user.restaurantId);
       return branch;
     });
   }
@@ -133,6 +171,7 @@ export class BranchesController {
       throw new NotFoundException('Branch not found');
     }
 
+    this.invalidate(user.restaurantId);
     return this.prisma.branch.update({
       where: { id },
       data: {

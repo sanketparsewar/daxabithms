@@ -54,6 +54,8 @@ export function useSettings(branchId: string | null) {
         `/settings?branchId=${branchId}`,
       ),
     enabled: !!branchId,
+    staleTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
   });
 }
 

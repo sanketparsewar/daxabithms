@@ -14,12 +14,40 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class SettingsService {
+  private readonly settingsCache = new Map<
+    string,
+    { data: { restaurant: unknown; branch: unknown }; expiresAt: number }
+  >();
+  private readonly CACHE_TTL_MS = 60_000;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
   ) {}
 
+  private invalidate(restaurantId?: string, branchId?: string) {
+    if (!restaurantId && !branchId) {
+      this.settingsCache.clear();
+      return;
+    }
+    for (const key of this.settingsCache.keys()) {
+      if (
+        (restaurantId && key.startsWith(`${restaurantId}:`)) ||
+        (branchId && key.endsWith(`:${branchId}`))
+      ) {
+        this.settingsCache.delete(key);
+      }
+    }
+  }
+
   async get(restaurantId: string, branchId: string) {
+    const key = `${restaurantId}:${branchId}`;
+    const now = Date.now();
+    const cached = this.settingsCache.get(key);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
+
     const restaurant = await this.prisma.restaurant.findUnique({
       where: { id: restaurantId },
     });
@@ -29,7 +57,9 @@ export class SettingsService {
     if (!restaurant || !branch) {
       throw new NotFoundException('Restaurant or branch not found');
     }
-    return { restaurant, branch };
+    const data = { restaurant, branch };
+    this.settingsCache.set(key, { data, expiresAt: now + this.CACHE_TTL_MS });
+    return data;
   }
 
   async updateRestaurant(
@@ -37,6 +67,7 @@ export class SettingsService {
     userId: string,
     dto: RestaurantSettingsDto,
   ) {
+    this.invalidate(restaurantId);
     const updated = await this.prisma.restaurant.update({
       where: { id: restaurantId },
       data: dto,
@@ -95,6 +126,7 @@ export class SettingsService {
       where: { id: branchId },
       data,
     });
+    this.invalidate(undefined, branchId);
     await this.audit.record({
       userId,
       action: 'settings.branch_updated',
@@ -130,6 +162,7 @@ export class SettingsService {
       where: { id: branchId },
       data: { kioskToken },
     });
+    this.invalidate(undefined, branchId);
     await this.audit.record({
       userId,
       action: `settings.kiosk_${action}`,
