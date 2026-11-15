@@ -28,7 +28,10 @@
     "nextjs"
   ],
   "scripts": {
-    "dev": "./scripts/start-local-pg.sh && turbo run dev",
+    "dev": "node -e \"if (process.platform === 'linux') try { require('child_process').spawnSync('bash', ['./scripts/start-local-pg.sh'], { stdio: 'inherit' }); } catch {}\" && turbo run dev",
+    "dev:backend": "pnpm --filter @daxabithms/backend dev",
+    "dev:web": "pnpm --filter web dev",
+    "start": "turbo run start",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
