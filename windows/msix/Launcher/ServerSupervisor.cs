@@ -8,17 +8,13 @@ using System.Text.RegularExpressions;
 namespace DaxabitHMS.Launcher;
 
 /// <summary>
-/// Owns the lifecycle of the embedded server: Postgres, the NestJS
-/// backend, and the Next.js web app, all run as native child processes of
-/// this launcher (no Docker). Only used when the user chose "this is the
-/// main computer" at first run (see MainForm's embedded-mode flow) —
-/// otherwise the app stays a pure thin client pointed at someone else's
-/// server, exactly as before this feature.
+/// Owns the complete local desktop stack: Postgres, the NestJS backend,
+/// and the Next.js UI run as native child processes of this launcher.
 ///
 /// v1 scope: fixed ports (see ServerPaths), no Windows Service — these
 /// processes live and die with this launcher's process tree. The launcher
 /// itself minimizes to a tray icon instead of exiting on window close (see
-/// TrayIcon.cs / MainForm.cs) so other LAN devices keep working as long as
+/// TrayIcon.cs / MainForm.cs) so the local desktop app stays available as long as
 /// this app keeps running in the background, not necessarily visible.
 /// </summary>
 internal sealed class ServerSupervisor : IDisposable
@@ -112,22 +108,11 @@ internal sealed class ServerSupervisor : IDisposable
         if (string.Equals(ServerPaths.RuntimeServerDir, ServerPaths.InstallServerDir, StringComparison.OrdinalIgnoreCase)) return;
         if (File.Exists(ServerPaths.NodeExePath)) return;
 
-        // This build's package genuinely has no embedded-server payload —
-        // either it was built without -IncludeEmbeddedServer (the default;
-        // see build-windows-msix.ps1), or an OLDER thin-client-only build
-        // got installed over a newer one. Without this check, robocopy
-        // just fails on a missing source directory with a bare "exit 16"
-        // — nothing here explains WHY, and config.json's Mode: embedded
-        // (written by FirstRunChoiceForm) persists in %LOCALAPPDATA%
-        // independently of whichever package is actually installed, so a
-        // stale choice from an earlier embedded install can silently
-        // outlive a later thin-client-only reinstall.
+        // Keep a clear error for damaged or incomplete desktop packages.
         if (!Directory.Exists(ServerPaths.InstallServerDir) || !Directory.EnumerateFileSystemEntries(ServerPaths.InstallServerDir).Any())
         {
             throw new InvalidOperationException(
-                "This installed build does not include the embedded server (it was built without -IncludeEmbeddedServer), " +
-                "but this PC is configured to run in embedded mode — likely left over from a previous install.\n\n" +
-                $"Delete \"{AppConfig.ConfigPath}\" and relaunch to choose again, or reinstall using a package built with -IncludeEmbeddedServer.");
+                "This desktop package is missing its local Node.js and PostgreSQL services. Reinstall the complete DaxabitHMS desktop package.");
         }
 
         Report("Setting up (first launch only — this can take a minute)…");
@@ -406,8 +391,9 @@ internal sealed class ServerSupervisor : IDisposable
         {
             $"JWT_SECRET={jwtSecret}",
             $"DATABASE_URL=postgresql://daxabithms:embedded@127.0.0.1:{ServerPaths.PostgresPort}/daxabithms",
+            "HOST=127.0.0.1",
             $"PORT={ServerPaths.BackendPort}",
-            $"CORS_ORIGIN=http://localhost:{ServerPaths.WebPort}",
+            $"CORS_ORIGIN=http://127.0.0.1:{ServerPaths.WebPort}",
             $"COOKIE_SECURE=false",
             $"UPLOADS_DIR={ServerPaths.UploadsDir}",
             $"NODE_ENV=production",
@@ -451,6 +437,8 @@ internal sealed class ServerSupervisor : IDisposable
     private void StartBackend()
     {
         var env = ReadBackendEnv();
+        env["HOST"] = "127.0.0.1";
+        env["CORS_ORIGIN"] = $"http://127.0.0.1:{ServerPaths.WebPort}";
         var mainJs = Path.Combine(ServerPaths.BackendWorkingDir, ServerPaths.BackendMainJsRelativePath);
         _backend = StartLongRunning(ServerPaths.NodeExePath, $"\"{mainJs}\"", ServerPaths.BackendWorkingDir, env, "backend");
     }
@@ -460,9 +448,7 @@ internal sealed class ServerSupervisor : IDisposable
         var env = new Dictionary<string, string>
         {
             ["PORT"] = ServerPaths.WebPort.ToString(),
-            // 0.0.0.0, not localhost: other LAN devices' browsers need to
-            // reach this port directly — that's the whole point.
-            ["HOSTNAME"] = "0.0.0.0",
+            ["HOSTNAME"] = "127.0.0.1",
         };
         _web = StartLongRunning(ServerPaths.NodeExePath, $"\"{ServerPaths.WebServerScriptRelativePath}\"", ServerPaths.WebDir, env, "web");
     }

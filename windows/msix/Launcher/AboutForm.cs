@@ -45,10 +45,10 @@ internal sealed class AboutForm : Form
             Size = new Size(410, 38),
         };
 
-        var modeText = config.IsEmbedded ? "Local Embedded Server (Port 1995)" : $"Remote Client ({config.ServerUrl})";
+        var modeText = "Local Desktop Application (127.0.0.1:1995)";
         var infoBox = new GroupBox
         {
-            Text = "Deployment Details",
+            Text = "Local Installation",
             Font = new Font("Segoe UI", 9f),
             Location = new Point(24, 150),
             Size = new Size(412, 100),

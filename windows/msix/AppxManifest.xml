@@ -58,8 +58,8 @@
   <!--
     Capabilities: deliberately minimal, per hardening brief sections 2/17/26.
 
-    - internetClient: outbound HTTP(S) to the restaurant's LAN/local
-      DaxabitHMS server. This is the ONLY capability the app needs.
+    - internetClient: optional outbound HTTP(S) for integrations and
+      release/update checks. The desktop UI and API stay on loopback.
     - runFullTrust: required for any Win32/.NET desktop app packaged as
       MSIX (this is what "EntryPoint=Windows.FullTrustApplication" above
       declares) — this is NOT the same thing as elevation/admin rights.

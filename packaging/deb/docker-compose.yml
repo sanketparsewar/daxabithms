@@ -24,7 +24,7 @@ services:
       DATABASE_URL: "postgresql://daxabithms:${POSTGRES_PASSWORD}@postgres:5432/daxabithms"
       JWT_EXPIRES_IN: "12h"
       PORT: "4000"
-      CORS_ORIGIN: "${FRONTEND_ORIGIN:-http://localhost:1995}"
+      CORS_ORIGIN: "${FRONTEND_ORIGIN:-http://127.0.0.1:1995}"
       COOKIE_SECURE: "${COOKIE_SECURE:-false}"
       UPLOADS_DIR: "/data/uploads"
       VERIFACTU_PRODUCER_ID: "${VERIFACTU_PRODUCER_ID:-}"
@@ -48,7 +48,7 @@ services:
     container_name: daxabithms-web
     restart: unless-stopped
     ports:
-      - "${HOST_PORT:-1995}:3000"
+      - "127.0.0.1:${HOST_PORT:-1995}:3000"
     depends_on:
       - backend
 volumes:

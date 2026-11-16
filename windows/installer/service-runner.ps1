@@ -103,6 +103,7 @@ function Start-BackendProcess {
     foreach ($k in $BackendEnv.Keys) {
         $psi.EnvironmentVariables[$k] = $BackendEnv[$k]
     }
+    $psi.EnvironmentVariables["HOST"] = "127.0.0.1"
     $psi.EnvironmentVariables["PORT"] = [string]$BackendPort
     $psi.EnvironmentVariables["NODE_ENV"] = "production"
 
@@ -141,7 +142,7 @@ function Start-WebProcess {
     $psi.CreateNoWindow = $true
 
     $psi.EnvironmentVariables["PORT"] = [string]$WebPort
-    $psi.EnvironmentVariables["HOSTNAME"] = "0.0.0.0"
+    $psi.EnvironmentVariables["HOSTNAME"] = "127.0.0.1"
     $psi.EnvironmentVariables["NODE_ENV"] = "production"
     $psi.EnvironmentVariables["BACKEND_URL"] = "http://127.0.0.1:$BackendPort"
 

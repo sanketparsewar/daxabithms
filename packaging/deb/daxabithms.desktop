@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=DaxabitHMS
+Comment=Local restaurant management desktop application
+Exec=/usr/bin/daxabithms
+Icon=daxabithms
+Terminal=false
+Categories=Office;Finance;
+StartupNotify=true

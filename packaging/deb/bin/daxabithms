@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+url="http://127.0.0.1:1995"
+profile="${XDG_DATA_HOME:-$HOME/.local/share}/daxabithms/chromium"
+
+ready=0
+for _ in $(seq 1 120); do
+  if curl --silent --fail --max-time 3 "$url/api/health" >/dev/null; then
+    ready=1
+    break
+  fi
+  sleep 1
+done
+
+if [ "$ready" -ne 1 ]; then
+  if command -v zenity >/dev/null 2>&1; then
+    zenity --error --title="DaxabitHMS is starting" \
+      --text="The local DaxabitHMS service is not ready. Check that the daxabithms service is running, then try again." || true
+  fi
+  exit 1
+fi
+
+mkdir -p "$profile"
+for browser in google-chrome-stable google-chrome chromium chromium-browser; do
+  if command -v "$browser" >/dev/null 2>&1; then
+    exec "$browser" --app="$url" --no-first-run --user-data-dir="$profile"
+  fi
+done
+
+if command -v zenity >/dev/null 2>&1; then
+  zenity --error --title="Chromium is required" \
+    --text="Install Chromium or Google Chrome to run DaxabitHMS as a desktop app." || true
+fi
+exit 1

@@ -1,18 +1,15 @@
 # DaxabitHMS: Complete Documentation Index & Operations Portal
 
-Welcome to the **DaxabitHMS** documentation repository. Below is the complete catalog of operational, technical, legal, and user documentation organized by role and lifecycle phase.
+Welcome to the **DaxabitHMS** documentation repository. The supported end-user product is a local desktop app for Windows and Ubuntu/Debian. The backend and frontend remain separate Node.js and Next.js workspace packages.
 
 ---
 
-## 🚀 1. Installation & Deployment Guides
+## 🚀 1. Desktop Installation
 
-* [Master Installation Guide](file:///d:/daxabithms/docs/INSTALLATION_GUIDE.md): Master guide covering all deployment modes (Windows Standalone, LAN, Docker, Cloud).
-* [Windows Server Installation Guide](file:///d:/daxabithms/docs/WINDOWS_SERVER_INSTALLATION.md): Complete setup guide for the zero-dependency Windows server (`DaxabitHMS-Setup.exe`).
-* [Windows Desktop Client Installation Guide](file:///d:/daxabithms/docs/WINDOWS_CLIENT_INSTALLATION.md): Instructions for the WinForms + WebView2 MSIX desktop launcher.
-* [Browser & LAN Access Guide](file:///d:/daxabithms/docs/BROWSER_ACCESS_GUIDE.md): Connecting tablets, iPads, and mobile phones over the local restaurant network.
-* [LAN Deployment & Firewall Guide](file:///d:/daxabithms/docs/LAN_DEPLOYMENT.md): Detailed router, subnet, and firewall configuration.
-* [Cloud / VPS Deployment Guide](file:///d:/daxabithms/docs/CLOUD_DEPLOYMENT.md): Containerized deployment behind Nginx / Caddy with HTTPS.
-* [Windows Uninstall & Disaster Recovery](file:///d:/daxabithms/docs/WINDOWS_UNINSTALL_AND_RECOVERY.md): Clean removal, data preservation, and recovery procedures.
+* [Desktop Quick Start](../QUICKSTART.md): Install and launch the local desktop app.
+* [Windows Desktop Installation](WINDOWS_CLIENT_INSTALLATION.md): MSIX installation, local data, and first launch.
+* [Windows Desktop Runtime](../windows/msix/README.md): Bundle contents, build, and diagnostics.
+* [Windows Uninstall & Disaster Recovery](WINDOWS_UNINSTALL_AND_RECOVERY.md): Clean removal, data preservation, and recovery procedures.
 
 ---
 

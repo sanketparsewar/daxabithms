@@ -142,13 +142,12 @@ Automated Test Coverage Overview:
 ### 3.4 Windows Desktop Standalone Installation & Upgrade Protocol
 - **Applies to:** Windows 10 (1809+) and Windows 11 PCs.
 - **Physical Test Procedure:**
-  1. Build package: `pwsh windows/msix/build-windows-msix.ps1 -IncludeEmbeddedServer`.
+  1. Build package: `pwsh windows/msix/build-windows-msix.ps1` (the local services are always bundled).
   2. Install on a clean Windows machine without Node or Postgres pre-installed.
   3. Launch DaxabitHMS from the Start Menu.
-  4. Select "This PC is the main restaurant computer".
   5. **Inspection Checklist:**
      - [ ] Embedded PostgreSQL initializes in `%LOCALAPPDATA%\DaxabitHMS\pgdata` on port 5433 without requiring UAC administrator elevation.
      - [ ] NestJS backend and Next.js frontend boot and health checks return `200 OK`.
-     - [ ] WebView2 loads `http://localhost:3000` with zero script errors.
-     - [ ] Window close button minimizes the application to the Windows System Tray; secondary LAN devices remain able to connect.
+     - [ ] WebView2 loads the local interface at `http://127.0.0.1:1995` with zero script errors.
+     - [ ] Window close button minimizes the application to the Windows System Tray; services remain available to the desktop app only.
      - [ ] Right-click System Tray icon → Exit cleanly terminates PostgreSQL, NestJS, and Next.js child process trees without orphaned zombie processes.

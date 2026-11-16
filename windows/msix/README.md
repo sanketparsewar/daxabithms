@@ -1,18 +1,18 @@
-# Daxabit — Windows MSIX client
+# Daxabit — Windows desktop app
 
-A thin native shell (WinForms + WebView2) around the same web UI the
-Linux/Docker deployment already serves. It ships no server, no database, no
-Node.js/Docker/pnpm, and no bundled Chromium — this is not Electron.
+A native WinForms + WebView2 desktop shell with its own local PostgreSQL,
+Node.js/NestJS backend, and Next.js user interface. The packaged app runs
+the complete stack on this computer and binds its services to loopback only.
+The frontend and backend remain separate workspace packages and build
+artifacts; the desktop package starts them locally and does not connect to a
+remote DaxabitHMS server.
 
 ## What this is / isn't
 
-- **Is:** a client. On first launch it asks for the restaurant's own
-  DaxabitHMS server address (LAN IP, hostname, VPN address) and connects
-  to it — same as typing that address into a browser, but packaged as a
-  normal Windows app with a Start Menu entry, no URL bar, no browser tab
-  habits.
-- **Isn't:** a copy of the server. Backend/Postgres/Docker stay exactly
-  where they already run (a restaurant's own machine or VPS).
+- **Is:** the complete local desktop application. PostgreSQL, the Node.js
+  API, and the web UI run on `127.0.0.1` and start with the desktop app.
+- **Isn't:** an online or LAN-hosted browser application. The web UI is an
+  internal desktop component; the app has no remote-server mode.
 - **Printing:** unchanged. The web app already prints receipts via
   `window.print()` (`apps/web/lib/print.ts`), which opens the standard OS
   print dialog. Inside WebView2 on Windows, that dialog IS the Windows
@@ -59,9 +59,8 @@ windows/msix/
     Launcher.csproj             # plain self-contained WinForms publish
     app.manifest                 # asInvoker execution level, per-monitor DPI
     Program.cs                   # entry point
-    MainForm.cs                  # WebView2 host + menu (change server / reload)
-    ServerSettingsForm.cs        # first-run / change-server dialog
-    AppConfig.cs                 # per-user server URL, %LOCALAPPDATA%\DaxabitHMS
+    MainForm.cs                  # WebView2 host and local service status
+    AppConfig.cs                 # local-only configuration, %LOCALAPPDATA%\DaxabitHMS
     TrayIcon.cs                   # embedded-mode system tray (minimize-to-tray, stop/exit, remove data)
     ServerSupervisor.cs           # embedded-mode server lifecycle (Postgres/backend/web child processes)
     ServerPaths.cs                # embedded-mode writable state layout, under AppConfig.ConfigDir
@@ -75,7 +74,7 @@ PATH from a "Developer PowerShell for VS" prompt).
 
 ```powershell
 cd windows/msix
-./build-windows-msix.ps1                              # unsigned build, for CI/inspection
+./build-windows-msix.ps1                              # builds the complete desktop bundle
 ./build-windows-msix.ps1 -SelfSignedTest -InstallLocally  # local test install round-trip
 ./validate-msix.ps1                                    # structural sanity checks
 ```
@@ -91,9 +90,9 @@ machine exists in the environment this app was developed in.
 
 ## Single-instance protection
 
-Embedded-mode installs minimize to the tray on window close instead of
-exiting (`MainForm.OnFormClosing`/`TrayIcon.cs`) — the server keeps running
-for other LAN devices even when the till window isn't visible. That means a
+The desktop app minimizes to the tray on window close instead of
+exiting (`MainForm.OnFormClosing`/`TrayIcon.cs`) — its local services keep
+running while the app window isn't visible. That means a
 user who thinks they "closed" the app and reopens it (Start Menu, desktop
 tile) is really launching a **second** process against an already-running
 first one.
@@ -140,7 +139,7 @@ package uninstall — leaves no residue on disk.
 
 | Capability | Why |
 |---|---|
-| `internetClient` | Reaching the restaurant's DaxabitHMS server (LAN IP, hostname, or a VPN/Tailscale address). |
+| `internetClient` | Optional outbound integrations and release/update checks. The desktop app does not connect to a remote DaxabitHMS server. |
 | `runFullTrust` (restricted) | Required for any Win32-model desktop app packaged via Desktop Bridge — see "Why WinForms, and why runFullTrust" above. Not elevation, not admin, not broad filesystem/registry/device access. |
 
 **No device/USB/Bluetooth capability of any kind**, no
@@ -244,7 +243,7 @@ Per this project's own "don't fake test results" rule:
   fails the build if any device/USB/broad-filesystem capability is ever
   added.
 - **WebView2 behavior: mostly verified, one path still real-hardware-only.**
-  Normal load/navigate/print/reload/change-server flows run against a
+  Normal load/navigate/print/reload flows run against a
   live self-hosted server as part of manual development, and dev
   tools/context menu/status bar are explicitly disabled for the packaged
   build (see `MainForm.cs`). The WebView2-Runtime-**absent** path is now

@@ -37,16 +37,8 @@
   actually install the package on the current machine (used by CI to get a
   real install/launch PASS signal, not just "it compiled").
 
-.PARAMETER IncludeEmbeddedServer
-  Also runs stage-server-assets.ps1 (pnpm install/build, portable Node.js,
-  portable Postgres) and folds its output into the package under
-  Launcher\server\ — needed for the "this PC is the server too" mode (see
-  ServerSupervisor.cs). Off by default: it's slow (full pnpm install +
-  ~80MB of downloads) and the plain thin-client build doesn't need it.
-
 .EXAMPLE
   ./build-windows-msix.ps1 -SelfSignedTest -InstallLocally
-  ./build-windows-msix.ps1 -SelfSignedTest -InstallLocally -IncludeEmbeddedServer
 #>
 param(
     [ValidateSet('Release', 'Debug')]
@@ -58,8 +50,6 @@ param(
     [switch]$SelfSignedTest,
 
     [switch]$InstallLocally,
-
-    [switch]$IncludeEmbeddedServer,
 
     [string]$CertificatePath,
 
@@ -131,15 +121,10 @@ Copy-Item -Path $manifestSrc -Destination (Join-Path $stageDir 'AppxManifest.xml
 # fails the build if any slip through here).
 Get-ChildItem -Path $stageDir -Filter '*.pdb' -Recurse -File | Remove-Item -Force
 
-# --- 2.5. Optional: embedded server assets (Postgres + Node + backend + web) --
-if ($IncludeEmbeddedServer) {
-    Write-Host "== Staging embedded server assets (this is the slow step) ==" -ForegroundColor Cyan
-    # Any failure inside stage-server-assets.ps1 throws a terminating error
-    # (it also sets $ErrorActionPreference = 'Stop'), which propagates up
-    # and halts this script too — no separate exit-code check needed here.
-    $stageServerScript = Join-Path $root 'stage-server-assets.ps1'
-    & $stageServerScript -StageDir $stageDir
-}
+# --- 2.5. Embedded local stack (Postgres + Node + backend + web) -------------
+Write-Host "== Staging the desktop's local database and services ==" -ForegroundColor Cyan
+$stageServerScript = Join-Path $root 'stage-server-assets.ps1'
+& $stageServerScript -StageDir $stageDir
 
 # --- 3. Pack ------------------------------------------------------------------
 New-Item -ItemType Directory -Force -Path (Split-Path $msixOut) | Out-Null

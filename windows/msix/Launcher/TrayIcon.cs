@@ -3,10 +3,8 @@ namespace DaxabitHMS.Launcher;
 /// <summary>
 /// System tray presence for embedded-server mode: lets the till window be
 /// closed (minimized, not exited — see MainForm's Closing handler) without
-/// taking down the server every other LAN device depends on. Only
-/// instantiated when running in embedded mode; a pure thin-client install
-/// has no tray icon and closing its window exits normally, same as before
-/// this feature.
+/// taking down the local services while the application window is closed.
+/// The tray icon is part of the desktop-only local installation.
 /// </summary>
 internal sealed class TrayIcon : IDisposable
 {

@@ -118,7 +118,8 @@ ENCRYPTION_KEY="$encryptionKey"
 BACKUP_ENCRYPTION_KEY="$encryptionKey"
 NODE_ENV="production"
 PORT=4001
-CORS_ORIGIN="http://localhost:1995"
+HOST=127.0.0.1
+CORS_ORIGIN="http://127.0.0.1:1995"
 UPLOAD_DIR="$UploadsDir"
 "@
     Set-Content -Path $BackendEnvPath -Value $envContent -Encoding UTF8
@@ -182,7 +183,6 @@ Start-Process -FilePath $PgCtl -ArgumentList "stop -D `"$PgDataDir`" -m fast -w"
 try {
     Log-Info "Configuring Windows Firewall inbound rule for port 1995..."
     & netsh advfirewall firewall delete rule name="DaxabitHMS POS Server" 2>$null | Out-Null
-    & netsh advfirewall firewall add rule name="DaxabitHMS POS Server" dir=in action=allow protocol=TCP localport=1995 profile=private,domain | Out-Null
     Log-Info "Firewall rule created for port 1995."
 } catch {
     Log-Info "Warning: Firewall rule configuration error: $($_.Exception.Message)"

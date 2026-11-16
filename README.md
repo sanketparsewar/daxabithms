@@ -4,10 +4,11 @@
 
 <img src="docs/daxabit-cover.jpg" alt="Daxabit Restaurant Dining Atmosphere" width="100%">
 
-**Open-source, self-hosted restaurant POS & management system** — billing
+**Open-source restaurant POS desktop app** — billing
 with **UPI QR payments**, tables, kitchen display (KDS), reservations,
 inventory, **staff attendance & payroll**, accounting, reports, CRM/loyalty
-and multi-branch control. Offline-first, runs on your own server, no
+and multi-branch control. Offline-first, runs its database and services on
+your own computer, no
 subscription. Not a retail POS bolted onto a restaurant; purpose-built for
 dine-in, takeaway, delivery and kitchen operations.
 
@@ -17,13 +18,12 @@ dine-in, takeaway, delivery and kitchen operations.
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](apps/web/tsconfig.json)
 [![NestJS](https://img.shields.io/badge/backend-NestJS-E0234E?logo=nestjs&logoColor=white)](apps/backend)
 [![Next.js](https://img.shields.io/badge/frontend-Next.js-000000?logo=next.js&logoColor=white)](apps/web)
-[![CasaOS / ZimaOS](https://img.shields.io/badge/CasaOS%20%2F%20ZimaOS-one--click%20app-1F6FEB)](casaos/README.md)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Status](https://img.shields.io/badge/status-active%20development-orange.svg)](./ROADMAP.md)
 
 Developed by [Daxabit](https://daxabit.com/)
 
-**[Try Daxabit]()** · **[Maintainer: Daxabit](https://daxabit.com/)**
+**[Maintainer: Daxabit](https://daxabit.com/)**
 
 <p align="center">
   <img src="docs/assets/hero-animated.svg" alt="DaxabitHMS: animated overview with an illustrative sample screen" width="100%">
@@ -47,11 +47,10 @@ Developed by [Daxabit](https://daxabit.com/)
 
 **DaxabitHMS** is a purpose-built, offline-first Restaurant
 Management System for restaurants, cafés, coffee shops, bakeries, fast
-food, fine dining, bars, food courts, cloud kitchens, and multi-branch
-chains. The whole stack — Postgres, API, and web app — runs on one local
-server on the restaurant's own LAN: order-taking, billing, KDS, and
-printing all keep working with the WAN cable unplugged. No subscription,
-no forced cloud dependency, self-hosted by design.
+food, fine dining, bars, food courts, and cloud kitchens. The desktop app
+runs PostgreSQL, its Node.js API, and its UI on one computer. Order-taking,
+billing, kitchen operations, and printing keep working without internet.
+No subscription or hosted account is required.
 
 It's a sister project to [`daxabithms`](https://github.com/sanketparsewar/daxabithms)
 (the retail-shop POS), reusing its proven patterns — auth/session model,
@@ -64,8 +63,8 @@ forcing one schema to serve both would have compromised both. See
 **Non-negotiable product principles** (the short version — full detail in
 [`PROJECT.md`](./PROJECT.md)):
 
-1. **Offline-first / self-hosted** — a single branch runs entirely on a
-   local LAN server, zero internet dependency once installed.
+1. **Offline-first / local** — a single computer runs the desktop app and
+   its database without a hosted account.
 2. **Premium, not "POS-ugly"** — every screen is held to the same bar as
    Stripe Dashboard, Linear, Notion, Vercel, Shopify Admin.
 3. **RBAC everywhere** — every action gated by a granular, individually
@@ -77,48 +76,30 @@ forcing one schema to serve both would have compromised both. See
 
 ## Where to run it
 
-"Offline-first" describes how the app runs, not where it has to live —
-nothing about it is tied to a specific machine or network:
+The supported end-user application is a local desktop app for one
+computer. Its PostgreSQL database, Node.js/NestJS API, and Next.js interface
+run locally; service ports bind to loopback and are not published to the
+LAN. The web UI is an internal desktop component, not a browser-hosted
+product.
 
-- **A local LAN server (the default, recommended setup).** One machine in
-  the restaurant runs `docker compose up`; every till, tablet, and KDS
-  screen on the same Wi-Fi/Ethernet reaches it at `http://<that machine's
-  LAN IP>:1995`. No internet connection is needed once it's running —
-  order-taking, billing, KDS, and printing all keep working with the WAN
-  cable unplugged.
-- **Any VPS or cloud box.** The identical `docker compose up` also runs
-  unmodified on a VPS (DigitalOcean, Hetzner, AWS, etc.) if you'd rather
-  manage one restaurant — or several branches — remotely instead of on
-  site. Point `FRONTEND_ORIGIN`/`HOST_PORT` in `.env` at that box instead
-  of `localhost`; nothing else changes.
-- **Behind a tunnel (Cloudflare Tunnel, ngrok, Tailscale Funnel, or any
-  reverse proxy).** Reachable from outside the LAN with a real HTTPS
-  certificate and no port-forwarding, by pointing the tunnel at the `web`
-  service's port (`1995` by default). Once traffic reaches the app over
-  `https://`, set **`COOKIE_SECURE=true`** in `.env` so the session cookie
-  is marked `Secure` — leave it `false` (the default) for a plain
-  `http://` LAN/VPS setup, since a browser silently refuses to store a
-  `Secure` cookie on a non-HTTPS origin, which locks every user out with
-  "Unauthorized" even though login appears to succeed.
-
-Whichever way you reach it, it's the same three containers, same data, same
-login — there's no separate "cloud" mode to configure.
-
-- **CasaOS / ZimaOS.** Pre-built, multi-arch (amd64/arm64) images are
-  published to GHCR and there's a ready-to-install app manifest — no build
-  step, no `git clone` needed. Install directly from a compose URL today;
-  see [`casaos/README.md`](casaos/README.md). Official app store submission
-  pending.
+The frontend and backend stay as separate workspace packages and build
+artifacts. The desktop launcher runs both locally. Developer Dockerfiles and
+service configuration remain available for custom deployments.
 
 ### Windows desktop client
 
-However you host the server above, tills that are Windows machines don't
-have to use a browser tab: `windows/msix/` packages a thin native client
-(WinForms + WebView2, not Electron — no bundled Chromium, no server, no
-Docker) with a Start Menu entry that points at your server's address and
-otherwise just shows the same web UI. See
-[`windows/msix/README.md`](windows/msix/README.md) for what it is/isn't,
-build instructions, and the full capability list.
+`windows/msix/` packages a WinForms + WebView2 desktop app with the local
+PostgreSQL database, Node.js backend, and web UI. It has no remote-server
+mode and does not accept LAN connections. See
+[`windows/msix/README.md`](windows/msix/README.md) for build and install
+details.
+
+### Ubuntu and Debian desktop
+
+The `.deb` package installs the local service and adds a DaxabitHMS entry to
+the Applications menu. It opens the interface in a Chromium app window and
+publishes the local UI only on `127.0.0.1`. Docker pulls the service images
+the first time they start; business data stays in local Docker volumes.
 
 Status: the build, package, install, and Start Menu registration are all
 machine-verified on every push via GitHub Actions (`windows-msix.yml`,
@@ -185,8 +166,9 @@ ordering page and staff sidebar.
   amount appears at the till *and* on the customer-facing screen; a
   "payment received" chime plays when the sale is closed. No gateway fees,
   money goes straight to your UPI id. See the [tutorial](./TUTORIAL.md#upi-qr-payments-and-the-customer-display).
-- **Runs without the internet** — one Docker Compose stack on a local
-  server; billing, KDS and printing survive a dead WAN link.
+- **Runs without the internet** — the desktop app keeps its database, API,
+  and interface on this computer; billing, KDS, and printing survive a dead
+  WAN link.
 - **Your data, your server** — AGPL-3.0, no per-terminal licence, no
   vendor lock-in. Backup and restore from the app.
 - **Whole-restaurant scope** — POS, kitchen, inventory, payroll, accounting
@@ -246,9 +228,9 @@ management tools with **56 screenshots of the app**.
 
 ## FAQ
 
-**Is there a free, open-source restaurant POS I can self-host?**
-Yes — DaxabitHMS is AGPL-3.0 and installs with `docker compose up`, or as
-a one-click app on CasaOS / ZimaOS.
+**Is there a free, open-source restaurant POS desktop app?**
+Yes — DaxabitHMS is AGPL-3.0 and runs its database and services locally on
+Windows or Ubuntu/Debian.
 
 **Does it support UPI payments and GST billing?**
 Yes. Add your UPI id under *Settings → Restaurant*; checkout then shows a
@@ -256,8 +238,9 @@ scannable QR for the exact amount. GST is configured per branch, inclusive
 or exclusive.
 
 **Does it work offline?**
-Order-taking, billing, the kitchen display and printing run entirely on
-your local server. Only optional features (email, webhooks) need internet.
+After installation, order-taking, billing, the kitchen display, and
+printing use the local database. Optional features such as email and
+webhooks need internet access.
 
 **Can it manage staff attendance and payroll?**
 Yes: clock in/out, shifts, leave, payroll from clocked hours with unpaid-leave
@@ -299,134 +282,26 @@ Postgres over the originally-specced SQLite — is in
 
 ## Quick start
 
-<p align="center">
-  <img src="docs/assets/install-animated.svg" alt="Animated terminal: clone the repo and run install.sh" width="100%">
-</p>
+Download the desktop installer for your operating system from the
+[latest release](https://github.com/sanketparsewar/daxabithms/releases/latest).
+On Ubuntu/Debian, install the `.deb`; DaxabitHMS then appears in the
+Applications menu. On Windows, install the MSIX package and launch it from
+Start. Both packages run their own local database and services.
 
+The UI and API are separate workspace packages: `apps/web` builds the
+Next.js frontend, and `apps/backend` builds the Node.js/NestJS API. The
+desktop installers bundle and run these components locally. Their Docker
+builds remain separate for developers who need custom deployment layouts.
 
-### Installing Docker
-
-Skip this if `docker --version` already works. Otherwise, pick your OS:
-
-**Linux** (Debian/Ubuntu/Fedora/etc. — official convenience script):
-
-```bash
-curl -fsSL https://get.docker.com | sudo sh && sudo usermod -aG docker $USER
-```
-
-Log out and back in (or run `newgrp docker`) so your user can run `docker`
-without `sudo`.
-
-**macOS** (via [Homebrew](https://brew.sh)):
-
-```bash
-brew install --cask docker
-```
-
-Then open the Docker.app once from Launchpad/Spotlight to finish setup and
-start the Docker engine — it needs to be running before `docker compose`
-works.
-
-**Windows 10/11** (via [winget](https://learn.microsoft.com/windows/package-manager/winget/), bundled with current Windows):
-
-```powershell
-winget install Docker.DockerDesktop
-```
-
-Reboot if prompted, accept the WSL2 backend if asked, then launch Docker
-Desktop once from the Start menu. Run the install steps below from **WSL2**
-or **Git Bash** (both include the `bash` this project's install script
-needs) — plain PowerShell/cmd can't run a `.sh` file directly.
-
-No hand-holding needed beyond that — all three ship Docker Compose v2
-already bundled, which is all this project requires.
-
-### One-click install
-
-```bash
-git clone https://github.com/sanketparsewar/daxabithms.git && cd daxabithms && ./install.sh
-```
-
-[`install.sh`](install.sh) generates a `.env` with random secrets (only if
-one doesn't already exist — safe to re-run), builds the backend + web Docker
-images, starts the stack, and waits for the backend to report healthy. Re-run
-it any time after `git pull` to rebuild.
-
-Open **http://localhost:1995** and create your restaurant at `/signup` — no
-demo data is loaded by default. To try the app with sample data instead, run
-`./install.sh --demo` and sign in with `owner@demo.local` / `Password123!`.
-
-The backend API and Swagger docs are reachable only through the web app's
-`/api` proxy, not published directly to the host.
-
-### Manual install
-
-If you'd rather run each step yourself (e.g. to set your own secrets instead
-of generated ones):
-
-```bash
-git clone https://github.com/sanketparsewar/daxabithms.git
-cd daxabithms
-cp .env.example .env        # edit JWT_SECRET / POSTGRES_PASSWORD for anything beyond local dev
-docker compose up -d --build
-docker exec daxabithms-restaurant-backend npx ts-node prisma/seed.ts   # optional: demo data + login; upsert-based, safe to re-run
-```
-
-### Local dev (no Docker for the apps)
-
-Requires Node 22+, pnpm, and a local Postgres (or just run the `postgres`
-service from Docker Compose).
-
-```bash
-pnpm install
-docker compose up -d postgres
-cp apps/backend/.env.example apps/backend/.env   # point DATABASE_URL at your Postgres
-pnpm --filter @daxabithms/types build
-cd apps/backend && npx prisma migrate dev && npx ts-node prisma/seed.ts && cd ../..
-pnpm dev   # runs backend (:4001) and web (:1995) together via Turborepo
-```
-
-Full setup detail, coding conventions, and the PR process are in
+For development setup and contribution instructions, see
 [`CONTRIBUTING.md`](./CONTRIBUTING.md).
-
-### Updating
-
-**Docker install (one-click or manual):**
-
-```bash
-git pull
-./install.sh
-```
-
-Re-running [`install.sh`](install.sh) is safe any time — it never overwrites
-an existing `.env` or touches existing data. It rebuilds the backend + web
-images and restarts the stack; the backend runs `prisma migrate deploy`
-automatically on startup, so any new database migrations from the pull are
-applied before it starts accepting traffic. If you installed manually
-instead, the equivalent is:
-
-```bash
-git pull
-docker compose up -d --build
-```
-
-**Local dev (no Docker for the apps):**
-
-```bash
-git pull
-pnpm install
-pnpm --filter @daxabithms/types build
-cd apps/backend && npx prisma migrate dev && cd ../..
-pnpm dev
-```
 
 ## Monorepo layout
 
 ```
-apps/backend    NestJS API (REST /api/v1, Swagger at /api/docs, Socket.IO)
-apps/web        Next.js — back-office, POS, KDS, public QR menu view
+apps/backend    Node.js/NestJS API (REST /api/v1, Swagger at /api/docs, Socket.IO)
+apps/web        Next.js UI embedded in the desktop app
 packages/types  Shared Zod schemas / TS types used by both apps
-casaos/         CasaOS/ZimaOS app store manifest + assets — see casaos/README.md
 docs/           Screenshots and supplementary docs
 ```
 
@@ -438,8 +313,8 @@ docs/           Screenshots and supplementary docs
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Tech-stack decisions and the reasoning behind each one |
 | [`ROADMAP.md`](./ROADMAP.md) | Phased build plan / living TODO — checkboxes are the real status |
 | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | Visual language, tokens, type scale, component inventory, per-surface UX notes |
-| [`casaos/README.md`](./casaos/README.md) | CasaOS/ZimaOS one-click install, image publishing, official app store submission steps |
-| [`windows/msix/README.md`](./windows/msix/README.md) | Windows MSIX desktop client — what it is/isn't, build/validate instructions, capabilities, what's CI-verified vs. not tested on real hardware |
+| [`QUICKSTART.md`](./QUICKSTART.md) | Install and launch the desktop app on Ubuntu/Debian or Windows |
+| [`windows/msix/README.md`](./windows/msix/README.md) | Windows desktop bundle and build instructions |
 | [`ACCESSIBILITY.md`](./ACCESSIBILITY.md) | WCAG 2.1 AA target, what's implemented, testing methodology, known gaps |
 | [`COMPLIANCE-INDIA.md`](./COMPLIANCE-INDIA.md) | How the architecture relates to the DPDP Act 2023, IT Rules, GST invoicing, and CCPA dark-patterns guidelines |
 | [`docs/verifactu.md`](./docs/verifactu.md) | Spain VERI*FACTU: chained invoice records, QR on the 80 mm receipt and AEAT reporting. Implemented, not certified; what is and is not verified |
@@ -523,4 +398,4 @@ Maintainer: [Daxabit](https://daxabit.com/)
 self-hosted POS, UPI QR payment POS, GST billing software for restaurants,
 kitchen display system, KDS, restaurant inventory management, restaurant
 payroll and attendance, café POS, cloud kitchen software, QR table ordering,
-offline-first POS, NestJS, Next.js, PostgreSQL, Prisma, CasaOS, ZimaOS.</sub>
+offline-first POS, NestJS, Next.js, PostgreSQL, Prisma.</sub>

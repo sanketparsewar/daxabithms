@@ -2,9 +2,9 @@ namespace DaxabitHMS.Launcher;
 
 internal static class Program
 {
-    // Embedded-mode installs minimize to the tray instead of exiting on
-    // window close (see MainForm.OnFormClosing/TrayIcon) so other LAN
-    // devices keep working — which means a user who thinks they "closed"
+    // Desktop installs minimize to the tray instead of exiting on
+    // window close (see MainForm.OnFormClosing/TrayIcon) so local
+    // services keep working — which means a user who thinks they "closed"
     // the app and reopens it (Start Menu, desktop shortcut) is actually
     // launching a SECOND process against an already-running first one.
     // Without a guard, that second process runs ServerSupervisor.StartAsync

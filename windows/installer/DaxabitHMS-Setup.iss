@@ -1,5 +1,5 @@
 ; DaxabitHMS Inno Setup Installer Script
-; Produces DaxabitHMS-Setup.exe supporting Mode A (Server) and Mode B (Client)
+; Produces the local-only DaxabitHMS desktop application installer.
 
 #define MyAppName "DaxabitHMS"
 #define MyAppVersion "1.0.0"
@@ -34,12 +34,11 @@ CloseApplications=yes
 RestartApplications=no
 
 [Types]
-Name: "server"; Description: "Full Local Application Server + Desktop Client (Main Restaurant PC - Recommended)"; Flags: iscustom
-Name: "client"; Description: "Lightweight Client Terminal (For Waiter/Bar/KDS devices connecting to Main PC)"
+Name: "desktop"; Description: "DaxabitHMS Local Desktop Application"; Flags: iscustom
 
 [Components]
-Name: "client_core"; Description: "DaxabitHMS Desktop Client Shell (WinForms + WebView2)"; Types: server client; Flags: fixed
-Name: "server_core"; Description: "Local Server (PostgreSQL 16, NestJS Backend, Standalone Web Server)"; Types: server
+Name: "client_core"; Description: "DaxabitHMS Desktop Shell (WinForms + WebView2)"; Types: desktop; Flags: fixed
+Name: "server_core"; Description: "Local PostgreSQL and Node.js services"; Types: desktop; Flags: fixed
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -49,7 +48,7 @@ Name: "autostart_service"; Description: "Register and start local background ser
 ; Client binaries (always installed)
 Source: "..\msix\out\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: client_core
 
-; Server binaries and runtimes (Server mode only)
+; Local database and service runtimes
 Source: "..\msix\out\stage\server\*"; DestDir: "{app}\server"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Components: server_core
 Source: "service-runner.ps1"; DestDir: "{app}\service"; Flags: ignoreversion; Components: server_core
 Source: "setup-server.ps1"; DestDir: "{app}\service"; Flags: ignoreversion; Components: server_core
@@ -67,12 +66,12 @@ Name: "{commonappdata}\{#MyAppName}\server\uploads"; Permissions: users-modify; 
 Name: "{commonappdata}\{#MyAppName}\server\logs"; Permissions: users-modify; Components: server_core
 
 [Run]
-; Mode A: Safe Server initialization, migrations, and firewall rule
+; Initialize the local database and apply migrations. Services bind to loopback only.
 Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\service\setup-server.ps1"" -InstallDir ""{app}"" -DataDir ""{commonappdata}\{#MyAppName}\server"""; \
     StatusMsg: "Provisioning local database, applying migrations, and configuring security..."; \
     Flags: runhidden waituntilterminated; Components: server_core
 
-; Register Windows background service via sc.exe (with auto-restart on unexpected failure)
+; Register the local background service via sc.exe
 Filename: "sc.exe"; Parameters: "create DaxabitHMSServer binPath= ""powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \""{app}\service\service-runner.ps1\"" -InstallDir \""{app}\"" -DataDir \""{commonappdata}\{#MyAppName}\server\"""" start= auto DisplayName= ""DaxabitHMS Restaurant Server"""; \
     StatusMsg: "Registering Windows Background Service..."; \
     Flags: runhidden waituntilterminated; Components: server_core; Tasks: autostart_service

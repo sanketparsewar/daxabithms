@@ -2,7 +2,7 @@
 <#
 .SYNOPSIS
   Builds the DaxabitHMS-Setup.exe unified Windows installer using Inno Setup.
-  Supports both Mode A (Server) and Mode B (Client).
+  Builds the local-only desktop application with its PostgreSQL and Node.js services.
 
 .DESCRIPTION
   1. Publishes the native WinForms WebView2 Launcher shell (win-x64, self-contained).

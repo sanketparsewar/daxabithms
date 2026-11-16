@@ -40,14 +40,13 @@
     (without this switch) is the loud, ship-blocking failure the
     placeholder is meant to produce.
 
-.PARAMETER ExpectEmbeddedServer
-    Set when validating a package built with build-windows-msix.ps1's
-    -IncludeEmbeddedServer. A real Node.js/Postgres dependency tree
+.DESCRIPTION
+    The desktop package always includes its local server. A real Node.js/Postgres dependency tree
     legitimately contains package.json, node_modules, and test/ folders
     by the thousand (every installed npm package ships its own) — the
     generic dev-artifact check's node_modules/package.json/test-folder
-    patterns would be near-100%-false-positive against that, so this
-    switch scopes that check to skip the server\ subtree and instead runs
+    patterns would be near-100%-false-positive against that, so the check
+    scopes itself to skip the server\ subtree and instead runs
     a small set of checks purpose-built for it (see "server assets" checks
     below): the embedded runtime binaries are actually present, and
     nothing that WOULD still be a real problem there (.env, .pdb, .git) is.
@@ -56,16 +55,15 @@
     ./validate-msix.ps1
     ./validate-msix.ps1 -MsixPath .\out\DaxabitHMS.msix
     ./validate-msix.ps1 -AllowPlaceholderPublisher   # CI/local self-signed test builds only
-    ./validate-msix.ps1 -ExpectEmbeddedServer        # packages built with -IncludeEmbeddedServer
 #>
 [CmdletBinding()]
 param(
     [string]$MsixPath = (Join-Path $PSScriptRoot 'out\DaxabitHMS.msix'),
-    [switch]$AllowPlaceholderPublisher,
-    [switch]$ExpectEmbeddedServer
+    [switch]$AllowPlaceholderPublisher
 )
 
 $ErrorActionPreference = 'Stop'
+$ExpectEmbeddedServer = $true
 $failures = @()
 $warnings = @()
 

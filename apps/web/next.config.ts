@@ -5,7 +5,7 @@ import type { NextConfig } from "next";
 // are proxied server-side to the backend. This keeps the session cookie first-party,
 // avoiding cross-origin cookie fragility. NOTE: Next bakes the rewrite destination
 // at build time, so in Docker this must come from a build ARG, not a runtime env var.
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4001";
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://127.0.0.1:4001";
 
 const isWindows = process.platform === "win32";
 

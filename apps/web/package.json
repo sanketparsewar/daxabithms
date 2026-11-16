@@ -5,7 +5,7 @@
   "author": "Daxabit",
   "license": "AGPL-3.0-only",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --hostname 127.0.0.1",
     "build": "node --require ./patch-windows-fs.cjs node_modules/next/dist/bin/next build --webpack",
     "start": "next start",
     "typecheck": "tsc --noEmit",

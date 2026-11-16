@@ -38,6 +38,8 @@ internal sealed class MainForm : Form
         Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? SystemIcons.Application;
 
         _config = AppConfig.Load();
+        _config.Mode = "embedded";
+        _config.ServerUrl = $"http://127.0.0.1:{ServerPaths.WebPort}";
         _activateEvent = activateEvent;
 
         BuildMenu();
@@ -81,20 +83,14 @@ internal sealed class MainForm : Form
         };
         fileMenu.DropDownItems.Add(reconnectItem);
 
-        var changeServer = new ToolStripMenuItem("Change server &address…", null, async (_, _) => await ChangeServerAsync());
-        fileMenu.DropDownItems.Add(changeServer);
-
-        if (_config.IsEmbedded)
+        var serverSync = new ToolStripMenuItem("Server &sync…", null, (_, _) =>
         {
-            var serverSync = new ToolStripMenuItem("Server &sync…", null, (_, _) =>
+            if (_webView.CoreWebView2 is not null)
             {
-                if (_webView.CoreWebView2 is not null)
-                {
-                    _webView.CoreWebView2.Navigate($"{_config.ServerUrl}/settings/sync");
-                }
-            });
-            fileMenu.DropDownItems.Add(serverSync);
-        }
+                _webView.CoreWebView2.Navigate($"{_config.ServerUrl}/settings/sync");
+            }
+        });
+        fileMenu.DropDownItems.Add(serverSync);
 
         var printItem = new ToolStripMenuItem("&Print…", null, (_, _) =>
         {
@@ -246,38 +242,11 @@ internal sealed class MainForm : Form
 
     private async Task InitializeAsync()
     {
-        if (string.IsNullOrWhiteSpace(_config.Mode))
-        {
-            using var choiceDialog = new FirstRunChoiceForm();
-            var choiceResult = choiceDialog.ShowDialog(this);
-            if (choiceResult != DialogResult.OK || choiceDialog.Result is null)
-            {
-                Close();
-                return;
-            }
-
-            if (choiceDialog.Result == FirstRunChoice.Embedded)
-            {
-                _config.Mode = "embedded";
-                _config.ServerUrl = $"http://localhost:{ServerPaths.WebPort}";
-                _config.Save();
-            }
-            else
-            {
-                await ChangeServerAsync(isFirstRun: true);
-                if (_config.ServerUrl is null) return;
-                _config.Mode = "remote";
-                _config.Save();
-            }
-
-            Controls.Remove(MainMenuStrip);
-            BuildMenu();
-        }
-        else if (!_config.IsEmbedded &&
-                 (string.IsNullOrWhiteSpace(_config.ServerUrl) || !AppConfig.IsValidServerUrl(_config.ServerUrl, out _)))
-        {
-            await ChangeServerAsync(isFirstRun: true);
-        }
+        // Desktop installs always use their bundled local database and services.
+        // This also migrates older remote-client config to the local-only mode.
+        _config.Mode = "embedded";
+        _config.ServerUrl = $"http://127.0.0.1:{ServerPaths.WebPort}";
+        _config.Save();
 
         if (_config.IsEmbedded && !await StartEmbeddedServerAsync())
         {
@@ -722,10 +691,6 @@ internal sealed class MainForm : Form
             };
             buttons.Controls.Add(updateBtn);
 
-            var changeServerBtn = new Button { Text = "Change Server Address…", AutoSize = true, Margin = new Padding(8), Font = new Font("Segoe UI", 10f) };
-            changeServerBtn.Click += async (_, _) => await ChangeServerAsync();
-            buttons.Controls.Add(changeServerBtn);
-
             var retryBtn = new Button { Text = "Retry", AutoSize = true, Margin = new Padding(8), Font = new Font("Segoe UI", 10f) };
             retryBtn.Click += async (_, _) => await ReconnectAsync();
             buttons.Controls.Add(retryBtn);
@@ -810,7 +775,7 @@ internal sealed class MainForm : Form
 
             var headline = new Label
             {
-                Text = "Unable to connect to DaxabitHMS Server",
+                Text = "Unable to start local DaxabitHMS",
                 Font = new Font("Segoe UI", 16f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(220, 53, 69),
                 AutoSize = false,
@@ -821,8 +786,8 @@ internal sealed class MainForm : Form
 
             var body = new Label
             {
-                Text = $"Could not reach {_config.ServerUrl}\n\n" +
-                       "Check that the DaxabitHMS server is running and this device is on the same local network.",
+                Text = $"Could not reach the local service at {_config.ServerUrl}.\n\n" +
+                       "Retry or open diagnostics. Your data remains on this computer.",
                 Font = new Font("Segoe UI", 10.5f),
                 ForeColor = Color.FromArgb(73, 80, 87),
                 AutoSize = false,
@@ -842,10 +807,6 @@ internal sealed class MainForm : Form
             var reconnectBtn = new Button { Text = "Reconnect Now", AutoSize = true, Margin = new Padding(8), Font = new Font("Segoe UI", 10f) };
             reconnectBtn.Click += async (_, _) => await ReconnectAsync();
             buttons.Controls.Add(reconnectBtn);
-
-            var changeServerBtn = new Button { Text = "Change Server Address…", AutoSize = true, Margin = new Padding(8), Font = new Font("Segoe UI", 10f) };
-            changeServerBtn.Click += async (_, _) => await ChangeServerAsync();
-            buttons.Controls.Add(changeServerBtn);
 
             var diagBtn = new Button { Text = "Diagnostics…", AutoSize = true, Margin = new Padding(8), Font = new Font("Segoe UI", 10f) };
             diagBtn.Click += (_, _) =>
@@ -992,19 +953,4 @@ internal sealed class MainForm : Form
         _fatalErrorPanel = wrapper;
     }
 
-    private async Task ChangeServerAsync(bool isFirstRun = false)
-    {
-        using var dialog = new ServerSettingsForm(_config.ServerUrl);
-        var result = dialog.ShowDialog(this);
-        if (result != DialogResult.OK || dialog.Result is null)
-        {
-            if (isFirstRun) Close();
-            return;
-        }
-        _config.ServerUrl = dialog.Result;
-        _config.Save();
-        HideConnectionError();
-        if (_webView.CoreWebView2 is not null) Navigate();
-        await Task.CompletedTask;
-    }
 }

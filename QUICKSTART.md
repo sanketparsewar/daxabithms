@@ -1,151 +1,36 @@
-# Daxabit — Quick Start Guide
+# DaxabitHMS Desktop Quick Start
 
-Welcome to **Daxabit**, a modern, offline-first Restaurant & Hotel Management System (POS, Kitchen Display System, Table Management, Inventory, and CRM).
+DaxabitHMS is distributed as a local desktop application. The database, Node.js API, and interface run on the same computer; the packaged app does not expose a browser service to the LAN.
 
-This step-by-step guide walks you through setting up and running Daxabit on your local machine in under 5 minutes.
+## Ubuntu and Debian
 
----
+Install the release `.deb` package and launch **DaxabitHMS** from the Applications menu. The package installs the local service and opens its interface in a Chromium app window. On first start, Docker downloads the service images; later use and business data stay local.
 
-## 📋 Prerequisites
+## Windows
 
-Before you begin, ensure you have the following installed on your machine:
+Install the release MSIX package and launch **DaxabitHMS** from Start. On first launch, the app initializes its bundled PostgreSQL database and starts its local Node.js backend and interface. The first setup can take a few minutes.
 
-- **Node.js**: `v22` or newer (Recommended: install via [nvm](https://github.com/nvm-sh/nvm): `nvm install 22`)
-- **pnpm**: `v9` or newer (`corepack enable && corepack prepare pnpm@latest --activate` or `npm install -g pnpm`)
-- **PostgreSQL**: `v15` or newer (Local service, Docker container, or cloud provider like Neon/Supabase)
+On either platform, create the owner account through the app’s signup flow. The new database has no demo data by default.
 
----
+## Desktop components
 
-## 🚀 Step-by-Step Setup
+- `apps/backend`: Node.js API built with NestJS, Prisma, and PostgreSQL.
+- `apps/web`: Next.js interface embedded in the desktop app.
+- `packages/types`: Shared TypeScript and Zod contracts.
 
-### Step 1: Clone the Repository & Install Dependencies
+The frontend and backend have separate builds and Dockerfiles. Desktop packages run them locally and bind service ports to loopback.
+
+## Developer setup
+
+Development requires Node.js 22+, pnpm, and local PostgreSQL. Copy `apps/backend/.env.example` to `apps/backend/.env`, set `DATABASE_URL` to your local database, then build the shared types and apply migrations:
 
 ```bash
-# Clone the repository
-git clone https://github.com/sanketparsewar/daxabithms.git
-cd daxabithms
-
-# Install all workspace dependencies
 pnpm install
-```
-
----
-
-### Step 2: Configure Environment Variables
-
-Daxabit uses monorepo workspaces with individual `.env` files for the backend and web frontend:
-
-#### 1. Backend Environment (`apps/backend/.env`)
-
-Copy the template or create `apps/backend/.env`:
-
-```bash
-cp apps/backend/.env.example apps/backend/.env
-```
-
-Ensure your `DATABASE_URL` and security secrets are configured:
-
-```env
-# Database Connection (replace with your local or cloud PostgreSQL credentials)
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/daxabit?schema=public"
-
-# Application Ports
-PORT=4001
-CORS_ORIGIN="http://localhost:3000"
-
-# Security & Secrets (generate random strings in production)
-JWT_SECRET="daxabit_super_secret_jwt_key_min_32_chars_long_12345"
-SESSION_SECRET="daxabit_super_secret_session_key_min_32_chars_12345"
-DATA_ENCRYPTION_KEY="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-```
-
-#### 2. Web Frontend Environment (`apps/web/.env.local`)
-
-Create or update `apps/web/.env.local`:
-
-```env
-NEXT_PUBLIC_API_URL="http://localhost:4001"
-```
-
----
-
-### Step 3: Initialize Database & Build Shared Packages
-
-Run the database migrations and build the shared TypeScript packages:
-
-```bash
-# 1. Build the shared types package
 pnpm --filter @daxabithms/types build
-
-# 2. Push schema / run migrations on your database
-pnpm --filter @daxabithms/backend prisma migrate dev
-
-# 3. (Optional) Seed initial demo data (menu, tables, default admin)
-pnpm --filter @daxabithms/backend seed
+cd apps/backend
+./node_modules/.bin/prisma migrate dev
+cd ../..
+pnpm dev
 ```
 
----
-
-### Step 4: Start the Development Server
-
-Launch both the frontend and backend in development mode with a single command:
-
-```bash
-npm run dev
-```
-
-You will see:
-- 🌐 **Web Frontend (POS, KDS, Admin)**: [http://localhost:3000](http://localhost:3000)
-- 🔌 **Backend REST API**: [http://localhost:4001/api/v1](http://localhost:4001/api/v1)
-- 📖 **Interactive Swagger API Documentation**: [http://localhost:4001/api/docs](http://localhost:4001/api/docs)
-
----
-
-## 🔑 Default Credentials & First Login
-
-If you ran the database seed:
-- **Email**: `admin@daxabit.com` (or the email specified in seed)
-- **Password**: `password123`
-
-### Fresh Instance Setup (No Seed)
-If starting without seeded data:
-1. Open [http://localhost:3000](http://localhost:3000).
-2. Click **Get started free** or navigate to [http://localhost:3000/signup](http://localhost:3000/signup).
-3. Enter your restaurant name, initial branch location, and admin password to initialize your venue.
-
----
-
-## 🐳 Alternative: Running with Docker Compose
-
-If you prefer running everything in containerized isolation:
-
-```bash
-# Start Postgres, Backend API, and Web App together
-docker compose up -d
-
-# View live container logs
-docker compose logs -f
-```
-
-Your app will be live at [http://localhost:3000](http://localhost:3000).
-
----
-
-## 🛠️ Common Commands Cheatsheet
-
-| Task | Command |
-|---|---|
-| Run all dev servers | `npm run dev` |
-| Typecheck entire project | `pnpm --filter web typecheck && pnpm --filter @daxabithms/backend typecheck` |
-| Run web test suite | `pnpm --filter web test` |
-| Run backend test suite | `pnpm --filter @daxabithms/backend test` |
-| Open Prisma Database Studio | `pnpm --filter @daxabithms/backend prisma studio` |
-| Build for production | `pnpm build` |
-
----
-
-## 💬 Support & Contributing
-
-- **Documentation**: Visit `/docs` within the running app or browse the [docs/](./docs) folder.
-- **Reporting Issues**: [https://github.com/sanketparsewar/daxabithms/issues](https://github.com/sanketparsewar/daxabithms/issues)
-- **Company**: Daxabit — [https://daxabit.com](https://daxabit.com)
+The development command runs the API on port 4001 and Next.js on port 3000. This is for development; end users should use the desktop installer.
