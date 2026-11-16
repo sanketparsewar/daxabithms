@@ -35,6 +35,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "package:linux": "bash packaging/deb/build-local.sh",
     "build-windows-msix": "pwsh -NoProfile -File windows/msix/build-windows-msix.ps1 && pwsh -NoProfile -File windows/msix/validate-msix.ps1"
   },
   "devDependencies": {

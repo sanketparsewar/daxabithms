@@ -114,10 +114,10 @@ export default function DownloadPage() {
             <DownloadCard
               title="Ubuntu / Debian desktop package"
               system="Ubuntu / Debian"
-              description="Installs a Daxabit application launcher and local services. Open it from the Applications menu after installation."
+              description="Installs Daxabit with its backend, web app, and database images bundled locally. Open it from the Applications menu after installation."
               href={downloadHref("linux-deb-amd64")}
               extraHref={downloadHref("linux-deb-arm64")}
-              note="amd64 and arm64 packages · Docker downloads service images the first time the app starts."
+              note="amd64 and arm64 packages · Docker Engine is required; the Daxabit services are bundled."
             />
           </div>
           <p className="mx-auto mt-5 max-w-3xl text-center text-xs leading-relaxed text-muted-foreground">
@@ -152,7 +152,7 @@ export default function DownloadPage() {
                 </ol>
                 <pre className="mt-3 overflow-x-auto rounded-lg bg-muted p-3 text-xs text-foreground"><code>sudo apt install ./daxabithms_VERSION_amd64.deb</code></pre>
                 <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-                  Docker downloads the local service images on first startup, so the first launch needs an internet connection. Later restaurant operations run on the computer.
+                  The installer loads the bundled Daxabit services into Docker. Internet is only needed to install Docker prerequisites; restaurant operations then run on this computer.
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">Launch DaxabitHMS from the Applications menu.</p>
               </article>

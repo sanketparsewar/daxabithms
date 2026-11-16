@@ -69,6 +69,6 @@ fi
 ( cd "$WORK" && sha256sum -c "$FILE.sha256" >/dev/null ) || die "Checksum mismatch: the download is damaged. Nothing was installed."
 chmod 0644 "$WORK/$FILE"
 
-say "Installing (the first start pulls the container images and can take a few minutes)"
+say "Installing the complete desktop package (it includes the local service images)"
 apt-get install -y "$WORK/$FILE"
 say "Done. Launch DaxabitHMS from the Applications menu  ·  status: systemctl status $PKG  ·  settings: /etc/$PKG/$PKG.env"

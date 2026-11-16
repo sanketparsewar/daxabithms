@@ -19,13 +19,23 @@ if [ "$1" = configure ]; then
     cat "$tmp" > "$ENVF"; rm -f "$tmp"
   fi
   chmod 0600 "$ENVF"
+  IMAGE_BUNDLE=/usr/lib/daxabithms/container-images.tar.gz
+  if [ -r "$IMAGE_BUNDLE" ] && command -v docker >/dev/null 2>&1; then
+    systemctl start docker.service >/dev/null 2>&1 || true
+    if docker info >/dev/null 2>&1; then
+      docker load --input "$IMAGE_BUNDLE" >/dev/null || \
+        echo "daxabithms: bundled images could not be loaded; the service will try to pull them when it starts." >&2
+    else
+      echo "daxabithms: Docker is not ready to load bundled images; the service will try to pull them when it starts." >&2
+    fi
+  fi
   systemctl daemon-reload >/dev/null 2>&1 || true
   systemctl enable daxabithms.service >/dev/null 2>&1 || true
   if [ -d /run/systemd/system ]; then
-    # Starting pulls the images; do not fail the install if Docker is not ready.
+    # Start the local application; do not fail package installation if Docker is not ready.
     systemctl restart daxabithms.service >/dev/null 2>&1 || \
       echo "daxabithms: could not start yet; check Docker, then run: sudo systemctl start daxabithms" >&2
   fi
-  echo "DaxabitHMS is installed. Launch it from the Applications menu (first start pulls the local service images)."
+  echo "DaxabitHMS is installed. Launch it from the Applications menu."
 fi
 exit 0

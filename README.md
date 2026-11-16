@@ -96,10 +96,16 @@ details.
 
 ### Ubuntu and Debian desktop
 
-The `.deb` package installs the local service and adds a DaxabitHMS entry to
-the Applications menu. It opens the interface in a Chromium app window and
-publishes the local UI only on `127.0.0.1`. Docker pulls the service images
-the first time they start; business data stays in local Docker volumes.
+The `.deb` package bundles the backend, web app, and PostgreSQL container
+images, installs the local service, and adds a DaxabitHMS entry to the
+Applications menu. It opens the interface in a Chromium app window and
+publishes the local UI only on `127.0.0.1`. Docker Engine is required; business
+data stays in local Docker volumes.
+
+Build a complete Linux package for the current machine with
+`pnpm package:linux`. The output is written to `dist/`; the local download page
+serves that package directly. Published deployments resolve packages attached
+to the latest GitHub release.
 
 Status: the build, package, install, and Start Menu registration are all
 machine-verified on every push via GitHub Actions (`windows-msix.yml`,

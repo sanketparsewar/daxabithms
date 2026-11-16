@@ -4,7 +4,7 @@ DaxabitHMS is distributed as a local desktop application. The database, Node.js 
 
 ## Ubuntu and Debian
 
-Install the release `.deb` package and launch **DaxabitHMS** from the Applications menu. The package installs the local service and opens its interface in a Chromium app window. On first start, Docker downloads the service images; later use and business data stay local.
+Install the release `.deb` package and launch **DaxabitHMS** from the Applications menu. The package includes the backend, web app, and PostgreSQL images, installs the local service, and opens its interface in a Chromium app window. Docker Engine is required; later use and business data stay local.
 
 ## Windows
 

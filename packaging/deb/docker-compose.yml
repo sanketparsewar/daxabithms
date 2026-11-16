@@ -17,7 +17,7 @@ services:
       timeout: 5s
       retries: 10
   backend:
-    image: ghcr.io/daxabithms/daxabithms-backend:@VERSION@
+    image: ghcr.io/sanketparsewar/daxabithms-backend:@VERSION@
     container_name: daxabithms-backend
     restart: unless-stopped
     environment:
@@ -44,7 +44,7 @@ services:
       - 'c 189:* rmw'
       - 'c 180:* rmw'
   web:
-    image: ghcr.io/daxabithms/daxabithms-web:@VERSION@
+    image: ghcr.io/sanketparsewar/daxabithms-web:@VERSION@
     container_name: daxabithms-web
     restart: unless-stopped
     ports:

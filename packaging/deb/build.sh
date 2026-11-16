@@ -14,6 +14,10 @@ for arch in $archs; do
   # Shipped as an example; postinst creates /etc/$PKG/$PKG.env from it once, so the settings and generated secrets
   # (which match the data volumes) survive remove, purge and upgrades.
   sed "s/@VERSION@/$ver/g" "$here/$PKG.env" > "$pkg/usr/share/$PKG/$PKG.env.example"
+  if [ -n "${IMAGE_BUNDLE:-}" ]; then
+    [ -f "$IMAGE_BUNDLE" ] || { echo "IMAGE_BUNDLE '$IMAGE_BUNDLE' does not exist" >&2; exit 1; }
+    install -m 0644 "$IMAGE_BUNDLE" "$pkg/usr/lib/$PKG/container-images.tar.gz"
+  fi
   install -m 0644 "$here/$PKG.service" "$pkg/lib/systemd/system/$PKG.service"
   install -m 0644 "$here/daxabithms.desktop" "$pkg/usr/share/applications/daxabithms.desktop"
   install -m 0644 "$root/apps/web/public/logo.png" "$pkg/usr/share/icons/hicolor/256x256/apps/daxabithms.png"
