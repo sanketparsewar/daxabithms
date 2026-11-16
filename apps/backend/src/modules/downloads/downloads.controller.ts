@@ -38,15 +38,20 @@ export class DownloadsController {
     try {
       upstream = await fetch(url);
     } catch {
-      throw new ServiceUnavailableException('The desktop download is temporarily unavailable.');
+      throw new ServiceUnavailableException(
+        'The desktop download is temporarily unavailable.',
+      );
     }
 
     if (!upstream.ok || !upstream.body) {
-      throw new ServiceUnavailableException('The desktop download is temporarily unavailable.');
+      throw new ServiceUnavailableException(
+        'The desktop download is temporarily unavailable.',
+      );
     }
 
     await this.downloads.recordAndResolve(channel);
-    const filename = new URL(url).pathname.split('/').at(-1) ?? 'daxabit-desktop-package';
+    const filename =
+      new URL(url).pathname.split('/').at(-1) ?? 'daxabit-desktop-package';
     res.status(200);
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);

@@ -159,6 +159,8 @@ async function bootstrap() {
   const port = process.env.PORT ?? 4000;
   const host = process.env.HOST?.trim() || '0.0.0.0';
   await app.listen(port, host);
-  console.log(`DaxabitHMS API listening on ${host}:${port} (docs at /api/docs)`);
+  console.log(
+    `DaxabitHMS API listening on ${host}:${port} (docs at /api/docs)`,
+  );
 }
 void bootstrap();

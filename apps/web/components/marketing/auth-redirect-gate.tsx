@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { useSetupStatus } from "@/hooks/use-setup-status";
 
@@ -17,14 +17,12 @@ function isLocalDesktopHost(hostname: string, port: string): boolean {
 // sign-in so the restaurant app remains usable without putting account links
 // on the public website.
 export function AuthRedirectGate() {
-  const [isLocalDesktop, setIsLocalDesktop] = useState(false);
+  const isLocalDesktop =
+    typeof window !== "undefined" &&
+    isLocalDesktopHost(window.location.hostname, window.location.port);
   const { data: current, isSuccess, isFetched } = useCurrentUser(isLocalDesktop);
   const setup = useSetupStatus(isLocalDesktop);
   const router = useRouter();
-
-  useEffect(() => {
-    setIsLocalDesktop(isLocalDesktopHost(window.location.hostname, window.location.port));
-  }, []);
 
   useEffect(() => {
     if (!isLocalDesktop) return;

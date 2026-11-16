@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 function isDesktopHost(): boolean {
   const { hostname, port } = window.location;
@@ -15,12 +15,14 @@ function isDesktopHost(): boolean {
 // presents product information and desktop downloads.
 export function useDesktopOnlyRoute(): boolean {
   const router = useRouter();
-  const [allowed, setAllowed] = useState(false);
+  const allowed = useSyncExternalStore(
+    () => () => {},
+    isDesktopHost,
+    () => false,
+  );
 
   useEffect(() => {
-    if (isDesktopHost()) {
-      setAllowed(true);
-    } else {
+    if (!isDesktopHost()) {
       router.replace("/");
     }
   }, [router]);
