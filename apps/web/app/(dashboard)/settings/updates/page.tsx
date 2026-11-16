@@ -198,17 +198,6 @@ export default function UpdatesPage() {
               </div>
             )}
 
-            {data.releaseUrl && (
-              <a
-                href={data.releaseUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm text-primary underline underline-offset-3 hover:text-primary/80"
-              >
-                View full release notes on GitHub →
-              </a>
-            )}
-
             {data.updateAvailable && (
               <div className="flex flex-col gap-2 pt-2">
                 <Button

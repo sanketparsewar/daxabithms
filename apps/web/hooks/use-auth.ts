@@ -4,11 +4,12 @@ import { permissionSatisfied, type LoginDto, type RegisterDto, type SessionUser 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
-export function useCurrentUser() {
+export function useCurrentUser(enabled = true) {
   return useQuery({
     queryKey: ["auth", "me"],
     queryFn: () => api.get<{ user: SessionUser }>("/auth/me"),
     retry: false,
+    enabled,
   });
 }
 

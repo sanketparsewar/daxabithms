@@ -8,13 +8,12 @@ import { PrismaService } from '../../prisma/prisma.service';
 // hardening report's "unsafe URL handling / open redirects" check, which
 // this is deliberately built to keep passing.
 const DOWNLOAD_CHANNELS: Record<string, string> = {
-  github: '#',
-  'install-script': '/install.sh',
-  docker: '#one-click-install',
-  casaos: '#',
-  windows: '/download/windows',
-  'windows-setup': '/downloads/DaxabitHMS-Setup.bat',
-  'windows-ps1': '/downloads/Install-Daxabit.ps1',
+  'windows-desktop':
+    'https://github.com/sanketparsewar/daxabithms/releases/latest/download/DaxabitHMS-Setup.exe',
+  'linux-deb-amd64':
+    'https://github.com/sanketparsewar/daxabithms/releases/latest/download/daxabithms-latest-amd64.deb',
+  'linux-deb-arm64':
+    'https://github.com/sanketparsewar/daxabithms/releases/latest/download/daxabithms-latest-arm64.deb',
 };
 
 export type DownloadChannel = keyof typeof DOWNLOAD_CHANNELS;

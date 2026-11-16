@@ -1,5 +1,4 @@
 import { FileCheck2, Lock, ScanEye, ServerCog } from "lucide-react";
-import Link from "next/link";
 import { Reveal, RevealGroup, RevealItem } from "@/components/marketing/reveal";
 
 const points = [
@@ -17,9 +16,9 @@ const points = [
   },
   {
     icon: ScanEye,
-    title: "Your data stays on your server",
+    title: "Your data stays on your computer",
     description:
-      "Self-hosted on your own LAN or VPS — no restaurant or customer data is ever sent to a third-party cloud you don't control.",
+      "Daxabit's local desktop installation stores restaurant data in a database on the computer where you run the app.",
   },
   {
     icon: FileCheck2,
@@ -41,8 +40,8 @@ export function SecuritySection() {
             Security built into every layer
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Daxabit ensures your restaurant operations, revenue records, and guest data
-            remain strictly private, encrypted, and isolated to your hardware.
+            Daxabit keeps restaurant records in a local database and protects staff actions with
+            account permissions and an audit trail.
           </p>
         </Reveal>
 
@@ -64,22 +63,6 @@ export function SecuritySection() {
             </RevealItem>
           ))}
         </RevealGroup>
-
-        <Reveal delay={0.1} className="mt-12 flex flex-wrap justify-center items-center gap-3">
-          <Link
-            href="/docs/accessibility"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary underline underline-offset-4 hover:opacity-85"
-          >
-            Read accessibility compliance
-          </Link>
-          <span className="text-sm text-muted-foreground/60">·</span>
-          <Link
-            href="/docs/compliance-india"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary underline underline-offset-4 hover:opacity-85"
-          >
-            Read India data-protection notes
-          </Link>
-        </Reveal>
       </div>
     </section>
   );

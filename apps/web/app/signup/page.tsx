@@ -13,9 +13,11 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useRegister } from "@/hooks/use-auth";
+import { useDesktopOnlyRoute } from "@/hooks/use-desktop-only-route";
 import { ApiError } from "@/lib/api";
 
 export default function SignupPage() {
+  const desktopOnly = useDesktopOnlyRoute();
   const router = useRouter();
   const register = useRegister();
   const prefersReducedMotion = useReducedMotion();
@@ -33,6 +35,8 @@ export default function SignupPage() {
       },
     });
   };
+
+  if (!desktopOnly) return null;
 
   return (
     <main className="relative flex flex-1 items-center justify-center overflow-hidden bg-background px-4 py-12">
@@ -141,12 +145,6 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          <div className="mt-6 border-t border-border/60 pt-4 text-center text-xs text-muted-foreground">
-            <span>Already have a configured restaurant? </span>
-            <Link href="/login" className="font-semibold text-primary underline underline-offset-4 hover:opacity-85">
-              Sign in
-            </Link>
-          </div>
         </div>
       </motion.div>
     </main>

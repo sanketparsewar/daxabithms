@@ -5,26 +5,16 @@ const columns = [
   {
     title: "Product",
     links: [
-      { href: "#features", label: "Features" },
-      { href: "#security", label: "Security" },
-      { href: "#get-started", label: "Get started" },
+      { href: "/#features", label: "Features" },
+      { href: "/download", label: "Desktop downloads" },
+      { href: "/download#setup", label: "Installation guide" },
     ],
   },
   {
     title: "Resources",
     links: [
-      { href: "/docs", label: "Documentation" },
-      { href: "/download/windows", label: "Windows app" },
-      { href: "/docs/api", label: "API & MCP" },
-      { href: "/docs/accessibility", label: "Accessibility statement" },
-      { href: "/docs/compliance-india", label: "India compliance notes" },
-    ],
-  },
-  {
-    title: "Account",
-    links: [
-      { href: "/login", label: "Sign in" },
-      { href: "/signup", label: "Create account" },
+      { href: "/#features", label: "Software features" },
+      { href: "/#security", label: "Privacy & security" },
     ],
   },
 ];
@@ -33,15 +23,15 @@ export function MarketingFooter() {
   return (
     <footer className="border-t border-border/60 px-4 py-14 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <div className="grid gap-10 sm:grid-cols-[1.5fr_repeat(3,1fr)]">
+        <div className="grid gap-10 sm:grid-cols-[1.5fr_repeat(2,1fr)]">
           <div>
             <Link href="/" className="flex items-center gap-2.5">
               <Logo size={28} />
               <span className="text-sm font-semibold text-foreground">Daxabit</span>
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-              Offline-first restaurant and hotel management system by Daxabit, self-hosted on your own
-              server.
+              Restaurant management software for your Windows PC or Ubuntu/Debian computer. Your
+              database and services run locally on the device.
             </p>
           </div>
 

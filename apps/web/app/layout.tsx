@@ -7,7 +7,8 @@ export const metadata: Metadata = {
     default: "Daxabit — Restaurant & Hotel Management System",
     template: "%s · Daxabit",
   },
-  description: "Daxabit — Restaurant & Hotel Management System",
+  description:
+    "Restaurant management desktop software for POS billing, kitchen display, reservations, inventory, and staff operations. Download for Windows or Ubuntu/Debian.",
   manifest: "/manifest.json",
   icons: {
     icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }],

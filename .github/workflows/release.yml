@@ -211,7 +211,7 @@ jobs:
           if ('${{ steps.cert.outputs.has_cert }}' -eq 'true') {
             Copy-Item $src 'out\release-msix\DaxabitHMS-Desktop.msix'
           } else {
-            Copy-Item $src 'out\release-msix\DaxabitHMS-Desktop-unsigned.msix'
+            Copy-Item $src 'out\release-msix\DaxabitHMS-Desktop.msix'
           }
 
       - name: Upload MSIX Artifact
@@ -222,10 +222,10 @@ jobs:
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
-  # 4. Build & Validate Windows Server Installer
+  # 4. Build & Validate Windows Desktop Installer
   # ---------------------------------------------------------------------------
   build-windows-installer:
-    name: Build Windows x64 Server Installer (Setup.exe)
+    name: Build Windows x64 Desktop Installer (Setup.exe)
     runs-on: windows-latest
     needs: [test-and-validate]
     steps:
@@ -319,23 +319,60 @@ jobs:
           if ('${{ steps.cert.outputs.has_cert }}' -eq 'true') {
             Copy-Item $src 'out\release-installer\DaxabitHMS-Setup.exe'
           } else {
-            Copy-Item $src 'out\release-installer\DaxabitHMS-Setup-unsigned.exe'
+            Copy-Item $src 'out\release-installer\DaxabitHMS-Setup.exe'
           }
 
-      - name: Upload Installer Artifact
+      - name: Upload Windows Desktop Installer
         uses: actions/upload-artifact@v4
         with:
-          name: windows-server-installer
+          name: windows-desktop-installer
           path: out\release-installer\*
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
-  # 5. Assemble Release, Generate Checksums & Publish to GitHub
+  # 5. Build Linux desktop packages
+  # ---------------------------------------------------------------------------
+  build-linux-deb:
+    name: Build Ubuntu and Debian Desktop Packages
+    runs-on: ubuntu-latest
+    needs: [test-and-validate]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve release version
+        id: meta
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build amd64 and arm64 packages
+        env:
+          OUT_DIR: ${{ github.workspace }}/out/release-linux
+        run: |
+          chmod +x packaging/deb/build.sh
+          packaging/deb/build.sh '${{ steps.meta.outputs.version }}' 'amd64 arm64'
+          cp "$OUT_DIR/daxabithms_${{ steps.meta.outputs.version }}_amd64.deb" "$OUT_DIR/daxabithms-latest-amd64.deb"
+          cp "$OUT_DIR/daxabithms_${{ steps.meta.outputs.version }}_arm64.deb" "$OUT_DIR/daxabithms-latest-arm64.deb"
+
+      - name: Upload Linux packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-desktop-deb
+          path: out/release-linux/*
+          if-no-files-found: error
+
+  # 6. Assemble Release, Generate Checksums & Publish
   # ---------------------------------------------------------------------------
   publish-release:
     name: Generate Checksums & Publish GitHub Release
     runs-on: ubuntu-latest
-    needs: [publish-docker-images, build-windows-msix, build-windows-installer]
+    needs: [publish-docker-images, build-windows-msix, build-windows-installer, build-linux-deb]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -359,10 +396,16 @@ jobs:
           name: windows-desktop-msix
           path: release-artifacts/
 
-      - name: Download Windows Installer Artifact
+      - name: Download Windows Desktop Installer
         uses: actions/download-artifact@v4
         with:
-          name: windows-server-installer
+          name: windows-desktop-installer
+          path: release-artifacts/
+
+      - name: Download Linux Desktop Packages
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-desktop-deb
           path: release-artifacts/
 
       - name: Generate Cryptographic SHA-256 Checksums
@@ -377,34 +420,16 @@ jobs:
           cat << 'EOF' > release_notes.md
           ## DaxabitHMS Release ${{ steps.meta.outputs.tag }}
 
-          Official production release of DaxabitHMS — Offline-First Restaurant & Hotel Management System.
+          Official desktop release of DaxabitHMS — local-first restaurant management software.
 
           ### Release Artifacts & Downloads
 
           | Platform | Package | Purpose |
           | :--- | :--- | :--- |
-          | **Windows Server** | `DaxabitHMS-Setup.exe` | One-click unified Windows server installer with managed PostgreSQL service |
-          | **Windows Desktop** | `DaxabitHMS-Desktop.msix` | WinForms + WebView2 standalone desktop client for cashiers and waiters |
-          | **Integrity** | `SHA256SUMS.txt` | Cryptographic SHA-256 digests for all release files |
-
-          ### Production Docker Images (GHCR)
-
-          ```bash
-          # Backend API
-          docker pull ghcr.io/${{ github.repository }}-backend:${{ steps.meta.outputs.version }}
-
-          # Web Management & POS Frontend
-          docker pull ghcr.io/${{ github.repository }}-web:${{ steps.meta.outputs.version }}
-
-          # Sidecar Auto-Updater
-          docker pull ghcr.io/${{ github.repository }}-updater:${{ steps.meta.outputs.version }}
-          ```
-
-          ### Deployment & Upgrade Guides
-          - [LAN Deployment & Terminal Access](docs/LAN_DEPLOYMENT.md)
-          - [Automatic Updates & Safe Rollback](docs/UPDATE_AND_ROLLBACK.md)
-          - [Hardware & Thermal Printing Guide](docs/HARDWARE_COMPATIBILITY.md)
-          - [Disaster Recovery & PostgreSQL Restoration](docs/DISASTER_RECOVERY.md)
+          | **Windows** | `DaxabitHMS-Setup.exe` | Local desktop application with PostgreSQL, Node.js API, and interface |
+          | **Ubuntu / Debian (amd64)** | `daxabithms-latest-amd64.deb` | Local desktop package |
+          | **Ubuntu / Debian (arm64)** | `daxabithms-latest-arm64.deb` | Local desktop package |
+          | **Integrity** | `SHA256SUMS.txt` | SHA-256 checksums for release files |
 
           ### Cryptographic Checksums (SHA-256)
           ```text

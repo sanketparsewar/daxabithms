@@ -40,7 +40,7 @@ export function PosMockup() {
               <span className="relative inline-flex size-2 rounded-full bg-success" />
             </span>
             <span className="hidden font-mono text-[11px] font-medium text-success sm:inline">
-              100% LAN Connected
+              Running locally
             </span>
           </div>
         </div>
@@ -84,7 +84,7 @@ export function PosMockup() {
         </div>
       </div>
 
-      {/* Floating Status Card Left — LAN Ping */}
+      {/* Floating Status Card Left — local service status */}
       <motion.div
         initial={{ opacity: 0, x: -16, y: 10 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
@@ -96,7 +96,7 @@ export function PosMockup() {
             <Activity className="size-3.5" />
           </div>
           <div>
-            <p className="text-[11px] font-medium text-muted-foreground">Local LAN Sync</p>
+            <p className="text-[11px] font-medium text-muted-foreground">Local service</p>
             <p className="text-sm font-semibold text-foreground">0.8 ms ping</p>
           </div>
         </div>

@@ -14,9 +14,11 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useLogin } from "@/hooks/use-auth";
+import { useDesktopOnlyRoute } from "@/hooks/use-desktop-only-route";
 import { ApiError } from "@/lib/api";
 
 export default function LoginPage() {
+  const desktopOnly = useDesktopOnlyRoute();
   const router = useRouter();
   const login = useLogin();
   // Set once the server says this account uses two-factor authentication.
@@ -49,6 +51,8 @@ export default function LoginPage() {
       },
     });
   };
+
+  if (!desktopOnly) return null;
 
   return (
     <main className="relative flex flex-1 items-center justify-center overflow-hidden bg-background px-4 py-12">
@@ -153,12 +157,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-7 border-t border-border/60 pt-5 text-center text-xs text-muted-foreground">
-            <span>New restaurant establishment? </span>
-            <Link href="/signup" className="font-semibold text-primary underline underline-offset-4 hover:opacity-85">
-              Set up account
-            </Link>
-          </div>
         </div>
       </motion.div>
     </main>

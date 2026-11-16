@@ -1,9 +1,9 @@
 import {
   ChefHat,
-  GitBranch,
   Gift,
   Package,
   Plug,
+  Monitor,
   QrCode,
   ShieldCheck,
   UtensilsCrossed,
@@ -46,7 +46,7 @@ const features = [
     icon: WifiOff,
     title: "Offline-first by design",
     description:
-      "The whole stack runs on one local server. Order-taking, billing, KDS, and printing keep working with the WAN cable unplugged.",
+      "The database, Node.js service, and desktop interface run on the same computer. After installation, daily restaurant work does not depend on an internet connection.",
   },
   {
     icon: ShieldCheck,
@@ -55,16 +55,16 @@ const features = [
       "Granular, individually toggleable permissions and strict multi-tenant isolation — never a hardcoded role check.",
   },
   {
-    icon: GitBranch,
-    title: "Open source, no lock-in",
+    icon: Monitor,
+    title: "A complete desktop system",
     description:
-      "AGPL-3.0 licensed. Self-host on Docker, CasaOS/ZimaOS, or a Windows client — your data never has to leave your building.",
+      "Install the application on a Windows or Ubuntu/Debian computer. The local database and services are included in the desktop setup.",
   },
   {
     icon: Plug,
-    title: "API & MCP integrations",
+    title: "Connected restaurant workflows",
     description:
-      "Connect an MCP client like Claude Desktop with your own permissions, or issue a scoped API key so your website can browse the menu, place orders, and book tables through Daxabit directly.",
+      "Manage menus, table QR codes, customer records, payments, staff access, and reports from the same restaurant management application.",
   },
 ];
 

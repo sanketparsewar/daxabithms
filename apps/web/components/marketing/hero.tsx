@@ -1,10 +1,9 @@
 "use client";
 
-import { ArrowRight, Github, Monitor } from "lucide-react";
+import { ArrowRight, Download, Monitor } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { downloadHref } from "@/lib/downloads";
 import { PosMockup } from "@/components/marketing/pos-mockup";
 
 const words = ["Restaurant", "software", "you", "actually", "own."];
@@ -37,7 +36,7 @@ export function Hero() {
           </span>
           <span>Daxabit</span>
           <span className="text-muted-foreground">·</span>
-          <span className="text-muted-foreground">AGPL-3.0 Self-Hosted Restaurant & Hotel Stack</span>
+          <span className="text-muted-foreground">Restaurant management desktop software</span>
         </motion.div>
 
         <h1 className="flex flex-wrap justify-center gap-x-3 text-4xl font-extrabold tracking-tight text-foreground sm:text-6xl">
@@ -60,8 +59,9 @@ export function Hero() {
           transition={{ duration: 0.4, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className="mt-6 max-w-2xl text-balance text-lg text-muted-foreground sm:text-xl font-normal leading-relaxed"
         >
-          Point of Sale, Kitchen Display, Tables, Reservations, Inventory, and CRM — engineered by{" "}
-          <strong className="font-semibold text-foreground">Daxabit</strong> into one robust stack that runs on your local network. No monthly subscription, no forced internet tether, no vendor lock-in.
+          Point of Sale, kitchen display, tables, reservations, inventory, and staff tools in one
+          application. Install it on a Windows or Ubuntu/Debian computer; the database and services
+          stay on that device.
         </motion.p>
 
         <motion.div
@@ -70,27 +70,15 @@ export function Hero() {
           transition={{ duration: 0.4, delay: 0.48, ease: [0.22, 1, 0.36, 1] }}
           className="mt-9 flex flex-col items-center gap-3.5 sm:flex-row"
         >
-          <Button size="lg" className="h-12 px-7 text-[15px] font-semibold shadow-lg shadow-primary/20" render={<Link href="/signup" />}>
-            Get started free
-            <ArrowRight className="size-4" data-icon="inline-end" />
-          </Button>
           <Button
             variant="default"
             size="lg"
-            className="h-12 px-6 text-[15px] font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border/80 shadow-sm"
-            render={<Link href="/download/windows" />}
+            className="h-12 px-7 text-[15px] font-semibold shadow-lg shadow-primary/20"
+            render={<Link href="/download" />}
           >
-            <Monitor className="size-4 text-primary" data-icon="inline-start" />
-            Download for Windows
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="h-12 px-6 text-[15px] border-border/80 bg-background/80 backdrop-blur-sm hover:bg-muted/80"
-            render={<a href={downloadHref("github")} />}
-          >
-            <Github className="size-4" data-icon="inline-start" />
-            View on GitHub
+            <Download className="size-4" data-icon="inline-start" />
+            Download desktop app
+            <ArrowRight className="size-4" data-icon="inline-end" />
           </Button>
         </motion.div>
 
@@ -103,17 +91,17 @@ export function Hero() {
         >
           <span className="flex items-center gap-1.5">
             <span className="size-1.5 rounded-full bg-success" />
-            ⚡ &lt;15ms Local LAN Latency
+            <Monitor className="size-3.5" /> Runs on this computer
           </span>
           <span className="hidden sm:inline text-border">·</span>
           <span className="flex items-center gap-1.5">
             <span className="size-1.5 rounded-full bg-primary" />
-            🛡️ 100% Offline-First Reliability
+            🛡️ Works offline after installation
           </span>
           <span className="hidden sm:inline text-border">·</span>
           <span className="flex items-center gap-1.5">
             <span className="size-1.5 rounded-full bg-success" />
-            🔒 Your Data Stays On Your Hardware
+            🔒 Restaurant data stays on your device
           </span>
         </motion.div>
       </div>

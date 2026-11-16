@@ -1,17 +1,14 @@
 "use client";
 
-import { Github, Menu, Monitor, X } from "lucide-react";
+import { Download, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Logo } from "@/components/layout/logo";
-import { Button } from "@/components/ui/button";
-import { downloadHref } from "@/lib/downloads";
 
 const links = [
-  { href: "#features", label: "Features" },
-  { href: "#security", label: "Security" },
-  { href: "/download/windows", label: "Windows App" },
-  { href: "#get-started", label: "Get started" },
+  { href: "/#features", label: "Features" },
+  { href: "/download", label: "Desktop app" },
+  { href: "/download#setup", label: "Setup guide" },
 ];
 
 export function MarketingNav() {
@@ -47,28 +44,13 @@ export function MarketingNav() {
         </nav>
 
         <div className="hidden items-center gap-2.5 md:flex">
-          <Button
-            variant="outline"
-            size="default"
-            className="font-medium gap-1.5 hidden lg:inline-flex border-primary/25 text-primary hover:bg-primary/10"
-            render={<Link href="/download/windows" />}
+          <Link
+            href="/download"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
           >
-            <Monitor className="size-3.5" />
-            Download for Windows
-          </Button>
-          <a
-            href={downloadHref("github")}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
-          >
-            <Github className="size-4" />
-            GitHub
-          </a>
-          <Button variant="ghost" size="default" className="font-medium" render={<Link href="/login" />}>
-            Sign in
-          </Button>
-          <Button variant="default" size="default" className="font-semibold shadow-sm shadow-primary/25" render={<Link href="/signup" />}>
-            Get started free
-          </Button>
+            <Download className="size-4" />
+            Download desktop app
+          </Link>
         </div>
 
         <button
@@ -95,14 +77,14 @@ export function MarketingNav() {
                 {l.label}
               </a>
             ))}
-            <div className="mt-2 flex flex-col gap-2">
-              <Button variant="outline" render={<Link href="/login" />}>
-                Sign in
-              </Button>
-              <Button variant="default" render={<Link href="/signup" />}>
-                Get started free
-              </Button>
-            </div>
+            <Link
+              href="/download"
+              onClick={() => setOpen(false)}
+              className="mt-2 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground"
+            >
+              <Download className="size-4" />
+              Download desktop app
+            </Link>
           </nav>
         </div>
       )}

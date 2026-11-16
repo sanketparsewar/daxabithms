@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DocPage, DocSection } from "@/components/marketing/doc-page";
-import { downloadHref } from "@/lib/downloads";
 
 export const metadata: Metadata = {
   title: "Documentation — Daxabit",
-  description: "API & MCP, accessibility, and India compliance docs for a self-hosted Daxabit instance.",
+  description: "Product information and local desktop installation help for Daxabit.",
 };
 
 const docs = [
   {
-    href: "/docs/api",
-    title: "API & MCP",
-    description: "Connect an AI client via MCP, or use Daxabit as a backend for your own website.",
+    href: "/download#setup",
+    title: "Desktop installation",
+    description: "Download Daxabit and set it up locally on Windows or Ubuntu/Debian.",
   },
   {
     href: "/docs/accessibility",
@@ -44,18 +43,10 @@ export default function DocsIndexPage() {
         </div>
       </DocSection>
 
-      <DocSection heading="Full setup & architecture docs">
+      <DocSection heading="Download the desktop application">
         <p>
-          Installation, environment variables, and the full architecture reference live in the{" "}
-          <a
-            href={downloadHref("github")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary underline underline-offset-4"
-          >
-            GitHub repository
-          </a>
-          &rsquo;s README and docs folder.
+          Daxabit is installed on one computer and runs its database and services locally. Choose a
+          package and follow the setup walkthrough on the <Link href="/download" className="text-primary underline underline-offset-4">desktop download page</Link>.
         </p>
       </DocSection>
     </DocPage>

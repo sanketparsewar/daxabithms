@@ -3,14 +3,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
-// Public, unauthenticated — whether any restaurant has been registered on
-// this self-hosted instance yet. Drives whether "/" shows the full
-// marketing pitch (unclaimed install) or just Sign in + View documentation
-// (someone already completed setup — see MarketingHomePage).
-export function useSetupStatus() {
+// Public, unauthenticated — whether the local desktop instance has completed
+// first-run setup. The marketing website does not call this endpoint.
+export function useSetupStatus(enabled = true) {
   return useQuery({
     queryKey: ["auth", "setup-status"],
     queryFn: () => api.get<{ isSetup: boolean }>("/auth/setup-status"),
     staleTime: 60_000,
+    enabled,
   });
 }
